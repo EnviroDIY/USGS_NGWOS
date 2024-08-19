@@ -76,3 +76,8 @@ boards/*
 filters/*
 TTN Keys.txt
 global_conf.json
+TestScribbles.txt
+PktFwdTx.json
+TTNUplinkRx.json
+global_conf_ttn.json
+local_conf.json

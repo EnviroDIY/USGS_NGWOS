@@ -8,14 +8,14 @@
       "bandwidth": 125000,
       "datarate": 50000,
       "enable": true,
-      "if": 300000,
-      "radio": 0
+      "radio": 0,
+      "if": 300000
     },
     "chan_Lora_std": {
       "bandwidth": 250000,
       "enable": true,
-      "if": -200000,
       "radio": 0,
+      "if": -200000,
       "spread_factor": 7
     },
     "chan_multiSF_0": { "enable": true, "if": -400000, "radio": 0 },
