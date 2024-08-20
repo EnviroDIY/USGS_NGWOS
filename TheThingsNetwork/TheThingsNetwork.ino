@@ -213,9 +213,12 @@ float getBatteryVoltage() {
     float rawBattery = analogRead(_batteryPin);
     MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
     // convert bits to volts
-    sensorValue_battery = (3.3 / 1023.) * 4.7 * rawBattery;
+    sensorValue_battery = (3.3 / 4095.) * 4.7 * rawBattery;
     MS_DBG(F("Battery in Volts:"), sensorValue_battery);
     return sensorValue_battery;
+}
+void buttonISR(void) {
+    Serial.println(F("\nButton interrupt!"));
 }
 /** End [working_functions] */
 
@@ -251,6 +254,7 @@ void setup() {
     SerialBee.begin(modemBaud);
 
     // Set up pins for the LED's
+    Serial.println(F("Flashing lights"));
     pinMode(greenLED, OUTPUT);
     digitalWrite(greenLED, LOW);
     pinMode(redLED, OUTPUT);
@@ -260,16 +264,19 @@ void setup() {
 
     pinMode(20, OUTPUT);  // for proper operation of the onboard flash memory
                           // chip's ChipSelect
-
-    // Set the timezones for the logger/data and the RTC
-    // Logging in the given time zone
-    Logger::setLoggerTimeZone(timeZone);
-    // It is STRONGLY RECOMMENDED that you set the RTC to be in UTC (UTC+0)
-    Logger::setRTCTimeZone(0);
+    Serial.println(F("Setting logger pins"));
     dataLogger.setLoggerPins(wakePin, sdCardSSPin, sdCardPwrPin, greenLED);
 
     // Begin the logger
     dataLogger.begin();
+
+    Serial.println(F("Setting time zones"));
+    // Set the timezones for the logger/data and the RTC
+    // Logging in the given time zone
+    // NOTE: with the RV8803, this must happen **AFTER** the begin
+    Logger::setLoggerTimeZone(timeZone);
+    // It is STRONGLY RECOMMENDED that you set the RTC to be in UTC (UTC+0)
+    Logger::setRTCTimeZone(0);
 
     // Set up the sensors, except at lowest battery level
     if (getBatteryVoltage() > 3.4) {
@@ -367,6 +374,9 @@ void setup() {
         dataLogger.turnOffSDcard(true);
         // true = wait for internal housekeeping after write
     }
+
+    pinMode(21, INPUT_PULLUP);
+    attachInterrupt(21, buttonISR, CHANGE);
 
     // Call the processor sleep
     Serial.println(F("Putting processor to sleep\n"));

@@ -519,13 +519,17 @@ void Logger::systemSleep(void) {
 
 #ifndef USE_TINYUSB
     // Detach the USB, iff not using TinyUSB
+    MS_DEEP_DBG(F("USBDevice.detach"));
     USBDevice.detach();
+    MS_DEEP_DBG(F("USBDevice.end"));
+    USBDevice.end();
+    USBDevice.standby();
 #endif
 
 #if defined(__SAMD51__)
-    // PM_SLEEPCFG_SLEEPMODE_BACKUP = 0x6
-    PM->SLEEPCFG.bit.SLEEPMODE = PM_SLEEPCFG_SLEEPMODE_BACKUP;
-    while (PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_BACKUP)
+    // PM_SLEEPCFG_SLEEPMODE_BACKUP = 0x4
+    PM->SLEEPCFG.bit.SLEEPMODE = 0x4;
+    while (PM->SLEEPCFG.bit.SLEEPMODE != 0x4)
         ;  // Wait for it to take
 #else
     // Disable systick interrupt:  See
@@ -555,6 +559,7 @@ void Logger::systemSleep(void) {
 #endif
     // Reattach the USB
 #ifndef USE_TINYUSB
+    USBDevice.init();
     USBDevice.attach();
 #endif
 
@@ -768,6 +773,17 @@ void Logger::begin() {
     MS_DBG(F("Logger ID is:"), _loggerID);
     MS_DBG(F("Logger is set to record at"), _loggingIntervalMinutes,
            F("minute intervals."));
+
+#if defined(ARDUINO_ARCH_SAMD)
+    MS_DBG(F("Disabling the USB on stnadby to lower sleep current"));
+    USB->DEVICE.CTRLA.bit.ENABLE = 0;  // Disable the USB peripheral
+    while (USB->DEVICE.SYNCBUSY.bit.ENABLE)
+        ;                                // Wait for synchronization
+    USB->DEVICE.CTRLA.bit.RUNSTDBY = 0;  // Deactivate run on standby
+    USB->DEVICE.CTRLA.bit.ENABLE   = 1;  // Enable the USB peripheral
+    while (USB->DEVICE.SYNCBUSY.bit.ENABLE)
+        ;  // Wait for synchronization
+#endif
 
     MS_DBG(F(
         "Setting up a watch-dog timer to fire after 15 minutes of inactivity"));
