@@ -41,11 +41,11 @@ volatile bool Logger::isLoggingNow = false;
 volatile bool Logger::isTestingNow = false;
 volatile bool Logger::startTesting = false;
 
+// Initialize the RTC
+RV8803 Logger::rtc;
+
 // Constructors
-Logger::Logger(const char* loggerID, uint16_t loggingIntervalMinutes,
-               int8_t SDCardSSPin, int8_t mcuWakePin)
-    : _SDCardSSPin(SDCardSSPin),
-      _mcuWakePin(mcuWakePin) {
+Logger::Logger(const char* loggerID, uint16_t loggingIntervalMinutes) {
     // Set parameters from constructor
     setLoggerID(loggerID);
     setLoggingInterval(loggingIntervalMinutes);

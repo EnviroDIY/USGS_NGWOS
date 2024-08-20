@@ -61,7 +61,6 @@ __pycache__/
 .clang_complete
 .gcc-flags.json
 tests/*
-lib/*
 boards/*
 /platformio.ini
 .sconsign.dblite

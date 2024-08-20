@@ -72,11 +72,6 @@
  * @ingroup base_classes
  */
 class Logger {
-    /**
-     * @brief The dataPublisher class contains endpoints for logged data and the
-     * proper formats for sending it.
-     */
-    friend class dataPublisher;
 
  public:
     /**
@@ -87,17 +82,11 @@ class Logger {
      * file was started.
      * @param loggingIntervalMinutes The frequency in minutes at which data
      * should be logged
-     * @param SDCardSSPin The pin of the chip select/slave select for the SPI
-     * connection to the SD card
-     * @param mcuWakePin The pin used to wake the logger from deep sleep -
-     * expected to be attached to an alarm pin of the real-time clock.  Use a
-     * value of -1 to prevent the board from sleeping.
      * @param inputArray A variableArray object instance providing data to be
      * logged.  This is NOT an array of variables, but an object of the variable
      * array class.
      */
-    Logger(const char* loggerID, uint16_t loggingIntervalMinutes,
-           int8_t SDCardSSPin, int8_t mcuWakePin);
+    Logger(const char* loggerID, uint16_t loggingIntervalMinutes);
     /**
      * @brief Destroy the Logger object - takes no action.
      */
@@ -704,7 +693,6 @@ class Logger {
      */
     bool logToSD(String& rec);
 
- protected:
     // The SD card and file
     /**
      * @brief An internal reference to SdFat for SD card control

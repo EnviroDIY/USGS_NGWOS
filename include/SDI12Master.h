@@ -7,6 +7,9 @@
 #include <SDI12.h>
 
 
+// Extra time needed for the sensor to wake (0-100ms)
+const uint32_t wake_delay = 10;
+
 struct startMeasurementResult {  // Structure declaration
     String  returned_address;
     uint8_t meas_time_s;
@@ -22,7 +25,8 @@ struct getResultsResult {  // Structure declaration
     bool    success;
 };
 
-getResultsResult getResults(char address, int resultsExpected,
+getResultsResult getResults(SDI12& _SDI12Internal, char address,
+                            int resultsExpected, float sdi12_results[10],
                             bool verify_crc = false, bool printCommands = true,
                             int8_t error_result_number = 0,
                             float  no_error_value      = 0) {
@@ -52,14 +56,14 @@ getResultsResult getResults(char address, int resultsExpected,
     return_result.success         = true;
 
     while (resultsReceived < resultsExpected && cmd_number <= 9) {
-        mySDI12.clearBuffer();
+        _SDI12Internal.clearBuffer();
         String command = "";
         command += address;
         command += "D";
         command += cmd_number;
         command +=
             "!";  // SDI-12 command to get data [address][D][dataOption][!]
-        mySDI12.sendCommand(command, wake_delay);
+        _SDI12Internal.sendCommand(command, wake_delay);
 
         if (printCommands) {
             Serial.print(">>>");
@@ -68,8 +72,8 @@ getResultsResult getResults(char address, int resultsExpected,
         char resp_buffer[max_sdi_response] = {'\0'};
 
         // read bytes into the char array until we get to a new line (\r\n)
-        size_t bytes_read = mySDI12.readBytesUntil('\n', resp_buffer,
-                                                   max_sdi_response);
+        size_t bytes_read = _SDI12Internal.readBytesUntil('\n', resp_buffer,
+                                                          max_sdi_response);
 
         size_t data_bytes_read = bytes_read -
             1;  // subtract one for the /r before the /n
@@ -82,15 +86,15 @@ getResultsResult getResults(char address, int resultsExpected,
         }
         // read and clear anything else from the buffer
         int extra_chars = 0;
-        while (mySDI12.available()) {
-            Serial.write(mySDI12.read());
+        while (_SDI12Internal.available()) {
+            Serial.write(_SDI12Internal.read());
             extra_chars++;
         }
         if (extra_chars > 0) {
             Serial.print(extra_chars);
             Serial.println(" additional characters received.");
         }
-        mySDI12.clearBuffer();
+        _SDI12Internal.clearBuffer();
 
         // check the address, break if it's incorrect
         char returned_address = resp_buffer[0];
@@ -110,7 +114,7 @@ getResultsResult getResults(char address, int resultsExpected,
 
         // check the crc, break if it's incorrect
         if (verify_crc) {
-            bool crcMatch   = mySDI12.verifyCRC(sdiResponse);
+            bool crcMatch   = _SDI12Internal.verifyCRC(sdiResponse);
             data_bytes_read = data_bytes_read - 3;
             if (crcMatch) {
                 if (printCommands) { Serial.println("CRC valid"); }
@@ -209,7 +213,7 @@ getResultsResult getResults(char address, int resultsExpected,
         cmd_number++;
     }
 
-    mySDI12.clearBuffer();
+    _SDI12Internal.clearBuffer();
 
     if (printCommands) {
         Serial.print("After ");
@@ -230,7 +234,7 @@ getResultsResult getResults(char address, int resultsExpected,
     return return_result;
 }
 
-startMeasurementResult startMeasurement(char   address,
+startMeasurementResult startMeasurement(SDI12& _SDI12Internal, char address,
                                         bool   is_concurrent = false,
                                         bool   request_crc   = false,
                                         String meas_type     = "",
@@ -241,7 +245,7 @@ startMeasurementResult startMeasurement(char   address,
     return_result.meas_time_s      = 0;
     return_result.numberResults    = 0;
 
-    mySDI12.clearBuffer();
+    _SDI12Internal.clearBuffer();
 
     String command = "";
     command += address;  // All commands start with the address
@@ -249,7 +253,7 @@ startMeasurementResult startMeasurement(char   address,
     command += request_crc ? "C" : "";  // add an additional C to request a CRC
     command += meas_type;               // Measurement type, "" or 0-9
     command += "!";                     // All commands end with "!"
-    mySDI12.sendCommand(command, wake_delay);
+    _SDI12Internal.sendCommand(command, wake_delay);
     if (printCommands) {
         Serial.print(">>>");
         Serial.println(command);
@@ -257,13 +261,13 @@ startMeasurementResult startMeasurement(char   address,
 
     // wait for acknowlegement with format [address][ttt (3 char,
     // seconds)][number of measurments available, 0-9]
-    String sdiResponse = mySDI12.readStringUntil('\n');
+    String sdiResponse = _SDI12Internal.readStringUntil('\n');
     sdiResponse.trim();
     if (printCommands) {
         Serial.print("<<<");
         Serial.println(sdiResponse);
     }
-    mySDI12.clearBuffer();
+    _SDI12Internal.clearBuffer();
 
     // check the address, return if it's incorrect
     String returned_address = sdiResponse.substring(0, 1);
@@ -308,19 +312,19 @@ startMeasurementResult startMeasurement(char   address,
  * @param i a character between '0'-'9', 'a'-'z', or 'A'-'Z'.
  * @param printCommands true to print the raw output and input from the command
  */
-bool printInfo(char i, bool printCommands = true) {
-    mySDI12.clearBuffer();
+bool printInfo(SDI12& _SDI12Internal, char i, bool printCommands = true) {
+    _SDI12Internal.clearBuffer();
     String command = "";
     command += i;
     command += "I!";
-    mySDI12.sendCommand(command, wake_delay);
+    _SDI12Internal.sendCommand(command, wake_delay);
     if (printCommands) {
         Serial.print(">>>");
         Serial.println(command);
     }
     delay(100);
 
-    String sdiResponse = mySDI12.readStringUntil('\n');
+    String sdiResponse = _SDI12Internal.readStringUntil('\n');
     sdiResponse.trim();
     // allccccccccmmmmmmvvvxxx...xx<CR><LF>
     if (printCommands) {
