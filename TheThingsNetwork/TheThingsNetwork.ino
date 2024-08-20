@@ -209,16 +209,18 @@ float getBatteryVoltage() {
     // The return value from analogRead() is IN BITS NOT IN VOLTS!!
     float  sensorValue_battery = -9999;
     int8_t _batteryPin         = 67;
+    pinMode(_batteryPin, INPUT);
     analogRead(_batteryPin);  // priming reading
     float rawBattery = analogRead(_batteryPin);
     MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
     // convert bits to volts
-    sensorValue_battery = (3.3 / 4095.) * 4.7 * rawBattery;
+    sensorValue_battery = (3.3 / 1024.) * 4.7 * rawBattery;
     MS_DBG(F("Battery in Volts:"), sensorValue_battery);
-    return sensorValue_battery;
+    // return sensorValue_battery;
+    return 4;
 }
 void buttonISR(void) {
-    Serial.println(F("\nButton interrupt!"));
+    Serial1.println(F("\nButton interrupt!"));
 }
 /** End [working_functions] */
 
@@ -236,6 +238,8 @@ void setup() {
 
     // Set console baud rate
     Serial.begin(serialBaud);
+    delay(10);
+    Serial1.begin(serialBaud);
     delay(10);
 
     Wire.begin();
