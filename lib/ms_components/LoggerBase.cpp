@@ -92,19 +92,36 @@ void Logger::setSDCardPwr(int8_t SDCardPowerPin) {
 // https://thecavepearlproject.org/2017/05/21/switching-off-sd-cards-for-low-power-data-logging/
 void Logger::turnOnSDcard(bool waitToSettle) {
     if (_SDCardPowerPin >= 0) {
+        MS_DBG(F("Pulling SS pin"), _SDCardSSPin,
+               F("HIGH and then powering the SD card with pin"),
+               _SDCardPowerPin);
+        // Pull the SS pin high before power up.
+        // Cave Pearl notes that some cars will fail on power-up unless SS is
+        // pulled up
+        pinMode(_SDCardSSPin, OUTPUT);
+        digitalWrite(_SDCardSSPin, HIGH);
+        delay(6);
+        pinMode(_SDCardPowerPin, OUTPUT);
         digitalWrite(_SDCardPowerPin, HIGH);
+        delay(6);
         // TODO(SRGDamia1):  figure out how long to wait
-        if (waitToSettle) { delay(6); }
+        if (waitToSettle) {
+            MS_DEEP_DBG(F("Waiting 100ms for SD card to boot"));
+            delay(100);
+        }
     }
 }
 void Logger::turnOffSDcard(bool waitForHousekeeping) {
     if (_SDCardPowerPin >= 0) {
+        MS_DBG(F("Cutting power to the SD card with pin"), _SDCardPowerPin);
         // TODO(SRGDamia1): set All SPI pins to INPUT?
         // TODO(SRGDamia1): set ALL SPI pins HIGH (~30k pull-up)
         pinMode(_SDCardPowerPin, OUTPUT);
         digitalWrite(_SDCardPowerPin, LOW);
         // TODO(SRGDamia1):  wait in lower power mode
         if (waitForHousekeeping) {
+            MS_DEEP_DBG(
+                F("Waiting 1s for SD card to finish any on-going writes"));
             // Specs say up to 1s for internal housekeeping after each write
             delay(1000);
         }
@@ -168,6 +185,48 @@ void Logger::setLoggerPins(int8_t mcuWakePin, int8_t SDCardSSPin,
     setAlertPin(ledPin);
 }
 
+
+// ===================================================================== //
+// Public functions for internet and dataPublishers
+// ===================================================================== //
+
+// Set up communications
+// Adds a loggerModem object to the logger
+// loggerModem = TinyGSM modem + TinyGSM client + Modem On Off
+void Logger::attachModem(loggerModem& modem) {
+    _logModem = &modem;
+}
+
+
+// Takes advantage of the modem to synchronize the clock
+bool Logger::syncRTC() {
+    bool success = false;
+    if (_logModem != nullptr) {
+        // Synchronize the RTC with NIST
+        PRINTOUT(F("Attempting to connect to the internet and synchronize RTC "
+                   "with NIST"));
+        PRINTOUT(F("This may take up to two minutes!"));
+        if (_logModem->modemWake()) {
+            if (_logModem->connectInternet(120000L)) {
+                setRTClock(_logModem->getNISTTime());
+                success = true;
+            } else {
+                PRINTOUT(F("Could not connect to internet for clock sync."));
+            }
+        } else {
+            PRINTOUT(F("Could not wake modem for clock sync."));
+        }
+        watchDogTimer.resetWatchDog();
+
+        // Power down the modem now that we are done with it
+        MS_DBG(F("Powering down modem after clock sync."));
+        _logModem->disconnectInternet();
+        _logModem->modemSleepPowerDown();
+    }
+    watchDogTimer.resetWatchDog();
+    return success;
+}
+
 // ===================================================================== //
 // Public functions to access the clock in proper format and time zone
 // ===================================================================== //
@@ -178,7 +237,12 @@ void Logger::setLoggerTimeZone(int8_t timeZone) {
     // void setTimeZoneQuarterHours(int8_t quarterHours);
     // Write the time zone to RV8803_RAM as int8_t (signed) in 15 minute
     // increments
+    PRINTOUT("Here 1");
+    delay(200);
     rtc.setTimeZoneQuarterHours(timeZone * 4);
+    delay(200);
+    PRINTOUT("Here 2");
+    delay(200);
 // Some helpful prints for debugging
 #ifdef STANDARD_SERIAL_OUTPUT
     const char* prtout1 = "Logger timezone is set to UTC";
@@ -635,7 +699,32 @@ bool Logger::initializeSDCard(void) {
         return false;
     }
     // Initialise the SD card
-    if (!sd.begin(_SDCardSSPin, SPI_FULL_SPEED)) {
+    // If you have a dedicated SPI for the SD card, you can overrride the
+    // default shared SPI using this:
+
+    // SdSpiConfig(SdCsPin_t cs, uint8_t opt, uint32_t maxSpeed, SpiPort_t*
+    // port);
+    // sd.begin(SdSpiConfig(_SDCardSSPin, DEDICATED_SPI, SPI_FULL_SPEED));
+    // else the default writes to
+    // sd.begin(SdSpiConfig(_SDCardSSPin, SHARED_SPI, SPI_FULL_SPEED));
+    // With DEDICATED_SPI, multi-block SD I/O may be used for better
+    // performance. The SPI bus may not be shared with other devices in this
+    // mode.
+    // NOTE: SPI_FULL_SPEED is 50MHz
+
+    // In order to prevent the SD card library from calling SPI.begin ever
+    // again, we need to make sure we set up the SD card object with a
+    // SdSpiConfig object with option "USER_SPI_BEGIN."
+    // so we extend the options to be
+    // sd.begin(SdSpiConfig(_SDCardSSPin, DEDICATED_SPI | USER_SPI_BEGIN,
+    // SPI_FULL_SPEED));
+
+
+    SdSpiConfig customSdConfig(static_cast<SdCsPin_t>(_SDCardSSPin),
+                               (uint8_t)(DEDICATED_SPI | USER_SPI_BEGIN),
+                               SPI_FULL_SPEED, &SPI);
+
+    if (!sd.begin(customSdConfig)) {
         PRINTOUT(F("Error: SD card failed to initialize or is missing."));
         PRINTOUT(F("Data will not be saved!"));
         return false;
@@ -775,7 +864,7 @@ void Logger::begin() {
            F("minute intervals."));
 
 #if defined(ARDUINO_ARCH_SAMD)
-    MS_DBG(F("Disabling the USB on stnadby to lower sleep current"));
+    MS_DBG(F("Disabling the USB on standby to lower sleep current"));
     USB->DEVICE.CTRLA.bit.ENABLE = 0;  // Disable the USB peripheral
     while (USB->DEVICE.SYNCBUSY.bit.ENABLE)
         ;                                // Wait for synchronization
