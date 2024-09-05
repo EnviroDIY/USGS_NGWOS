@@ -233,6 +233,10 @@ void buttonISR(void) {
 //  Arduino Setup Function
 // ==========================================================================
 void setup() {
+    // Set console baud rate
+    Serial.begin(serialBaud);
+    delay(10);
+
 // Wait for USB connection to be established by PC
 // NOTE:  Only use this when debugging - if not connected to a PC, this
 // could prevent the script from starting
@@ -240,9 +244,6 @@ void setup() {
     while (!SERIAL_PORT_USBVIRTUAL && (millis() < 10000L)) {}
 #endif
 
-    // Set console baud rate
-    Serial.begin(serialBaud);
-    delay(10);
     Serial1.begin(serialBaud);
     delay(10);
 
@@ -306,7 +307,7 @@ void setup() {
     // SdSpiConfig object with option "USER_SPI_BEGIN."
 #endif
 
-    Serial.println(F("Starting I2C"));
+    Serial.println(F("Starting I2C (Wire)"));
     Wire.begin();
 
     Serial.println(F("Setting onboard flash pins"));
@@ -320,6 +321,10 @@ void setup() {
         F("Setting analog read resolution for onboard ADC to 12 bit"));
     analogReadResolution(12);
 
+    // Begin the logger
+    Serial.println(F("Beginning the logger"));
+    dataLogger.begin();
+
     Serial.println(F("Setting time zones"));
     // Set the timezones for the logger/data and the RTC
     // Logging in the given time zone
@@ -327,9 +332,6 @@ void setup() {
     Logger::setLoggerTimeZone(timeZone);
     // It is STRONGLY RECOMMENDED that you set the RTC to be in UTC (UTC+0)
     Logger::setRTCTimeZone(0);
-
-    // Begin the logger
-    dataLogger.begin();
 
     // Set up the sensors, except at lowest battery level
     if (getBatteryVoltage() > 3.4) {
