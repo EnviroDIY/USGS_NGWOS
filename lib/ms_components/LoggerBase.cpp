@@ -237,12 +237,7 @@ void Logger::setLoggerTimeZone(int8_t timeZone) {
     // void setTimeZoneQuarterHours(int8_t quarterHours);
     // Write the time zone to RV8803_RAM as int8_t (signed) in 15 minute
     // increments
-    PRINTOUT("Here 1");
-    delay(200);
     rtc.setTimeZoneQuarterHours(timeZone * 4);
-    delay(200);
-    PRINTOUT("Here 2");
-    delay(200);
 // Some helpful prints for debugging
 #ifdef STANDARD_SERIAL_OUTPUT
     const char* prtout1 = "Logger timezone is set to UTC";
