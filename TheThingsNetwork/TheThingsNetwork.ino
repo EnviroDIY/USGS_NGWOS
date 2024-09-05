@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "wiring_private.h"  // pinPeripheral() function
 
 // Select your LoRa Module:
 #define LORA_AT_MDOT
@@ -52,8 +53,9 @@ const int8_t  greenLED   = 8;       // Pin for the green LED
 const int8_t  redLED     = 9;       // Pin for the red LED
 const int8_t  buttonPin  = 21;      // Pin for debugging mode (ie, button pin)
 const int8_t  wakePin    = 38;  // MCU interrupt/alarm pin to wake from sleep
-// Stonefly 0.1
-const int8_t sdCardPwrPin   = 32;  // MCU SD card power pin
+// Stonefly 0.1 would have SD power on pin 32, but the MOSFET circuit is bad
+// const int8_t sdCardPwrPin = 32;  // MCU SD card power pin
+const int8_t sdCardPwrPin   = -1;  // MCU SD card power pin
 const int8_t sdCardSSPin    = 29;  // SD card chip select/slave select pin
 const int8_t sensorPowerPin = 22;  // MCU pin controlling main sensor power
 /** End [logging_options] */
@@ -101,8 +103,8 @@ LoRa_AT lora_modem(SerialBee);
 
 LoRaStream loraStream(lora_modem);
 
-loraModemTTN ttn_modem(modemVccPin, modemSleepRqPin, modemStatusPin, lora_wake_pin, lora_wake_pullup,
-                       lora_wake_edge);
+loraModemTTN ttn_modem(modemVccPin, modemSleepRqPin, modemStatusPin,
+                       lora_wake_pin, lora_wake_pullup, lora_wake_edge);
 
 
 // ==========================================================================
@@ -211,6 +213,8 @@ float getBatteryVoltage() {
     int8_t _batteryPin         = 67;
     pinMode(_batteryPin, INPUT);
     analogRead(_batteryPin);  // priming reading
+    analogRead(_batteryPin);  // priming reading
+    analogRead(_batteryPin);  // priming reading
     float rawBattery = analogRead(_batteryPin);
     MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
     // convert bits to volts
@@ -242,8 +246,6 @@ void setup() {
     Serial1.begin(serialBaud);
     delay(10);
 
-    Wire.begin();
-
     // Print a start-up note to the first serial port
     Serial.print(F("\n\nNow running "));
     Serial.print(sketchName);
@@ -264,15 +266,59 @@ void setup() {
     pinMode(redLED, OUTPUT);
     digitalWrite(redLED, LOW);
     // Blink the LEDs to show the board is on and starting up
-    greenredflash();
+    greenredflash(5, 100);
 
+    // Start the SPI library
+    Serial.println(F("Starting SPI"));
+    SPI.begin();
+
+    // disable hardware slave select
+    // This is needed because the slave select pin is on the wrong SPI pad on
+    // the Stonefly 0.1
+
+    // NOTE: While the Adafruit core sets the MSSEN bit, it does NOT set the
+    // pinPeripheral for the SS pin.
+
+#if 0
+    //  All of this has to happen **after** calling SPI.begin(), which will
+    //  reset the entirety of CTRLB!
+    Serial.println(F("Disabling SPI hardware slave select (MSSEN)"));
+    // First, disable SPI (CTRL.ENABLE=0)
+    // All of the bits of CTRL B (except RXEN) are "Enable-Protected" - they
+    // cannot be written while the peripheral is enabled Setting the CTRLB
+    // register
+    sercom4.disableSPI();  // NOTE: sercom4 is as sercom object,
+                           // SERCOM4 is a specific memory address.
+    // Now set the CTRLB register to disable hardware SS
+    SERCOM4->SPI.CTRLB.bit.MSSEN = 0;  // Disable MSSEN
+    while (SERCOM4->SPI.SYNCBUSY.bit.CTRLB == 1)
+        ;  // not required, the MSSEN bit is not synchronized
+    // Re-enable SPI
+    sercom4.enableSPI();
+    Serial.println(F("Correcting the pin peripheral mode for the SS pin"));
+    // Ensure the pin-periperal type for the SS pin is digital I/O so it can be
+    // set high and low manually
+
+    pinPeripheral(sdCardSSPin, PIO_OUTPUT);
+
+    // In order to prevent the SD card library from calling SPI.begin ever
+    // again, we need to make sure we set up the SD card object with a
+    // SdSpiConfig object with option "USER_SPI_BEGIN."
+#endif
+
+    Serial.println(F("Starting I2C"));
+    Wire.begin();
+
+    Serial.println(F("Setting onboard flash pins"));
     pinMode(20, OUTPUT);  // for proper operation of the onboard flash memory
                           // chip's ChipSelect
+
     Serial.println(F("Setting logger pins"));
     dataLogger.setLoggerPins(wakePin, sdCardSSPin, sdCardPwrPin, greenLED);
 
-    // Begin the logger
-    dataLogger.begin();
+    Serial.println(
+        F("Setting analog read resolution for onboard ADC to 12 bit"));
+    analogReadResolution(12);
 
     Serial.println(F("Setting time zones"));
     // Set the timezones for the logger/data and the RTC
@@ -281,6 +327,9 @@ void setup() {
     Logger::setLoggerTimeZone(timeZone);
     // It is STRONGLY RECOMMENDED that you set the RTC to be in UTC (UTC+0)
     Logger::setRTCTimeZone(0);
+
+    // Begin the logger
+    dataLogger.begin();
 
     // Set up the sensors, except at lowest battery level
     if (getBatteryVoltage() > 3.4) {
@@ -295,7 +344,7 @@ void setup() {
 
         if (!maxlipo.begin()) {
             Serial.println(
-                F("Couldnt find Adafruit MAX17048?\nMake sure a battery "
+                F("Couldn't find Adafruit MAX17048?\nMake sure a battery "
                   "is plugged in!"));
         } else {
             Serial.print(F("Found MAX17048"));
@@ -374,7 +423,13 @@ void setup() {
         header += "Battery Percent,";
         header += "Battery (Dis)Charge Rate,";
         header += "Encoded LPP Buffer";
-        dataLogger.logToSD(header);
+        Serial.println(F("Writing header to SD card"));
+        Serial.println(header);
+        if (dataLogger.logToSD(header)) {
+            Serial.println(F("SD card success"));
+        } else {
+            Serial.println(F("Failed to write to SD card!"));
+        }
         dataLogger.turnOffSDcard(true);
         // true = wait for internal housekeeping after write
     }
@@ -404,7 +459,11 @@ void loop() {
         // Turn on the LED to show we're taking a reading
         dataLogger.alertOn();
         // Power up the SD Card, but skip any waits after power up
-        dataLogger.turnOnSDcard(false);
+        dataLogger.turnOnSDcard(true);
+        dataLogger.watchDogTimer.resetWatchDog();
+
+        // wake up the modem
+        ttn_modem.modemWake(lora_modem);
         dataLogger.watchDogTimer.resetWatchDog();
 
         // Confirm the date and time using the ISO 8601 timestamp
@@ -420,10 +479,6 @@ void loop() {
             dataLogger.watchDogTimer.resetWatchDog();
             delay(100L);
         }
-
-        // wake up the modem
-        ttn_modem.modemWake(lora_modem);
-        dataLogger.watchDogTimer.resetWatchDog();
 
         // set lpp buffer pointer back to the head of the buffer
         lpp.reset();
@@ -547,6 +602,7 @@ void loop() {
         float lux_val = current_val * (1000. / 200.);
         Serial.print(F("Lux: "));
         Serial.println(lux_val);
+        // Add to LPP buffer
         lpp.addLuminosity(10, lux_val);
         // Add to the CSV
         csvOutput += ",";
@@ -566,6 +622,7 @@ void loop() {
         Serial.print(F("(Dis)Charge rate: "));
         Serial.print(chargeRate, 1);
         Serial.println(" %/hr");
+        // Add to LPP buffer
         lpp.addVoltage(11, cellVoltage);
         lpp.addPercentage(12, cellPercent);
         lpp.addGenericSensor(13, chargeRate);
@@ -578,7 +635,7 @@ void loop() {
         csvOutput += String(chargeRate, 1);
         dataLogger.watchDogTimer.resetWatchDog();
 
-        // decode and print the buffer we just created
+        // decode and print the Cayenne LPP buffer we just created
         Serial.println("Cayenne LPP Buffer:");
         printFrameHex(lpp.getBuffer(), lpp.getSize());
         Serial.println("\nDecoded Buffer:");
@@ -596,7 +653,14 @@ void loop() {
         sensorPowerOff();
 
         // Save data to the SD Card
-        dataLogger.logToSD(csvOutput);
+
+        Serial.println(F("Writing line to SD card"));
+        Serial.println(csvOutput);
+        if (dataLogger.logToSD(csvOutput)) {
+            Serial.println(F("SD card success"));
+        } else {
+            Serial.println(F("Failed to write to SD card!"));
+        }
         // Cut power from the SD card
         dataLogger.turnOffSDcard(true);
         dataLogger.watchDogTimer.resetWatchDog();
@@ -632,6 +696,11 @@ void loop() {
 
         // put the modem to sleep
         ttn_modem.modemSleep(lora_modem);
+
+        // Turn off the LED
+        dataLogger.alertOff();
+        // Print a line to show reading ended
+        Serial.println(F("------------------------------------------\n"));
     }
 
     // Call the processor sleep
