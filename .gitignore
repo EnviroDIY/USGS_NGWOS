@@ -79,3 +79,22 @@ PktFwdTx.json
 TTNUplinkRx.json
 global_conf_ttn.json
 local_conf.json
+lib/*Adafruit*/*
+lib/Adafruit Unified Sensor/.gitignore
+lib/ArduinoECCX08/*
+lib/ArduinoJson/*
+lib/Arduino-wolfSSL/*
+lib/ArduinoBearSSL/*
+lib/CayenneLPP/*
+lib/LoRa_AT/*
+lib/PubSubClient/*
+lib/RTCLib/*
+lib/SdFat/*
+lib/SDI-12/*
+lib/SparkFun*/*
+lib/SSLClient/*
+lib/StreamDebugger/*
+lib/TinyGSM/*
+variants/*
+compile_commands.json
+pio_common_libdeps.ini
