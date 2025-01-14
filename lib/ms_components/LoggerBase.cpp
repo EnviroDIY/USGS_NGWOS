@@ -134,6 +134,7 @@ void Logger::setSDCardSS(int8_t SDCardSSPin) {
     _SDCardSSPin = SDCardSSPin;
     if (_SDCardSSPin >= 0) {
         pinMode(_SDCardSSPin, OUTPUT);
+        digitalWrite(_SDCardSSPin, HIGH);
         MS_DBG(F("Pin"), _SDCardSSPin, F("set as SD Card Slave/Chip Select"));
     }
 }
@@ -151,10 +152,13 @@ void Logger::setSDCardPins(int8_t SDCardSSPin, int8_t SDCardPowerPin) {
 void Logger::setRTCWakePin(int8_t mcuWakePin, uint8_t wakePinMode) {
     _mcuWakePin = mcuWakePin;
     if (_mcuWakePin >= 0) {
-        pinMode(_mcuWakePin, wakePinMode);
-        MS_DBG(F("Pin"), _mcuWakePin, F("set as RTC wake up pin"));
+        pinMode(_mcuWakePin, _wakePinMode);
+        MS_DBG(F("Pin"), _mcuWakePin, F("set as RTC wake up pin with pin mode"),
+               _wakePinMode);
     } else {
+#if !defined(MS_USE_RTC_ZERO)
         MS_DBG(F("Logger mcu will not sleep between readings!"));
+#endif
     }
 }
 
@@ -177,11 +181,13 @@ void Logger::alertOff() {
 
 // Sets up the five pins of interest for the logger
 void Logger::setLoggerPins(int8_t mcuWakePin, int8_t SDCardSSPin,
-                           int8_t SDCardPowerPin, int8_t ledPin,
-                           uint8_t wakePinMode) {
-    setRTCWakePin(mcuWakePin, wakePinMode);
+                           int8_t SDCardPowerPin, int8_t buttonPin,
+                           int8_t ledPin, uint8_t wakePinMode,
+                           uint8_t buttonPinMode) {
+    MS_DEEP_DBG("Setting all logger pins");
     setSDCardSS(SDCardSSPin);
     setSDCardPwr(SDCardPowerPin);
+    setRTCWakePin(mcuWakePin, wakePinMode);
     setAlertPin(ledPin);
 }
 
@@ -222,6 +228,8 @@ bool Logger::syncRTC() {
         MS_DBG(F("Powering down modem after clock sync."));
         _logModem->disconnectInternet();
         _logModem->modemSleepPowerDown();
+    } else {
+        PRINTOUT(F("No modem available for clock sync!"));
     }
     watchDogTimer.resetWatchDog();
     return success;
@@ -260,7 +268,6 @@ void Logger::setTimeZone(int8_t timeZone) {
 int8_t Logger::getTimeZone(void) {
     return getLoggerTimeZone();
 }
-
 // Sets the static timezone that the RTC is programmed in
 // I VERY VERY STRONGLY RECOMMEND SETTING THE RTC IN UTC
 // You can either set the RTC offset directly or set the offset between the
@@ -516,7 +523,7 @@ bool Logger::checkMarkedInterval(void) {
 // Set up the Interrupt Service Request for waking
 // In this case, we're doing nothing, we just want the processor to wake
 // This must be a static function (which means it can only call other static
-// funcions.)
+// functions.)
 void Logger::wakeISR(void) {
     MS_DEEP_DBG(F("\nClock interrupt!"));
 }
@@ -525,11 +532,14 @@ void Logger::wakeISR(void) {
 // Puts the system to sleep to conserve battery life.
 // This DOES NOT sleep or wake the sensors!!
 void Logger::systemSleep(void) {
+    MS_DEEP_DBG(F("\n==================================="));
+#if !defined(MS_USE_RTC_ZERO)
     // Don't go to sleep unless there's a wake pin!
     if (_mcuWakePin < 0) {
         MS_DBG(F("Use a non-negative wake pin to request sleep!"));
         return;
     }
+#endif
 
     // Disable any previous interrupts
     rtc.disableAllInterrupts();
@@ -542,25 +552,23 @@ void Logger::systemSleep(void) {
 
     // Set up a pin to hear clock interrupt and attach the wake ISR to it
     pinMode(_mcuWakePin, INPUT_PULLUP);
-    enableInterrupt(_mcuWakePin, wakeISR, CHANGE);
+    enableInterrupt(_mcuWakePin, wakeISR, RISING);
 
     // Send one last message before shutting down serial ports
     MS_DBG(F("Putting processor to sleep.  ZZzzz..."));
 
-// Wait until the serial ports have finished transmitting
-// This does not clear their buffers, it just waits until they are finished
-// TODO(SRGDamia1):  Make sure can find all serial ports
-#if defined(STANDARD_SERIAL_OUTPUT)
-    STANDARD_SERIAL_OUTPUT.flush();  // for debugging
-#endif
-#if defined DEBUGGING_SERIAL_OUTPUT
-    DEBUGGING_SERIAL_OUTPUT.flush();  // for debugging
-#endif
-
     // Stop any I2C connections
-    // This function actually disables the two-wire pin functionality and
-    // turns off the internal pull-up resistors.
+    // WARNING: After stopping I2C, we can no longer communicate with the RTC!
+    // Any calls to get the current time, change the alarm settings, reset the
+    // alarm flags, or any other event that involves communication with the RTC
+    // will fail!
+    MS_DEEP_DBG(F("Ending I2C"));
+    // For an AVR board, this function disables the two-wire pin functionality
+    // and turns off the internal pull-up resistors.
+    // For a SAMD board, this only disables the I2C sercom and does nothing with
+    // the pins. The Wire.end() function does **NOT** force the pins low.
     Wire.end();
+
 // Now force the I2C pins to LOW
 // I2C devices have a nasty habit of stealing power from the SCL and SDA pins...
 // This will only work for the "main" I2C/TWI interface
@@ -574,23 +582,45 @@ void Logger::systemSleep(void) {
 #endif
 
     // Disable the watch-dog timer
+    MS_DEEP_DBG(F("Disabling the watchdog"));
     watchDogTimer.disableWatchDog();
 
 #ifndef USE_TINYUSB
     // Detach the USB, iff not using TinyUSB
-    MS_DEEP_DBG(F("USBDevice.detach"));
-    USBDevice.detach();
-    MS_DEEP_DBG(F("USBDevice.end"));
-    USBDevice.end();
-    USBDevice.standby();
+    MS_DEEP_DBG(F("Detaching USBDevice"));
+    USBDevice.detach();   // USB->DEVICE.CTRLB.bit.DETACH = 1;
+    USBDevice.end();      // USB->DEVICE.CTRLA.bit.ENABLE = 0; wait for sync;
+    USBDevice.standby();  // USB->DEVICE.CTRLA.bit.RUNSTDBY = 0;
 #endif
 
 #if defined(__SAMD51__)
-    // PM_SLEEPCFG_SLEEPMODE_BACKUP = 0x4
-    PM->SLEEPCFG.bit.SLEEPMODE = 0x4;
-    while (PM->SLEEPCFG.bit.SLEEPMODE != 0x4)
-        ;  // Wait for it to take
-#else
+
+    // Clear the FPU interrupt because it can prevent us from sleeping.
+    // From Circuit Python:
+    // https://github.com/maholli/circuitpython/blob/210ce1d1dc9b1c6c615ff2d3201dde89cb75c555/ports/atmel-samd/supervisor/port.c#L654
+    if (__get_FPSCR() & ~(0x9f)) {
+        __set_FPSCR(__get_FPSCR() & ~(0x9f));
+        (void)__get_FPSCR();
+    }
+
+    // PM_SLEEPCFG_SLEEPMODE_STANDBY_Val = 0x4
+    PM->SLEEPCFG.bit.SLEEPMODE = PM_SLEEPCFG_SLEEPMODE_STANDBY_Val;
+    while (PM->SLEEPCFG.bit.SLEEPMODE !=
+           PM_SLEEPCFG_SLEEPMODE_STANDBY_Val);  // Wait for it to take
+
+    //  From datasheet 18.6.3.3: After power-up, the MAINVREG low power mode
+    //  takes some time to stabilize. Once stabilized, the INTFLAG.SLEEPRDY
+    //  bit is set. Before entering Standby, Hibernate or Backup mode,
+    //  software must ensure that the INTFLAG.SLEEPRDY bit is set.
+    //  SRGD Note: I believe this only applies at power-on, but it's probably
+    //  not a bad idea to check that the flag has been set.
+    while (!PM->INTFLAG.bit.SLEEPRDY);
+#else  // SAMD21
+
+    // Don't fully power down flash when in sleep
+    // Datasheet Eratta 1.14.2 says this is required.
+    NVMCTRL->CTRLB.bit.SLEEPPRM = NVMCTRL_CTRLB_SLEEPPRM_DISABLED_Val;
+
     // Disable systick interrupt:  See
     // https://www.avrfreaks.net/forum/samd21-samd21e16b-sporadically-locks-and-does-not-wake-standby-sleep-mode
     // Due to a hardware bug on the SAMD21, the SysTick interrupts become active
@@ -598,8 +628,21 @@ void Logger::systemSleep(void) {
     // prevent this the SysTick interrupts are disabled before entering sleep
     // mode.
     SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
-    // Now go to sleep
+    // Set the sleep config
+    // SCB = System Control Space Base Address
+    // SCR = System Control Register
+    // SCB_SCR_SLEEPDEEP_Msk = (1UL << 2U), the position of the deep sleep bit
+    // in the system control register
     SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+#endif
+
+// Wait until the serial ports have finished transmitting
+// This does not clear their buffers, it just waits until they are finished
+#if defined(STANDARD_SERIAL_OUTPUT)
+    STANDARD_SERIAL_OUTPUT.flush();  // for debugging
+#endif
+#if defined DEBUGGING_SERIAL_OUTPUT
+    DEBUGGING_SERIAL_OUTPUT.flush();  // for debugging
 #endif
 
     __DSB();  // Data sync to ensure outgoing memory accesses complete
@@ -617,15 +660,19 @@ void Logger::systemSleep(void) {
     SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
 #endif
     // Reattach the USB
-#ifndef USE_TINYUSB
+#if !defined(USE_TINYUSB) && defined(USBCON)
+    MS_DEEP_DBG(F("Reattaching USBDevice"));
     USBDevice.init();
+    // ^^ Restarts the bus, including re-attaching the NVIC interrupts
     USBDevice.attach();
+    // ^^ USB->DEVICE.CTRLB.bit.DETACH = 0; enables USB interrupts
 #endif
 
     // Re-enable the watch-dog timer
     watchDogTimer.enableWatchDog();
 
-// Re-start the I2C interface
+    // Re-start the I2C interface
+    MS_DEEP_DBG(F("Restarting I2C"));
 #ifdef SDA
     pinMode(SDA, INPUT_PULLUP);  // set as input with the pull-up on
 #endif
@@ -714,17 +761,34 @@ bool Logger::initializeSDCard(void) {
     // sd.begin(SdSpiConfig(_SDCardSSPin, DEDICATED_SPI | USER_SPI_BEGIN,
     // SPI_FULL_SPEED));
 
+#if !defined(SDCARD_SPI)
+#define SDCARD_SPI SPI
+#endif
 
+#if (defined(ARDUINO_ARCH_SAMD)) && !defined(__SAMD51__)
+    // Dispite the 48MHz clock speed, the max SPI speed of a SAMD21 is 12 MHz
+    // see https://github.com/arduino/ArduinoCore-samd/pull/292
+    // The Adafruit SAMD core does NOT automatically manage the SPI speed, so
+    // this needs to be set.
     SdSpiConfig customSdConfig(static_cast<SdCsPin_t>(_SDCardSSPin),
-                               (uint8_t)(DEDICATED_SPI | USER_SPI_BEGIN),
-                               SPI_FULL_SPEED, &SPI);
+                               (uint8_t)(DEDICATED_SPI), SD_SCK_MHZ(12),
+                               &SDCARD_SPI);
+#else
+    // The SAMD51 is fast enough to handle SPI_FULL_SPEED=SD_SCK_MHZ(50).
+    // The SPI library of the Adafruit/Arduino AVR core will automatically
+    // adjust the full speed of the SPI clock down to whatever the board can
+    // handle.
+    SdSpiConfig customSdConfig(static_cast<SdCsPin_t>(_SDCardSSPin),
+                               (uint8_t)(DEDICATED_SPI), SPI_FULL_SPEED,
+                               &SDCARD_SPI);
+#endif
 
     if (!sd.begin(customSdConfig)) {
         PRINTOUT(F("Error: SD card failed to initialize or is missing."));
         PRINTOUT(F("Data will not be saved!"));
         return false;
     } else {
-        // skip everything else if there's no SD card, otherwise it mighthang
+        // skip everything else if there's no SD card, otherwise it might hang
         MS_DBG(F("Successfully connected to SD Card with card/slave select on "
                  "pin"),
                _SDCardSSPin);
@@ -860,13 +924,11 @@ void Logger::begin() {
 
 #if defined(ARDUINO_ARCH_SAMD)
     MS_DBG(F("Disabling the USB on standby to lower sleep current"));
-    USB->DEVICE.CTRLA.bit.ENABLE = 0;  // Disable the USB peripheral
-    while (USB->DEVICE.SYNCBUSY.bit.ENABLE)
-        ;                                // Wait for synchronization
-    USB->DEVICE.CTRLA.bit.RUNSTDBY = 0;  // Deactivate run on standby
-    USB->DEVICE.CTRLA.bit.ENABLE   = 1;  // Enable the USB peripheral
-    while (USB->DEVICE.SYNCBUSY.bit.ENABLE)
-        ;  // Wait for synchronization
+    USB->DEVICE.CTRLA.bit.ENABLE = 0;         // Disable the USB peripheral
+    while (USB->DEVICE.SYNCBUSY.bit.ENABLE);  // Wait for synchronization
+    USB->DEVICE.CTRLA.bit.RUNSTDBY = 0;       // Deactivate run on standby
+    USB->DEVICE.CTRLA.bit.ENABLE   = 1;       // Enable the USB peripheral
+    while (USB->DEVICE.SYNCBUSY.bit.ENABLE);  // Wait for synchronization
 #endif
 
     MS_DBG(F(
@@ -876,12 +938,13 @@ void Logger::begin() {
     watchDogTimer.enableWatchDog();
     watchDogTimer.resetWatchDog();
 
-    // Set the pins for I2C
-    MS_DBG(F("Setting I2C Pins to INPUT_PULLUP"));
+// Set the pins for I2C
 #ifdef SDA
+    MS_DBG(F("Setting SDA pin"), SDA, F("to INPUT_PULLUP"));
     pinMode(SDA, INPUT_PULLUP);  // set as input with the pull-up on
 #endif
 #ifdef SCL
+    MS_DBG(F("Setting SCL pin"), SCL, F("to INPUT_PULLUP"));
     pinMode(SCL, INPUT_PULLUP);
 #endif
     MS_DBG(F("Beginning wire (I2C)"));
@@ -899,7 +962,7 @@ void Logger::begin() {
 
     // Set all of the pin modes
     // NOTE:  This must be done here at run time not at compile time
-    setLoggerPins(_mcuWakePin, _SDCardSSPin, _SDCardPowerPin, _ledPin);
+    // setLoggerPins(_mcuWakePin, _SDCardSSPin, _SDCardPowerPin, _ledPin);
 
     MS_DBG(F("Beginning RV-8803 real time clock"));
     rtc.begin();
@@ -912,7 +975,6 @@ void Logger::begin() {
              formatDateTime_ISO8601(getNowUTCEpoch()));
     PRINTOUT(F("Current localized logger time is:"),
              formatDateTime_ISO8601(getNowLocalEpoch()));
-
     // Reset the watchdog
     watchDogTimer.resetWatchDog();
 

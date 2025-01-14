@@ -17,6 +17,7 @@
 
 // Debugging Statement
 // #define MS_LOGGERBASE_DEBUG
+// #define MS_LOGGERBASE_DEBUG_DEEP
 
 #ifdef MS_LOGGERBASE_DEBUG
 #define MS_DEBUGGING_STD "LoggerBase"
@@ -113,7 +114,7 @@ class Logger {
     /**
      * @brief Get the Logger ID.
      *
-     * @return **const char\*** A pointer to the logger ID
+     * @return A pointer to the logger ID
      */
     const char* getLoggerID() {
         return _loggerID;
@@ -129,7 +130,7 @@ class Logger {
     /**
      * @brief Get the Logging Interval.
      *
-     * @return **uint16_t** The logging interval in minutes
+     * @return The logging interval in minutes
      */
     uint16_t getLoggingInterval() {
         return _loggingIntervalMinutes;
@@ -145,7 +146,7 @@ class Logger {
     /**
      * @brief Get the Sampling Feature UUID.
      *
-     * @return **const char\*** The sampling feature UUID
+     * @return The sampling feature UUID
      */
     const char* getSamplingFeatureUUID() {
         return _samplingFeatureUUID;
@@ -231,7 +232,7 @@ class Logger {
      * Because this sets the pin mode, this function should only be called
      * during the `setup()` or `loop()` portion of an Arduino program.
      *
-     * @note  This sets the pin mode but does NOT enable the interrupt!
+     * @note This sets the pin mode but does NOT enable the interrupt!
      *
      * @param mcuWakePin The pin on the mcu to be used to wake the mcu from deep
      * sleep.
@@ -280,6 +281,9 @@ class Logger {
      * the SD card.  The pin mode of this pin will be set as `OUTPUT`.
      * @param SDCardPowerPin A digital pin number on the mcu controlling power
      * to the SD card.  The pin mode of this pin will be set as `OUTPUT`.
+     * @param buttonPin The pin on the mcu to listen to for a value-change
+     * interrupt to enter testing mode.  The mode of this pin will be set to
+     * `buttonPinMode`.
      * @param ledPin The pin on the mcu to be held `HIGH` while sensor data is
      * being collected and logged.  The pin mode of this pin will be set as
      * `OUTPUT`.
@@ -288,10 +292,20 @@ class Logger {
      * `INPUT_PULLUP`. Optional with a default value of `INPUT_PULLUP`.  The
      * DS3231 has an active low interrupt, so the pull-up resistors should be
      * enabled.
+     * @param buttonPinMode The pin mode to be used for the button pin.  Must be
+     * either `INPUT` OR `INPUT_PULLUP`.  Optional with a default value of
+     * `INPUT`.  Using `INPUT_PULLUP` will enable processor input resistors,
+     * while using `INPUT` will explicitly disable them.  If your pin is
+     * externally pulled down or the button is a normally open (NO) switch with
+     * common (COM) connected to Vcc, like the EnviroDIY Mayfly), you should use
+     * the `INPUT` pin mode.  Coversely, if your button is active when connected
+     * to ground, you should enable the processor pull-up resistors using
+     * `INPUT_PULLUP`.
      */
     void setLoggerPins(int8_t mcuWakePin, int8_t SDCardSSPin,
-                       int8_t SDCardPowerPin, int8_t ledPin,
-                       uint8_t wakePinMode = INPUT_PULLUP);
+                       int8_t SDCardPowerPin, int8_t buttonPin, int8_t ledPin,
+                       uint8_t wakePinMode   = INPUT_PULLUP,
+                       uint8_t buttonPinMode = INPUT);
 
  protected:
     // Initialization variables
@@ -318,6 +332,15 @@ class Logger {
      */
     int8_t _mcuWakePin = -1;
     /**
+     * @brief The pin mode used for wake up on the clock alert pin.
+     *
+     * Must be either `INPUT` OR `INPUT_PULLUP` with an AVR board.  On a SAM/D
+     * board `INPUT_PULLDOWN` is also an option.  Optional with a default value
+     * of `INPUT_PULLUP`.  The DS3231 has an active low interrupt, so the
+     * pull-up resistors should be enabled.
+     */
+    uint8_t _wakePinMode = INPUT_PULLUP;
+    /**
      * @brief Digital pin number on the mcu used to output an alert that the
      * logger is measuring.
      *
@@ -331,6 +354,14 @@ class Logger {
      * Expected to be connected to a user button.
      */
     int8_t _buttonPin = -1;
+    /**
+     * @brief The pin mode used for interrupts on the testing (button) pin.
+     *
+     * Must be either `INPUT` OR `INPUT_PULLUP` with an AVR board.  On a SAM/D
+     * board `INPUT_PULLDOWN` is also an option.  Optional with a default value
+     * of `INPUT_PULLUP`.
+     */
+    uint8_t _buttonPinMode = INPUT_PULLUP;
 
     /**
      * @brief The sampling feature UUID
@@ -365,7 +396,7 @@ class Logger {
      * @brief Use the attahed loggerModem to synchronize the real-time clock
      * with NIST time servers.
      *
-     * @return **bool** True if clock synchronization was successful
+     * @return True if clock synchronization was successful
      */
     bool syncRTC();
 
@@ -402,7 +433,7 @@ class Logger {
     /**
      * @brief Get the Logger Time Zone.
      *
-     * @return **int8_t** The timezone data is be saved to the SD card in.  This
+     * @return The timezone data is be saved to the SD card in.  This
      * is not be the same as the timezone of the real time clock.
      */
     static int8_t getLoggerTimeZone(void);
@@ -438,10 +469,9 @@ class Logger {
     /**
      * @brief Get the timezone of the real-time clock (RTC).
      *
-     * @return **int8_t** The timezone of the real-time clock (RTC)
+     * @return The offset of the real-time clock (RTC) from UTC in hours
      */
     static int8_t getRTCTimeZone(void);
-
     /**
      * @brief Set the offset between the built-in clock and the time zone
      * where the data is being recorded.
@@ -458,7 +488,7 @@ class Logger {
      * @brief Get the offset between the built-in clock and the time zone
      * where the data is being recorded.
      *
-     * @return **int8_t** The offset between the built-in clock and the time
+     * @return The offset between the built-in clock and the time
      * zone where the data is being recorded.
      */
     static int8_t getTZOffset(void);
@@ -476,7 +506,7 @@ class Logger {
      * number of seconds from January 1, 1970 00:00:00) and correct it to the
      * logging time zone.
      *
-     * @return **uint32_t**  The number of seconds from January 1, 1970 in the
+     * @return The number of seconds from January 1, 1970 in the
      * logging time zone.
      *
      * @m_deprecated_since{0,33,0}
@@ -488,7 +518,7 @@ class Logger {
      * number of seconds from January 1, 1970 00:00:00) and correct it to the
      * logging time zone.
      *
-     * @return **uint32_t**  The number of seconds from January 1, 1970 in the
+     * @return The number of seconds from January 1, 1970 in the
      * logging time zone.
      */
     static uint32_t getNowLocalEpoch(void);
@@ -498,7 +528,7 @@ class Logger {
      * the RTC (unix time, ie, the number of seconds from January 1, 1970
      * 00:00:00 UTC)
      *
-     * @return **uint32_t**  The number of seconds from 1970-01-01T00:00:00Z0000
+     * @return The number of seconds from 1970-01-01T00:00:00Z0000
      */
     static uint32_t getNowUTCEpoch(void);
     /**
@@ -520,7 +550,7 @@ class Logger {
      * the LOGGER's offset as the time zone offset in the string.
      *
      * @param epochTime The number of seconds since 1970.
-     * @return **String** An ISO8601 formatted String.
+     * @return An ISO8601 formatted String.
      */
     static String formatDateTime_ISO8601(uint32_t epochTime);
 
@@ -529,7 +559,7 @@ class Logger {
      * clock to the given time.
      *
      * @param UTCEpochSeconds The number of seconds since 1970 in UTC.
-     * @return **bool** True if the input timestamp passes sanity checks **and**
+     * @return True if the input timestamp passes sanity checks **and**
      * the clock has been successfully set.
      */
     bool setRTClock(uint32_t UTCEpochSeconds);
@@ -539,7 +569,7 @@ class Logger {
      *
      * To be sane the clock  must be between 2020 and 2030.
      *
-     * @return **bool** True if the current time on the RTC passes sanity range
+     * @return True if the current time on the RTC passes sanity range
      * checking
      */
     static bool isRTCSane(void);
@@ -550,7 +580,7 @@ class Logger {
      * To be sane the clock  must be between 2020 and 2025.
      *
      * @param epochTime The epoch time to be checked.
-     * @return **bool** True if the given time passes sanity range checking.
+     * @return True if the given time passes sanity range checking.
      */
     static bool isRTCSane(uint32_t epochTime);
 
@@ -569,7 +599,7 @@ class Logger {
     /**
      * @brief Check if the CURRENT time is an even interval of the logging rate
      *
-     * @return **bool** True if the current time on the RTC is an even interval
+     * @return True if the current time on the RTC is an even interval
      * of the logging rate.
      */
     bool checkInterval(void);
@@ -583,7 +613,7 @@ class Logger {
      * printing, etc) have the same timestamp even though the update routine may
      * take several (or many) seconds.
      *
-     * @return **bool** True if the marked time is an even interval of the
+     * @return True if the marked time is an even interval of the
      * logging rate.
      */
     bool checkMarkedInterval(void);
@@ -621,7 +651,7 @@ class Logger {
      *
      * In this case, we're doing nothing, we just want the processor to wake.
      * This must be a static function (which means it can only call other static
-     * funcions.)
+     * functions.)
      */
     static void wakeISR(void);
 
@@ -675,7 +705,7 @@ class Logger {
      * an auto-generated filename which is a concatenation of the logger id and
      * the date when the file was started.
      *
-     * @return **String** The name of the file data is currently being saved to.
+     * @return The name of the file data is currently being saved to.
      */
     String getFileName(void) {
         return _fileName;
@@ -691,7 +721,7 @@ class Logger {
      * file with a secondary file name.
      *
      * @param filename The name of the file to create
-     * @return **bool** True if the file was successfully created.
+     * @return True if the file was successfully created.
      */
     bool createLogFile(String& filename);
     /**
@@ -703,7 +733,7 @@ class Logger {
      * written to the file based on the variable information from the variable
      * array.
      *
-     * @return **bool** True if the file was successfully created.
+     * @return True if the file was successfully created.
      */
     bool createLogFile();
 
@@ -717,7 +747,7 @@ class Logger {
      *
      * @param filename The name of the file to write to
      * @param rec The line to be written to the file
-     * @return **bool** True if the file was successfully accessed or created
+     * @return True if the file was successfully accessed or created
      * _and_ data appended to it.
      */
     bool logToSD(String& filename, String& rec);
@@ -730,7 +760,7 @@ class Logger {
      * modified and accessed timestamps of the file to the current time.
      *
      * @param rec The line to be written to the file
-     * @return **bool** True if the file was successfully accessed or created
+     * @return True if the file was successfully accessed or created
      * _and_ data appended to it.
      */
     bool logToSD(String& rec);
@@ -756,7 +786,7 @@ class Logger {
      * We run this check before every communication with the SD card to prevent
      * hanging.
      *
-     * @return **bool** True if the SD card is ready
+     * @return True if the SD card is ready
      */
     bool initializeSDCard(void);
 
@@ -782,7 +812,7 @@ class Logger {
      *
      * @param filename The name of the file to open
      * @param createFile True to create the file if it did not already exist
-     * @return **bool** True if a file was successfully opened or created.
+     * @return True if a file was successfully opened or created.
      */
     bool openFile(String& filename, bool createFile);
     /**@}*/
