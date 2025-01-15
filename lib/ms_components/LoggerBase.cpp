@@ -191,50 +191,6 @@ void Logger::setLoggerPins(int8_t mcuWakePin, int8_t SDCardSSPin,
     setAlertPin(ledPin);
 }
 
-
-// ===================================================================== //
-// Public functions for internet and dataPublishers
-// ===================================================================== //
-
-// Set up communications
-// Adds a loggerModem object to the logger
-// loggerModem = TinyGSM modem + TinyGSM client + Modem On Off
-void Logger::attachModem(loggerModem& modem) {
-    _logModem = &modem;
-}
-
-
-// Takes advantage of the modem to synchronize the clock
-bool Logger::syncRTC() {
-    bool success = false;
-    if (_logModem != nullptr) {
-        // Synchronize the RTC with NIST
-        PRINTOUT(F("Attempting to connect to the internet and synchronize RTC "
-                   "with NIST"));
-        PRINTOUT(F("This may take up to two minutes!"));
-        if (_logModem->modemWake()) {
-            if (_logModem->connectInternet(120000L)) {
-                setRTClock(_logModem->getNISTTime());
-                success = true;
-            } else {
-                PRINTOUT(F("Could not connect to internet for clock sync."));
-            }
-        } else {
-            PRINTOUT(F("Could not wake modem for clock sync."));
-        }
-        watchDogTimer.resetWatchDog();
-
-        // Power down the modem now that we are done with it
-        MS_DBG(F("Powering down modem after clock sync."));
-        _logModem->disconnectInternet();
-        _logModem->modemSleepPowerDown();
-    } else {
-        PRINTOUT(F("No modem available for clock sync!"));
-    }
-    watchDogTimer.resetWatchDog();
-    return success;
-}
-
 // ===================================================================== //
 // Public functions to access the clock in proper format and time zone
 // ===================================================================== //
