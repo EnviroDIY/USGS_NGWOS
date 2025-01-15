@@ -31,7 +31,7 @@
 #include "ModSensorDebugger.h"
 #undef MS_DEBUGGING_STD
 #undef MS_DEBUGGING_DEEP
-#include "LoggerModem.h"
+// #include "LoggerModem.h"
 
 
 // Bring in the libraries to handle the processor sleep/standby modes
@@ -369,47 +369,6 @@ class Logger {
     const char* _samplingFeatureUUID = nullptr;
     // ^^ Start with no feature UUID
     /**@}*/
-
-    // ===================================================================== //
-    /**
-     * @anchor logger_internet
-     * @name Internet and Publisher Functions
-     * Public functions for internet and dataPublishers
-     */
-    /**@{*/
-    // ===================================================================== //
-
- public:
-    /**
-     * @brief Attach a loggerModem to the logger to provide internet access.
-     *
-     * See [Modem and Internet Functions](@ref the_modems)
-     * for more information on how the modem must be set up before it is
-     * attached to the logger.  You must include an ampersand to tie in the
-     * already created modem!  If you do not attach a modem, no action will be
-     * taken to publish data.
-     *
-     * @param modem An instance of the loggerModem class
-     */
-    void attachModem(loggerModem& modem);
-    /**
-     * @brief Use the attahed loggerModem to synchronize the real-time clock
-     * with NIST time servers.
-     *
-     * @return True if clock synchronization was successful
-     */
-    bool syncRTC();
-
- protected:
-    /**
-     * @brief The internal modem instance
-     *
-     * @note The internal #_logModem must be a POINTER not a reference because
-     * it is possible for no modem to be attached (and thus the pointer could be
-     * null).  It is not possible to have a null reference.
-     */
-    loggerModem* _logModem = nullptr;
-    // ^^ Start with no modem attached
 
     // ===================================================================== //
     /**

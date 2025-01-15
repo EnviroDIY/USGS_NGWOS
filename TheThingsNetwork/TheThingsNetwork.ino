@@ -1,6 +1,22 @@
-#include <Arduino.h>
-#include "wiring_private.h"  // pinPeripheral() function
+/** =========================================================================
+ * @example{lineno} TheThingsNetwork.ino
+ * @copyright Stroud Water Research Center
+ * @license This example is published under the BSD-3 license.
+ * @author Sara Geleskie Damiano <sdamiano@stroudcenter.org>
+ *
+ * @brief A On-Off to send data to The Things Network
+ * ======================================================================= */
 
+// Defines to help me print strings
+// this converts to string
+#define STR_(X) #X
+// this makes sure the argument is expanded before converting to string
+#define STR(X) STR_(X)
+
+// ==========================================================================
+//  Defines for LoRa_AT
+// ==========================================================================
+/** Start [defines] */
 // Select your LoRa Module:
 #define LORA_AT_MDOT
 
@@ -13,6 +29,16 @@
 
 // Define the serial console for debug prints, if needed
 #define LORA_AT_DEBUG Serial
+/** End [defines] */
+
+// ==========================================================================
+//  Include the libraries required for any data logger
+// ==========================================================================
+/** Start [includes] */
+// The Arduino library is needed for every Arduino program.
+#include <Arduino.h>
+// Needed for the pinPeripheral() function
+#include "wiring_private.h"
 
 // Include the LoRa library
 #include <LoRa_AT.h>
@@ -30,6 +56,7 @@
 #include "SDI12Master.h"
 #include "LoRaModemFxns.h"
 #include "LoggerBase.h"
+/** End [includes] */
 
 
 // ==========================================================================
@@ -39,7 +66,7 @@
 // The name of this program file
 const char* sketchName = "TheThingsNetwork.ino";
 // Logger ID, also becomes the prefix for the name of the data file on SD card
-const char* LoggerID = "Stonefly2";
+const char* LoggerID = "24008";
 // How frequently (in minutes) to log data
 const uint8_t loggingInterval = 1;
 // Your logger's timezone.
@@ -48,15 +75,18 @@ const int8_t timeZone = -5;  // Eastern Standard Time
 
 // Set the input and output pins for the logger
 // NOTE:  Use -1 for pins that do not apply
-const int32_t serialBaud = 115200;  // Baud rate for debugging
-const int8_t  greenLED   = 8;       // Pin for the green LED
-const int8_t  redLED     = 9;       // Pin for the red LED
-const int8_t  buttonPin  = 21;      // Pin for debugging mode (ie, button pin)
-const int8_t  wakePin    = 38;  // MCU interrupt/alarm pin to wake from sleep
+const int32_t serialBaud    = 115200;  // Baud rate for debugging
+const int8_t  greenLED      = 8;       // Pin for the green LED
+const int8_t  redLED        = 9;       // Pin for the red LED
+const int8_t  buttonPin     = 21;  // Pin for debugging mode (ie, button pin)
+uint8_t       buttonPinMode = INPUT_PULLDOWN;  // mode for debugging pin
+const int8_t  wakePin       = 38;  // MCU interrupt/alarm pin to wake from sleep
+uint8_t       wakePinMode   = INPUT_PULLUP;  // mode for wake pin
 // Stonefly 0.1 would have SD power on pin 32, but the MOSFET circuit is bad
 // const int8_t sdCardPwrPin = 32;  // MCU SD card power pin
 const int8_t sdCardPwrPin   = -1;  // MCU SD card power pin
 const int8_t sdCardSSPin    = 29;  // SD card chip select/slave select pin
+const int8_t flashSSPin     = 20;  // onboard flash chip select/slave select pin
 const int8_t sensorPowerPin = 22;  // MCU pin controlling main sensor power
 /** End [logging_options] */
 
@@ -79,7 +109,6 @@ const int32_t modemBaud = 115200;
 
 // Modem Pins - Describe the physical pin connection of your modem to your board
 // NOTE:  Use -1 for pins that do not apply
-// and-global breakout bk-7080a
 const int8_t modemVccPin     = 18;  // MCU pin controlling modem power
 const int8_t modemStatusPin  = 19;  // MCU pin used to read modem status
 const int8_t modemSleepRqPin = 23;  // MCU pin for modem sleep/wake request
@@ -149,7 +178,7 @@ JsonDocument jsonBuffer;  // ArduinoJson 6
 Adafruit_SHT4x sht4 = Adafruit_SHT4x();
 
 // Create the battery monitor object
-Adafruit_MAX17048 maxlipo;
+Adafruit_MAX17048 max17048;
 
 const int8_t alsDataPin = 74;
 
@@ -168,7 +197,7 @@ Logger dataLogger(LoggerID, loggingInterval);
 // ==========================================================================
 /** Start [working_functions] */
 // Flashes the LED's on the primary board
-void greenredflash(uint8_t numFlash = 4, uint8_t rate = 75) {
+void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
     for (uint8_t i = 0; i < numFlash; i++) {
         digitalWrite(greenLED, HIGH);
         digitalWrite(redLED, LOW);
@@ -210,7 +239,7 @@ float getBatteryVoltage() {
     // Get the battery voltage
     // The return value from analogRead() is IN BITS NOT IN VOLTS!!
     float  sensorValue_battery = -9999;
-    int8_t _batteryPin         = 67;
+    int8_t _batteryPin         = 75;
     pinMode(_batteryPin, INPUT);
     analogRead(_batteryPin);  // priming reading
     analogRead(_batteryPin);  // priming reading
@@ -224,28 +253,32 @@ float getBatteryVoltage() {
     return 4;
 }
 void buttonISR(void) {
+    Serial.println(F("\nButton interrupt!"));
     Serial1.println(F("\nButton interrupt!"));
 }
 /** End [working_functions] */
 
 
 // ==========================================================================
-//  Arduino Setup Function
+// Arduino Setup Function
 // ==========================================================================
+/** Start [setup] */
 void setup() {
-    // Set console baud rate
-    Serial.begin(serialBaud);
-    delay(10);
+    // Blink the LEDs to show the board is on and starting up
+    greenRedFlash(3, 35);
 
 // Wait for USB connection to be established by PC
-// NOTE:  Only use this when debugging - if not connected to a PC, this
-// could prevent the script from starting
-#if defined SERIAL_PORT_USBVIRTUAL
-    while (!SERIAL_PORT_USBVIRTUAL && (millis() < 10000L)) {}
+// NOTE:  Only use this when debugging - if not connected to a PC, this adds an
+// unnecesary startup delay
+#if defined(SERIAL_PORT_USBVIRTUAL)
+    while (!SERIAL_PORT_USBVIRTUAL && (millis() < 10000L));
 #endif
 
+    // Start the primary serial connection
+    Serial.begin(serialBaud);
     Serial1.begin(serialBaud);
     delay(10);
+    greenRedFlash(5, 50);
 
     // Print a start-up note to the first serial port
     Serial.print(F("\n\nNow running "));
@@ -267,7 +300,7 @@ void setup() {
     pinMode(redLED, OUTPUT);
     digitalWrite(redLED, LOW);
     // Blink the LEDs to show the board is on and starting up
-    greenredflash(5, 100);
+    greenRedFlash(5, 100);
 
     // Start the SPI library
     Serial.println(F("Starting SPI"));
@@ -315,7 +348,8 @@ void setup() {
                           // chip's ChipSelect
 
     Serial.println(F("Setting logger pins"));
-    dataLogger.setLoggerPins(wakePin, sdCardSSPin, sdCardPwrPin, greenLED);
+    dataLogger.setLoggerPins(wakePin, sdCardSSPin, sdCardPwrPin, buttonPin,
+                             greenLED, wakePinMode, buttonPinMode);
 
     Serial.println(
         F("Setting analog read resolution for onboard ADC to 12 bit"));
@@ -344,14 +378,14 @@ void setup() {
         sht4.setHeater(SHT4X_NO_HEATER);
         ;
 
-        if (!maxlipo.begin()) {
+        if (!max17048.begin()) {
             Serial.println(
                 F("Couldn't find Adafruit MAX17048?\nMake sure a battery "
                   "is plugged in!"));
         } else {
             Serial.print(F("Found MAX17048"));
             Serial.print(F(" with Chip ID: 0x"));
-            Serial.println(maxlipo.getChipID(), HEX);
+            Serial.println(max17048.getChipID(), HEX);
         }
 
         Serial.print("Opening SDI-12 bus on pin ");
@@ -436,8 +470,8 @@ void setup() {
         // true = wait for internal housekeeping after write
     }
 
-    pinMode(21, INPUT_PULLUP);
-    attachInterrupt(21, buttonISR, CHANGE);
+    pinMode(buttonPin, INPUT_PULLDOWN);
+    attachInterrupt(buttonPin, buttonISR, RISING);
 
     // Call the processor sleep
     Serial.println(F("Putting processor to sleep\n"));
@@ -600,7 +634,7 @@ void loop() {
         // resistance is entered in kΩ and we want µA
         float current_val = (volt_val / (10 * 1000)) * 1e6;
         // convert current to illuminance
-        // from sensor datasheet, typical 200µA current for1000 Lux
+        // from sensor datasheet, typical 200µA current for 1000 Lux
         float lux_val = current_val * (1000. / 200.);
         Serial.print(F("Lux: "));
         Serial.println(lux_val);
@@ -612,9 +646,9 @@ void loop() {
         dataLogger.watchDogTimer.resetWatchDog();
 
         // Read the battery monitor
-        float cellVoltage = maxlipo.cellVoltage();
-        float cellPercent = maxlipo.cellPercent();
-        float chargeRate  = maxlipo.chargeRate();
+        float cellVoltage = max17048.cellVoltage();
+        float cellPercent = max17048.cellPercent();
+        float chargeRate  = max17048.chargeRate();
         Serial.print(F("Batt Voltage: "));
         Serial.print(cellVoltage, 3);
         Serial.println(" V");
