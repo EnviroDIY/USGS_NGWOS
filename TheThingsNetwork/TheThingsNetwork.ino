@@ -55,7 +55,7 @@
 // Local H files with separated fxns
 #include "SDI12Master.h"
 #include "LoRaModemFxns.h"
-#include "LoggerBase.h"
+#include "ms_components/LoggerBase.h"
 /** End [includes] */
 
 
