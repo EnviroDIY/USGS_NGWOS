@@ -242,7 +242,7 @@ Variable *variableList[] = {
     new ProcessorStats_SampleNumber(&mcuBoard),
 };
 
-const char *UUIDs[] = // UUID array for device sensors
+const char* UUIDs[] =  // UUID array for device sensors
     {
         "12345678-abcd-1234-ef00-1234567890ab", // Gage height
                                                 // (VEGA_VEGAPULS_stage)
@@ -254,17 +254,20 @@ const char *UUIDs[] = // UUID array for device sensors
                                                 // (VEGA_VEGAPULS_measurement_reliability)
         "12345678-abcd-1234-ef00-1234567890ab", // Instrument status code
                                                 // (VEGA_VEGAPULS_status_code)
-        "12345678-abcd-1234-ef00-1234567890ab", // Geolux Image Size
+        "12345678-abcd-1234-ef00-1234567890ab", // Counter
+                                                // (Geolux_HydroCam_ImageSize)
         "12345678-abcd-1234-ef00-1234567890ab", // Relative humidity
                                                 // (Sensirion_SHT40_Humidity)
         "12345678-abcd-1234-ef00-1234567890ab", // Temperature
                                                 // (Sensirion_SHT40_Temperature)
-        "12345678-abcd-1234-ef00-1234567890ab", // Everlight ALSPT19 Illuminance
+        "12345678-abcd-1234-ef00-1234567890ab", // Luminous Flux
+                                                // (EVERLIGHT_AnalogALS_Illuminance)
         "12345678-abcd-1234-ef00-1234567890ab", // Battery voltage
-                                                // (EnviroDIY_Mayfly_Batt)
+                                                // (EnviroDIY_Stonefly_Battery)
         "12345678-abcd-1234-ef00-1234567890ab", // Percent full scale
                                                 // (ESP_SignalStrength)
-        "12345678-abcd-1234-ef00-1234567890ab", // Processor Stats Sample Number
+        "12345678-abcd-1234-ef00-1234567890ab", // Sequence number
+                                                // (EnviroDIY_Stonefly_SampleNum)
 };
 // Count up the number of pointers in the array
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
