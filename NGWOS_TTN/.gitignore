@@ -57,7 +57,7 @@ __pycache__/
 .atomrc.cson
 
 # PlatformIO
-.pio/*
+.pio
 .clang_complete
 .gcc-flags.json
 tests/*
@@ -71,6 +71,7 @@ boards/*
 .vscode/launch.json
 .vscode
 .history
+.history/*
 filters/*
 TTN Keys.txt
 global_conf.json
@@ -79,22 +80,7 @@ PktFwdTx.json
 TTNUplinkRx.json
 global_conf_ttn.json
 local_conf.json
-lib/*Adafruit*/*
-lib/Adafruit Unified Sensor/.gitignore
-lib/ArduinoECCX08/*
-lib/ArduinoJson/*
-lib/Arduino-wolfSSL/*
-lib/ArduinoBearSSL/*
-lib/CayenneLPP/*
-lib/LoRa_AT/*
-lib/PubSubClient/*
-lib/RTCLib/*
-lib/SdFat/*
-lib/SDI-12/*
-lib/SparkFun*/*
-lib/SSLClient/*
-lib/StreamDebugger/*
-lib/TinyGSM/*
+lib/*
 variants/*
 compile_commands.json
 pio_common_libdeps.ini
