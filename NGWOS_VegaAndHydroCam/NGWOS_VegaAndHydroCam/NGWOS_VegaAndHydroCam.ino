@@ -4,6 +4,10 @@
  * @author Sara Geleskie Damiano <sdamiano@stroudcenter.org>
  * ======================================================================= */
 
+// Define the modem you will use
+// #define BUILD_MODEM_ESPRESSIF_ESP32
+// #define BUILD_MODEM_SIM_COM_SIM7080
+
 // Defines to help me print strings
 // this converts to string
 #define STR_(X) #X
