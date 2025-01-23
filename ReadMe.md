@@ -64,3 +64,19 @@ board_build.variant = stonefly_m4
 board_build.variants_dir = ${platformio.core_dir}/variants
 board_build.ldscript = ${platformio.core_dir}/variants/stonefly_m4/linker_scripts/gcc/flash_with_bootloader.ld
 ```
+
+## Example Programs
+
+This repo contains 3 example programs for the USGS:
+
+- NGWOS_TTN
+  - This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to The Things Network
+- NGWOS_VegaAndHydroCam
+  - This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to Monitor My Watershed. It also saves images from a Geolux HydroCam.
+- NGWOS_Hydros21_HydroCam
+  - This is identical to the Vega and HydroCam example, but with a Meter Hydros21 instead of a Vega Puls.
+
+Within each example folder, there is a zip file of library dependencies.
+Download the zip and un-zip it.
+Move all of the files from the unzipped directory into your Arduino libraries folder.
+Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
