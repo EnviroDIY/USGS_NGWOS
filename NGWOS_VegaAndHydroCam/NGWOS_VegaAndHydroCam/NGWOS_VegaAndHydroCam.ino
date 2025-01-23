@@ -185,8 +185,7 @@ EverlightALSPT19 alsPt19(alsPower, alsData, alsSupply, alsResistance,
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
 const int8_t cameraPower = sensorPowerPin;        // Power pin
-const int8_t cameraAdapterPower = sensorPowerPin; // Power pin
-const uint8_t MPL115A2ReadingsToAvg = 1;
+const int8_t cameraAdapterPower = sensorPowerPin;        // Power pin
 const char *imageResolution = "1600x1200";
 const char *filePrefix = "HydroCam";
 bool alwaysAutoFocus = false;
@@ -241,33 +240,33 @@ Variable *variableList[] = {
     new Modem_SignalPercent(&modem),
     new ProcessorStats_SampleNumber(&mcuBoard),
 };
-
+// https://monitormywatershed.org/sites/TestVega/
 const char* UUIDs[] =  // UUID array for device sensors
     {
-        "12345678-abcd-1234-ef00-1234567890ab", // Gage height
-                                                // (VEGA_VEGAPULS_stage)
-        "12345678-abcd-1234-ef00-1234567890ab", // Distance
-                                                // (VEGA_VEGAPULS_range)
-        "12345678-abcd-1234-ef00-1234567890ab", // Temperature, sensor
-                                                // (VEGA_VEGAPULS_temperature)
-        "12345678-abcd-1234-ef00-1234567890ab", // Signal quality
-                                                // (VEGA_VEGAPULS_measurement_reliability)
-        "12345678-abcd-1234-ef00-1234567890ab", // Instrument status code
-                                                // (VEGA_VEGAPULS_status_code)
-        "12345678-abcd-1234-ef00-1234567890ab", // Counter
-                                                // (Geolux_HydroCam_ImageSize)
-        "12345678-abcd-1234-ef00-1234567890ab", // Relative humidity
-                                                // (Sensirion_SHT40_Humidity)
-        "12345678-abcd-1234-ef00-1234567890ab", // Temperature
-                                                // (Sensirion_SHT40_Temperature)
-        "12345678-abcd-1234-ef00-1234567890ab", // Luminous Flux
-                                                // (EVERLIGHT_AnalogALS_Illuminance)
-        "12345678-abcd-1234-ef00-1234567890ab", // Battery voltage
-                                                // (EnviroDIY_Stonefly_Battery)
-        "12345678-abcd-1234-ef00-1234567890ab", // Percent full scale
-                                                // (ESP_SignalStrength)
-        "12345678-abcd-1234-ef00-1234567890ab", // Sequence number
-                                                // (EnviroDIY_Stonefly_SampleNum)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Gage height
+                                                 // (VEGA_VEGAPULS_stage)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Distance
+                                                 // (VEGA_VEGAPULS_range)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Temperature, sensor
+                                                 // (VEGA_VEGAPULS_temperature)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Signal quality
+                                                 // (VEGA_VEGAPULS_measurement_reliability)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Instrument status code
+                                                 // (VEGA_VEGAPULS_status_code)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Counter
+                                                 // (Geolux_HydroCam_ImageSize)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Relative humidity
+                                                 // (Sensirion_SHT40_Humidity)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Temperature
+                                                 // (Sensirion_SHT40_Temperature)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Luminous Flux
+                                                 // (EVERLIGHT_AnalogALS_Illuminance)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Battery voltage
+                                                 // (EnviroDIY_Stonefly_Battery)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Percent full scale
+                                                 // (ESP_SignalStrength)
+        "12345678-abcd-1234-ef00-1234567890ab",  // Sequence number
+                                                 // (EnviroDIY_Stonefly_SampleNum)
 };
 // Count up the number of pointers in the array
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
@@ -280,10 +279,10 @@ VariableArray varArray(variableCount, variableList, UUIDs);
 // ==========================================================================
 // Device registration and sampling feature information can be obtained after
 // registration at https://monitormywatershed.org or https://data.envirodiy.org
-const char *registrationToken =
-    "12345678-abcd-1234-ef00-1234567890ab"; // Device registration token
-const char *samplingFeature =
-    "12345678-abcd-1234-ef00-1234567890ab"; // Sampling feature UUID
+const char* registrationToken =
+    "12345678-abcd-1234-ef00-1234567890ab";  // Device registration token
+const char* samplingFeature =
+    "12345678-abcd-1234-ef00-1234567890ab";  // Sampling feature UUID
 
 // Create a data publisher for the Monitor My Watershed/EnviroDIY POST endpoint
 #include <publishers/EnviroDIYPublisher.h>
