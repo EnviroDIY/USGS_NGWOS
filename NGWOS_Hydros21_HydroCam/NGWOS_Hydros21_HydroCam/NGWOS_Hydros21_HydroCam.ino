@@ -7,6 +7,7 @@
 // Define the modem you will use
 // #define BUILD_MODEM_ESPRESSIF_ESP32
 #define BUILD_MODEM_SIM_COM_SIM7080
+// #define USE_VEGA_PULS
 
 // Defines to help me print strings
 // this converts to string
@@ -207,16 +208,16 @@ const bool   SHT4xUseHeater = true;
 // Create an Sensirion SHT4X sensor object
 SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
 
-#if 0
+#ifdef USE_VEGA_PULS
 // ==========================================================================
 //  VEGA PULS 21 Radar Sensor
 // ==========================================================================
 #include <sensors/VegaPuls21.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const char *VegaPulsSDI12address = "0";      // The SDI-12 Address of the VegaPuls10
-const int8_t VegaPulsPower = sensorPowerPin; // Power pin
-const int8_t VegaPulsData = 3;               // The SDI-12 data pin
+const char* VegaPulsSDI12address = "0";  // The SDI-12 Address of the VegaPuls10
+const int8_t VegaPulsPower       = sensorPowerPin;  // Power pin
+const int8_t VegaPulsData        = 3;               // The SDI-12 data pin
 // NOTE:  you should NOT take more than one readings.  THe sensor already takes
 // and averages 8 by default.
 
@@ -246,14 +247,14 @@ MeterHydros21 hydros21(*hydros21SDI12address, hydros21Power, hydros21Data,
 // Version 1: Create pointers for all of the variables from the sensors,
 // at the same time putting them into an array
 Variable* variableList[] = {
-    // new VegaPuls21_Stage(&VegaPuls, "12345678-abcd-1234-ef00-1234567890ab"),
-    // new VegaPuls21_Distance(&VegaPuls,
-    // "12345678-abcd-1234-ef00-1234567890ab"),
-    // new VegaPuls21_Temp(&VegaPuls, "12345678-abcd-1234-ef00-1234567890ab"),
-    // new VegaPuls21_Reliability(&VegaPuls,
-    //                            "12345678-abcd-1234-ef00-1234567890ab"),
-    // new VegaPuls21_ErrorCode(&VegaPuls,
-    // "12345678-abcd-1234-ef00-1234567890ab"),
+#ifdef USE_VEGA_PULS
+    new VegaPuls21_Stage(&VegaPuls, "12345678-abcd-1234-ef00-1234567890ab"),
+    new VegaPuls21_Distance(&VegaPuls, "12345678-abcd-1234-ef00-1234567890ab"),
+    new VegaPuls21_Temp(&VegaPuls, "12345678-abcd-1234-ef00-1234567890ab"),
+    new VegaPuls21_Reliability(&VegaPuls,
+                               "12345678-abcd-1234-ef00-1234567890ab"),
+    new VegaPuls21_ErrorCode(&VegaPuls, "12345678-abcd-1234-ef00-1234567890ab"),
+#endif
     new MeterHydros21_Cond(&hydros21, "12345678-abcd-1234-ef00-1234567890ab"),
     new MeterHydros21_Temp(&hydros21, "12345678-abcd-1234-ef00-1234567890ab"),
     new MeterHydros21_Depth(&hydros21, "12345678-abcd-1234-ef00-1234567890ab"),
