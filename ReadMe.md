@@ -1,6 +1,6 @@
 # The EnviroDIY Stonefly
 
-This new logger board was developed by the Stroud Water Research center with funding from the USGS's [NGWOS](https://www.usgs.gov/mission-areas/water-resources/science/next-generation-water-observing-system-ngwos) [External R&D](https://www.usgs.gov/mission-areas/water-resources/science/ngwos-external-research-and-development) Program
+This new logger board was developed by the Stroud Water Research center with funding from the USGS's [NGWOS](https://www.usgs.gov/mission-areas/water-resources/science/next-generation-water-observing-system-ngwos) [External R&D](https://www.usgs.gov/mission-areas/water-resources/science/ngwos-external-research-and-development) Program.
 The brain of the new board is a Microchip Technology's [ATSAMD51N19A](https://www.microchip.com/en-us/product/ATSAMD51N19A).
 
 ## UF2 bootloader
@@ -34,3 +34,5 @@ If you have problems installing the board and core in the board manager, Adafrui
 When following the Adafruit instructions, make sure to use the EnviroDIY URL above, not just Adafruit's URL.
 
 Once the board and core packages are installed, when you click Tools > Board you will see EnviroDIY SAMD boards > EnviroDIY Stonefly listed as options for available boards.
+
+## Setting up the Stonefly in PlatformIO on VSCode
