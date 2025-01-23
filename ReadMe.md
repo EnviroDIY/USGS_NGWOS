@@ -16,6 +16,7 @@ You must have a special programmer or debugger board to install the bootloader.
 
 To use the Stonefly in the Arduino IDE, you must be using at least version 2 of the IDE.
 The IDE can be downloaded [here](https://www.arduino.cc/en/software).
+These instructions were testing using version 2.3.4 of the IDE.
 You **must have administrator privileges** on a Windows computer to install the Arduino IDE and the Adafruit SAMD core needed by the Stonefly.
 
 To add the EnviroDIY Stonefly board to your Arduino IDE, go to File > Preferences (for a Mac: Arduino > Preferences) and copy the following URL into the box labeled "Additional Boards Manager URLs":
