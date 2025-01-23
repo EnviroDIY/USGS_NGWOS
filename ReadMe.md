@@ -36,6 +36,10 @@ When following the Adafruit instructions, make sure to use the EnviroDIY URL abo
 
 Once the board and core packages are installed, when you click Tools > Board you will see EnviroDIY SAMD boards > EnviroDIY Stonefly listed as options for available boards.
 
+If you get a board error when trying to compile for the Stonefly for the first time, the IDE probably did not correctly install the Adafruit SAMD core.
+To add the Adafruit SAMD core, follow the directions linked above to add Adafruit's board URL to your boards list.
+Then select and install the "Adafruit SAMD Boards" package.
+
 ## Setting up the Stonefly in PlatformIO on VSCode
 
 To use the Stonefly in PlatformIO, you must manually download the boards and variants files and put them in the correct folder.
