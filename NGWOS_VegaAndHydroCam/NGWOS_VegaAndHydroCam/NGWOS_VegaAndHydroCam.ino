@@ -46,29 +46,29 @@
 //  Data Logging Options
 // ==========================================================================
 // The name of this program file
-const char *sketchName = "Stonefly_Vega_Cellular.ino";
+const char* sketchName = "Stonefly_Vega_Cellular.ino";
 // Logger ID, also becomes the prefix for the name of the data file on SD card
-const char *LoggerID = "24008";
+const char* LoggerID = "24008";
 // How frequently (in minutes) to log data
 const uint8_t loggingInterval = 5;
 // Your logger's timezone.
-const int8_t timeZone = -5; // Eastern Standard Time
+const int8_t timeZone = -5;  // Eastern Standard Time
 // NOTE:  Daylight savings time will not be applied!  Please use standard time!
 
 // Set the input and output pins for the logger
 // NOTE:  Use -1 for pins that do not apply
-const int32_t serialBaud = 115200;      // Baud rate for debugging
-const int8_t greenLED = 8;              // Pin for the green LED
-const int8_t redLED = 9;                // Pin for the red LED
-const int8_t buttonPin = 21;            // Pin for debugging mode (ie, button pin)
-uint8_t buttonPinMode = INPUT_PULLDOWN; // mode for debugging pin
-const int8_t wakePin = 38;              // MCU interrupt/alarm pin to wake from sleep
-uint8_t wakePinMode = INPUT_PULLUP;     // mode for wake pin
+const int32_t serialBaud    = 115200;  // Baud rate for debugging
+const int8_t  greenLED      = 8;       // Pin for the green LED
+const int8_t  redLED        = 9;       // Pin for the red LED
+const int8_t  buttonPin     = 21;  // Pin for debugging mode (ie, button pin)
+uint8_t       buttonPinMode = INPUT_PULLDOWN;  // mode for debugging pin
+const int8_t  wakePin       = 38;  // MCU interrupt/alarm pin to wake from sleep
+uint8_t       wakePinMode   = INPUT_PULLUP;  // mode for wake pin
 // const int8_t sdCardPwrPin   = 32;  // MCU SD card power pin
-const int8_t sdCardPwrPin = -1;   // MCU SD card power pin
-const int8_t sdCardSSPin = 29;    // SD card chip select/slave select pin
-const int8_t flashSSPin = 20;     // onboard flash chip select/slave select pin
-const int8_t sensorPowerPin = 22; // MCU pin controlling main sensor power
+const int8_t sdCardPwrPin   = -1;  // MCU SD card power pin
+const int8_t sdCardSSPin    = 29;  // SD card chip select/slave select pin
+const int8_t flashSSPin     = 20;  // onboard flash chip select/slave select pin
+const int8_t sensorPowerPin = 22;  // MCU pin controlling main sensor power
 const int8_t relayPowerPin = 41;  // MCU pin controlling an optional power relay
 
 // ==========================================================================
@@ -102,21 +102,21 @@ Logger dataLogger;
 
 // NOTE: Extra hardware and software serial ports are created in the "Settings
 // for Additional Serial Ports" section
-const int32_t modemBaud = 57600; // Communication speed of the modem
+const int32_t modemBaud = 57600;  // Communication speed of the modem
 // NOTE:  This baud rate too fast for an 8MHz board, like the Mayfly!  The
 // module should be programmed to a slower baud rate or set to auto-baud using
 // the AT+UART_CUR or AT+UART_DEF command.
 
 // Modem Pins - Describe the physical pin connection of your modem to your board
 // NOTE:  Use -1 for pins that do not apply
-const int8_t modemVccPin = 18;     // MCU pin controlling modem power
-const int8_t modemResetPin = 24;   // MCU pin connected to modem reset pin
-const int8_t modemLEDPin = redLED; // MCU pin connected an LED to show modem
-                                   // status
+const int8_t modemVccPin   = 18;      // MCU pin controlling modem power
+const int8_t modemResetPin = 24;      // MCU pin connected to modem reset pin
+const int8_t modemLEDPin   = redLED;  // MCU pin connected an LED to show modem
+                                      // status
 
 // Network connection information
-const char *wifiId = WIFI_ID;      // WiFi access point name
-const char *wifiPwd = WIFI_PASSWD; // WiFi password (WPA2)
+const char* wifiId  = WIFI_ID;      // WiFi access point name
+const char* wifiPwd = WIFI_PASSWD;  // WiFi password (WPA2)
 
 // Create the modem object
 EspressifESP32 modemESP(&modemSerial, modemVccPin, modemResetPin, wifiId,
@@ -132,18 +132,18 @@ EspressifESP32 modem = modemESP;
 // NOTE: Extra hardware and software serial ports are created in the "Settings
 // for Additional Serial Ports" section
 const int32_t modemBaud =
-    9600; //  SIM7080 does auto-bauding by default, but I set mine to 9600
+    9600;  //  SIM7080 does auto-bauding by default, but I set mine to 9600
 
 // Modem Pins - Describe the physical pin connection of your modem to your board
 // NOTE:  Use -1 for pins that do not apply
-const int8_t modemVccPin = 18;     // MCU pin controlling modem power
-const int8_t modemStatusPin = 19;  // MCU pin used to read modem status
-const int8_t modemSleepRqPin = 23; // MCU pin for modem sleep/wake request
-const int8_t modemLEDPin = redLED; // MCU pin connected an LED to show modem
-                                   // status
+const int8_t modemVccPin     = 18;  // MCU pin controlling modem power
+const int8_t modemStatusPin  = 19;  // MCU pin used to read modem status
+const int8_t modemSleepRqPin = 23;  // MCU pin for modem sleep/wake request
+const int8_t modemLEDPin = redLED;  // MCU pin connected an LED to show modem
+                                    // status
 
 // Network connection information
-const char *apn = CELLULAR_APN; // APN for GPRS connection
+const char* apn = CELLULAR_APN;  // APN for GPRS connection
 
 // Create the modem object
 SIMComSIM7080 modem7080(&modemSerial, modemVccPin, modemStatusPin,
@@ -159,7 +159,7 @@ SIMComSIM7080 modem = modem7080;
 #include <sensors/ProcessorStats.h>
 
 // Create the main processor chip "sensor" - for general metadata
-const char *mcuBoardVersion = "v0.1";
+const char*    mcuBoardVersion = "v0.1";
 ProcessorStats mcuBoard(mcuBoardVersion, 5);
 
 // ==========================================================================
@@ -168,10 +168,10 @@ ProcessorStats mcuBoard(mcuBoardVersion, 5);
 #include <sensors/EverlightALSPT19.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const int8_t alsPower = sensorPowerPin; // Power pin
-const int8_t alsData = A8;              // The ALS PT-19 data pin
-const int8_t alsSupply = 3.3;           // The ALS PT-19 supply power voltage
-const int8_t alsResistance = 10;        // The ALS PT-19 loading resistance (in kΩ)
+const int8_t  alsPower      = sensorPowerPin;  // Power pin
+const int8_t  alsData       = A8;              // The ALS PT-19 data pin
+const int8_t  alsSupply     = 3.3;  // The ALS PT-19 supply power voltage
+const int8_t  alsResistance = 10;   // The ALS PT-19 loading resistance (in kΩ)
 const uint8_t alsNumberReadings = 10;
 
 // Create a Everlight ALS-PT19 sensor object
@@ -184,11 +184,11 @@ EverlightALSPT19 alsPt19(alsPower, alsData, alsSupply, alsResistance,
 #include <sensors/GeoluxHydroCam.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const int8_t cameraPower = sensorPowerPin;        // Power pin
-const int8_t cameraAdapterPower = sensorPowerPin;        // Power pin
-const char *imageResolution = "1600x1200";
-const char *filePrefix = "HydroCam";
-bool alwaysAutoFocus = false;
+const int8_t cameraPower        = sensorPowerPin;  // Power pin
+const int8_t cameraAdapterPower = sensorPowerPin;  // Power pin
+const char*  imageResolution    = "1600x1200";
+const char*  filePrefix         = "HydroCam";
+bool         alwaysAutoFocus    = false;
 
 // Create a GeoluxHydroCam sensor object
 GeoluxHydroCam hydrocam(cameraSerial, cameraPower, dataLogger,
@@ -201,8 +201,8 @@ GeoluxHydroCam hydrocam(cameraSerial, cameraPower, dataLogger,
 #include <sensors/SensirionSHT4x.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const int8_t SHT4xPower = sensorPowerPin; // Power pin
-const bool SHT4xUseHeater = true;
+const int8_t SHT4xPower     = sensorPowerPin;  // Power pin
+const bool   SHT4xUseHeater = true;
 
 // Create an Sensirion SHT4X sensor object
 SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
@@ -213,9 +213,9 @@ SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
 #include <sensors/VegaPuls21.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const char *VegaPulsSDI12address = "0";      // The SDI-12 Address of the VegaPuls10
-const int8_t VegaPulsPower = sensorPowerPin; // Power pin
-const int8_t VegaPulsData = 3;               // The SDI-12 data pin
+const char* VegaPulsSDI12address = "0";  // The SDI-12 Address of the VegaPuls10
+const int8_t VegaPulsPower       = sensorPowerPin;  // Power pin
+const int8_t VegaPulsData        = 3;               // The SDI-12 data pin
 // NOTE:  you should NOT take more than one readings.  THe sensor already takes
 // and averages 8 by default.
 
@@ -225,14 +225,13 @@ VegaPuls21 VegaPuls(*VegaPulsSDI12address, VegaPulsPower, VegaPulsData);
 // Version 2: Create two separate arrays, on for the variables and a separate
 // one for the UUID's, then give both as input to the variable array
 // constructor.  Be cautious when doing this though because order is CRUCIAL!
-Variable *variableList[] = {
+Variable* variableList[] = {
     new VegaPuls21_Stage(&VegaPuls),
     new VegaPuls21_Distance(&VegaPuls),
     new VegaPuls21_Temp(&VegaPuls),
     new VegaPuls21_Reliability(&VegaPuls),
     new VegaPuls21_ErrorCode(&VegaPuls),
-    new GeoluxHydroCam_ImageSize(
-        &hydrocam),
+    new GeoluxHydroCam_ImageSize(&hydrocam),
     new SensirionSHT4x_Humidity(&sht4x),
     new SensirionSHT4x_Temp(&sht4x),
     new EverlightALSPT19_Illuminance(&alsPt19),
@@ -293,16 +292,14 @@ EnviroDIYPublisher EnviroDIYPOST(dataLogger, &modem.gsmClient,
 //  Working Functions
 // ==========================================================================
 // Flashes the LED's on the primary board
-void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75)
-{
+void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
     // Set up pins for the LED's
     pinMode(greenLED, OUTPUT);
     digitalWrite(greenLED, LOW);
     pinMode(redLED, OUTPUT);
     digitalWrite(redLED, LOW);
     // Flash the lights
-    for (uint8_t i = 0; i < numFlash; i++)
-    {
+    for (uint8_t i = 0; i < numFlash; i++) {
         digitalWrite(greenLED, HIGH);
         digitalWrite(redLED, LOW);
         delay(rate);
@@ -315,11 +312,9 @@ void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75)
 
 // Uses the processor sensor object to read the battery voltage
 // NOTE: This will actually return the battery level from the previous update!
-float getBatteryVoltage()
-{
+float getBatteryVoltage() {
     if (mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM] == -9999 ||
-        mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM] == 0)
-    {
+        mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM] == 0) {
         mcuBoard.update();
     }
     return mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM];
@@ -328,8 +323,7 @@ float getBatteryVoltage()
 // ==========================================================================
 //  Arduino Setup Function
 // ==========================================================================
-void setup()
-{
+void setup() {
     // Blink the LEDs to show the board is on and starting up
     greenRedFlash(3, 35);
 
@@ -337,8 +331,7 @@ void setup()
 // NOTE:  Only use this when debugging - if not connected to a PC, this adds an
 // unnecesary startup delay
 #if defined(SERIAL_PORT_USBVIRTUAL)
-    while (!SERIAL_PORT_USBVIRTUAL && (millis() < 10000L))
-    {
+    while (!SERIAL_PORT_USBVIRTUAL && (millis() < 10000L)) {
         // wait
     }
 #endif
@@ -378,7 +371,7 @@ void setup()
 #if defined(EXTERNAL_FLASH_DEVICES)
     PRINTOUT(F("Setting onboard flash pin modes"));
     pinMode(flashSSPin,
-            OUTPUT); // for proper operation of the onboard flash memory
+            OUTPUT);  // for proper operation of the onboard flash memory
 #endif
 
     PRINTOUT(F("Starting I2C (Wire)"));
@@ -425,8 +418,7 @@ void setup()
 
     // Note:  Please change these battery voltages to match your battery
     // Set up the sensors, except at lowest battery level
-    if (getBatteryVoltage() > 3.4)
-    {
+    if (getBatteryVoltage() > 3.4) {
         PRINTOUT(F("Setting up sensors..."));
         varArray.sensorsPowerUp();
         varArray.setupSensors();
@@ -439,13 +431,11 @@ void setup()
     PRINTOUT(F("Attempting to begin modem communication at"), modemBaud,
              F("baud.  This will fail if the baud is mismatched.."));
     modemSerial.begin(modemBaud);
-    modem.modemWake(); // NOTE:  This will also set up the modem
-    if (!modem.gsmModem.testAT())
-    {
+    modem.modemWake();  // NOTE:  This will also set up the modem
+    if (!modem.gsmModem.testAT()) {
         PRINTOUT(F("Attempting autobauding.."));
         uint32_t foundBaud = TinyGsmAutoBaud(modemSerial);
-        if (foundBaud != 0 || F_CPU == 8000000L)
-        {
+        if (foundBaud != 0 || F_CPU == 8000000L) {
             PRINTOUT(F("Got modem response at baud of"), foundBaud,
                      F("Firing an attempt to change the baud rate to"),
                      modemBaud);
@@ -458,25 +448,24 @@ void setup()
 #endif
 
 #if defined(BUILD_MODEM_SIM_COM_SIM7080)
-    modem.setModemWakeLevel(HIGH);  // ModuleFun Bee inverts the signal
-    modem.setModemResetLevel(HIGH); // ModuleFun Bee inverts the signal
+    modem.setModemWakeLevel(HIGH);   // ModuleFun Bee inverts the signal
+    modem.setModemResetLevel(HIGH);  // ModuleFun Bee inverts the signal
     PRINTOUT(F("Waking modem and setting Cellular Carrier Options..."));
-    modem.modemWake();                  // NOTE:  This will also set up the modem
-    modem.gsmModem.setBaud(modemBaud);  // Make sure we're *NOT* auto-bauding!
-    modem.gsmModem.setNetworkMode(38);  // set to LTE only
-                                        // 2 Automatic
-                                        // 13 GSM only
-                                        // 38 LTE only
-                                        // 51 GSM and LTE only
-    modem.gsmModem.setPreferredMode(1); // set to CAT-M
-                                        // 1 CAT-M
-                                        // 2 NB-IoT
-                                        // 3 CAT-M and NB-IoT
+    modem.modemWake();  // NOTE:  This will also set up the modem
+    modem.gsmModem.setBaud(modemBaud);   // Make sure we're *NOT* auto-bauding!
+    modem.gsmModem.setNetworkMode(38);   // set to LTE only
+                                         // 2 Automatic
+                                         // 13 GSM only
+                                         // 38 LTE only
+                                         // 51 GSM and LTE only
+    modem.gsmModem.setPreferredMode(1);  // set to CAT-M
+                                         // 1 CAT-M
+                                         // 2 NB-IoT
+                                         // 3 CAT-M and NB-IoT
 #endif
 
     // Sync the clock if it isn't valid or we have battery to spare
-    if (getBatteryVoltage() > 3.55 || !loggerClock::isRTCSane())
-    {
+    if (getBatteryVoltage() > 3.55 || !loggerClock::isRTCSane()) {
         // Synchronize the RTC with NIST
         // This will also set up the modem
         dataLogger.syncRTC();
@@ -487,13 +476,12 @@ void setup()
     // all sensor names correct
     // Writing to the SD card can be power intensive, so if we're skipping
     // the sensor setup we'll skip this too.
-    if (getBatteryVoltage() > 3.4)
-    {
+    if (getBatteryVoltage() > 3.4) {
         PRINTOUT(F("Setting up file on SD card"));
         delay(50);
         dataLogger.turnOnSDcard(true);
         // true = wait for card to settle after power up
-        dataLogger.createLogFile(true); // true = write a new header
+        dataLogger.createLogFile(true);  // true = write a new header
         dataLogger.turnOffSDcard(true);
         // true = wait for internal housekeeping after write
     }
@@ -508,27 +496,21 @@ void setup()
 //  Arduino Loop Function
 // ==========================================================================
 // Use this short loop for simple data logging and sending
-void loop()
-{
+void loop() {
     // Note:  Please change these battery voltages to match your battery
     // At very low battery, just go back to sleep
-    if (getBatteryVoltage() < 3.4)
-    {
+    if (getBatteryVoltage() < 3.4) {
         PRINTOUT(F("Battery too low, ("),
                  mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM],
                  F("V) going back to sleep."));
         dataLogger.systemSleep();
-    }
-    else if (getBatteryVoltage() < 3.55)
-    {
+    } else if (getBatteryVoltage() < 3.55) {
         // At moderate voltage, log data but don't send it over the modem
         PRINTOUT(F("Battery at"),
                  mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM],
                  F("V; high enough to log, but will not publish!"));
         dataLogger.logData();
-    }
-    else
-    {
+    } else {
         // If the battery is good, send the data to the world
         PRINTOUT(F("Battery at"),
                  mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM],
