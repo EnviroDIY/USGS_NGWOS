@@ -25,7 +25,8 @@ https://raw.githubusercontent.com/EnviroDIY/Arduino_boards/master/package_Enviro
 
 If you already have other custom board manager URL's, extend your list with the EnviroDIY link.
 
-Then in the IDE, click on Tools > Board > Boards Manager.   Use the dropdown box for Type to select "Contributed".
+Then in the IDE, click on Tools > Board > Boards Manager.
+Use the dropdown box for Type to select "Contributed".
 You should then see an option for "EnviroDIY SAMD Boards".
 Click the "Install" button to add the EnviroDIY boards to your IDE.
 The install process should also install the Adafruit core into the Arduino IDE.
@@ -36,3 +37,30 @@ When following the Adafruit instructions, make sure to use the EnviroDIY URL abo
 Once the board and core packages are installed, when you click Tools > Board you will see EnviroDIY SAMD boards > EnviroDIY Stonefly listed as options for available boards.
 
 ## Setting up the Stonefly in PlatformIO on VSCode
+
+To use the Stonefly in PlatformIO, you must manually download the boards and variants files and put them in the correct folder.
+
+- Navigate to your [PlatformIO core directory](https://docs.platformio.org/en/latest/projectconf/sections/platformio/options/directory/core_dir.html#projectconf-pio-core-dir). On Windows, it will be something like `C:\Users\{yourUserName}\.platformio`.
+- If they don't already exist, create a "boards" folder and a "variants" folder within the PlatformIO core directory.
+- Download the Stonefly boards file [here](https://raw.githubusercontent.com/EnviroDIY/Arduino_boards/refs/heads/master/EnviroDIYSAMDBoards/boards/envirodiy_stonefly_m4.json) and put it into your new boards subdirectory.
+  - On windows, the new file should end up being `C:\Users\{yourUserName}\.platformio\boards\envirodiy_stonefly_m4.json`
+- Download all of the files in this [variants directory](https://github.com/EnviroDIY/Arduino_boards/tree/master/EnviroDIYSAMDBoards/variants/stonefly_m4) and put them in your new variants folder.
+  - You should end up with these files:
+    - `C:\Users\{yourUserName}\.platformio\variants\stonefly_m4\pins_arduino.h`
+    - `C:\Users\{yourUserName}\.platformio\variants\stonefly_m4\variant.h`
+    - `C:\Users\{yourUserName}\.platformio\variants\stonefly_m4\variant.cpp`
+    - `C:\Users\{yourUserName}\.platformio\variants\stonefly_m4\linker_scripts\gcc\flash_with_bootloader.ld`
+    - `C:\Users\{yourUserName}\.platformio\variants\stonefly_m4\linker_scripts\gcc\flash_without_bootloader.ld`
+- Create a new PlatformIO project through PlatformIO home. If you have correctly added `envirodiy_stonefly_m4.json` to your boards folder, you should see the option for the Stonefly in the board selection dropdown.
+- You must modify your platformio.ini file to specify the location of your variants folder.  Your Stonefly environment should look like the code below.
+  - NOTE: You do NOT need to replace `${platformio.core_dir}` with your real core directory. Leave that exactly as is in your ini.
+
+```ini
+[env:envirodiy_stonefly_m4]
+platform = atmelsam
+board = envirodiy_stonefly_m4
+framework = arduino
+board_build.variant = stonefly_m4
+board_build.variants_dir = ${platformio.core_dir}/variants
+board_build.ldscript = ${platformio.core_dir}/variants/stonefly_m4/linker_scripts/gcc/flash_with_bootloader.ld
+```
