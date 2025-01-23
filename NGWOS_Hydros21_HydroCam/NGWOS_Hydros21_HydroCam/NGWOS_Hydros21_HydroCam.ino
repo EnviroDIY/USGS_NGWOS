@@ -271,8 +271,8 @@ Variable* variableList[] = {
 };
 // Count up the number of pointers in the array
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
-// Create the VariableArray object and attach the UUID's
-VariableArray varArray(variableCount, variableList, UUIDs);
+// Create the VariableArray object
+VariableArray varArray(variableCount, variableList);
 // ==========================================================================
 
 // ==========================================================================
