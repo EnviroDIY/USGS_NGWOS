@@ -85,3 +85,5 @@ variants/*
 compile_commands.json
 pio_common_libdeps.ini
 passwords.txt
+NGWOS_VegaAndHydroCam/NGWOS_VegaAndHydroCam/NGWOS_VegaAndHydroCam_withUUIDs.ino
+NGWOS_Hydros21_HydroCam/NGWOS_Hydros21_HydroCam/NGWOS_Hydros21_HydroCam_withUUIDs.ino
