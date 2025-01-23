@@ -22,7 +22,7 @@ To add the EnviroDIY Stonefly board to your Arduino IDE, go to File > Preference
 
 https://raw.githubusercontent.com/EnviroDIY/Arduino_boards/master/package_EnviroDIY_index.json
 
-If you already have other custom board manager URL's, extend your list with the EnviroDIY
+If you already have other custom board manager URL's, extend your list with the EnviroDIY link.
 
 Then in the IDE, click on Tools > Board > Boards Manager.   Use the dropdown box for Type to select "Contributed".
 You should then see an option for "EnviroDIY SAMD Boards".
