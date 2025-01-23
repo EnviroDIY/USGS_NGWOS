@@ -84,3 +84,5 @@ Within each example folder, there is a zip file of library dependencies.
 Download the zip and un-zip it.
 Move all of the files from the unzipped directory into your Arduino libraries folder.
 Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
+
+Detailed instructions for each example are in the ReadMe files in the respective subfolders.
