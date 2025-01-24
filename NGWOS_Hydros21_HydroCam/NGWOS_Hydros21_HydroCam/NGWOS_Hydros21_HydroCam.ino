@@ -8,6 +8,8 @@
 // #define BUILD_MODEM_ESPRESSIF_ESP32
 #define BUILD_MODEM_SIM_COM_SIM7080
 // #define USE_VEGA_PULS
+#define USE_METER_HYDROS21
+#define USE_GEOLUX_HYDROCAM
 
 // Defines to help me print strings
 // this converts to string
@@ -47,7 +49,7 @@
 //  Data Logging Options
 // ==========================================================================
 // The name of this program file
-const char* sketchName = "Stonefly_Vega_Cellular.ino";
+const char* sketchName = "NGWOS_Hydros21_HydroCam.ino";
 // Logger ID, also becomes the prefix for the name of the data file on SD card
 const char* LoggerID = "24008";
 // How frequently (in minutes) to log data
@@ -179,6 +181,7 @@ const uint8_t alsNumberReadings = 10;
 EverlightALSPT19 alsPt19(alsPower, alsData, alsSupply, alsResistance,
                          alsNumberReadings);
 
+#ifdef USE_GEOLUX_HYDROCAM
 // ==========================================================================
 //  Geolux HydroCam camera
 // ==========================================================================
@@ -195,6 +198,7 @@ bool         alwaysAutoFocus    = false;
 GeoluxHydroCam hydrocam(cameraSerial, cameraPower, dataLogger,
                         cameraAdapterPower, imageResolution, filePrefix,
                         alwaysAutoFocus);
+#endif
 
 // ==========================================================================
 //  Sensirion SHT4X Digital Humidity and Temperature Sensor
@@ -225,7 +229,7 @@ const int8_t VegaPulsData        = 3;               // The SDI-12 data pin
 VegaPuls21 VegaPuls(*VegaPulsSDI12address, VegaPulsPower, VegaPulsData);
 #endif
 
-
+#ifdef USE_METER_HYDROS21
 // ==========================================================================
 //  Meter Hydros 21 Conductivity, Temperature, and Depth Sensor
 // ==========================================================================
@@ -240,6 +244,7 @@ const int8_t  hydros21Data           = 3;               // The SDI-12 data pin
 // Create a Decagon Hydros21 sensor object
 MeterHydros21 hydros21(*hydros21SDI12address, hydros21Power, hydros21Data,
                        hydros21NumberReadings);
+#endif
 
 // ==========================================================================
 //  Creating the Variable Array[s] and Filling with Variable Objects
@@ -255,11 +260,15 @@ Variable* variableList[] = {
                                "12345678-abcd-1234-ef00-1234567890ab"),
     new VegaPuls21_ErrorCode(&VegaPuls, "12345678-abcd-1234-ef00-1234567890ab"),
 #endif
+#ifdef USE_METER_HYDROS21
     new MeterHydros21_Cond(&hydros21, "12345678-abcd-1234-ef00-1234567890ab"),
     new MeterHydros21_Temp(&hydros21, "12345678-abcd-1234-ef00-1234567890ab"),
     new MeterHydros21_Depth(&hydros21, "12345678-abcd-1234-ef00-1234567890ab"),
+#endif
+#ifdef USE_GEOLUX_HYDROCAM
     new GeoluxHydroCam_ImageSize(&hydrocam,
                                  "12345678-abcd-1234-ef00-1234567890ab"),
+#endif
     new SensirionSHT4x_Humidity(&sht4x, "12345678-abcd-1234-ef00-1234567890ab"),
     new SensirionSHT4x_Temp(&sht4x, "12345678-abcd-1234-ef00-1234567890ab"),
     new EverlightALSPT19_Illuminance(&alsPt19,
