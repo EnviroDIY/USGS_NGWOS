@@ -7,6 +7,22 @@ The camera images are **NOT** transmitted to any endpoint.
 > [!NOTE]
 > I've already sent Bill code with UUID's prepared to go to the [TestVega](https://monitormywatershed.org/sites/TestVega/) site on Monitor My Watershed.
 
+- [Hydros 21 and HydroCam](#hydros-21-and-hydrocam)
+  - [Physical Connections](#physical-connections)
+  - [Library Dependencies](#library-dependencies)
+  - [Setting up in Monitor My Watershed](#setting-up-in-monitor-my-watershed)
+  - [Customizing the Example Sketch](#customizing-the-example-sketch)
+  - [Enabling the Vega Puls in this sketch](#enabling-the-vega-puls-in-this-sketch)
+    - [v1: as sent to Bill](#v1-as-sent-to-bill)
+    - [v2: as on GitHub](#v2-as-on-github)
+  - [Using the Vega Puls and Meter Hydros21 together](#using-the-vega-puls-and-meter-hydros21-together)
+    - [Option 1: Using both on the same SDI-12 bus (data pin) with different addresses](#option-1-using-both-on-the-same-sdi-12-bus-data-pin-with-different-addresses)
+    - [Option 2: Using each on a separate SDI-12 bus (data pin)](#option-2-using-each-on-a-separate-sdi-12-bus-data-pin)
+  - [Switching from LTE to WiFi and back](#switching-from-lte-to-wifi-and-back)
+  - [Switching to WiFi](#switching-to-wifi)
+  - [Switching to LTE](#switching-to-lte)
+
+
 ## Physical Connections
 
 This program is written for an EnviroDIY Stonefly, a Vega Puls 23, a Geolux HydroCan, a Meter Hydros21, and either an EnviroDIY LTE Bee or an EnviroDIY WiFi Bee.
@@ -44,7 +60,7 @@ The Vega and HydroCam need the 12V, so save those plugs for them.
 
 This example program is built around the **HydroCam branch** of ModularSensors library, _**NOT**_ the released version of the library!
 
-To get all of the correct dependencies for Arduino IDE, please download them together in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/raw/refs/heads/main/NGWOS_VegaAndHydroCam/VegaHydroCamDependencies.zip) in this folder.
+To get all of the correct dependencies for Arduino IDE, please download them together in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/raw/refs/heads/main/NGWOS_VegaAndHydroCam/VegaHydroCamDependencies.zip) in the NGWOS_VegaAndHydroCam example folder.
 After unzipping the dependencies, move them all to your Arduino libraries folder.
 Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
 
@@ -77,8 +93,8 @@ Once you've created all of the sensors, navigate back to the site and you should
 
 ## Customizing the Example Sketch
 
-Once you have all of the UUID's for your sensors from Monitor My Watershed, copy them one-by-one into the example code between lines 248 and 271.
-Also add the site and registration tokens in lines 284-287.
+Once you have all of the UUID's for your sensors from Monitor My Watershed, copy them one-by-one into the example code between lines 254 and 284.
+Also add the site and registration tokens in lines 293-296.
 Make sure you replace all instances of `12345678-abcd-1234-ef00-1234567890ab` with correct UUID's.
 The UUID's must be surrounded by quotes.
 
@@ -95,6 +111,54 @@ Also remove the leading double slashes (`//`) before the Vega Puls variables in 
 
 Remove the leading double slashes (`//`) before `#define USE_VEGA_PULS` in line 10.
 
+## Using the Vega Puls and Meter Hydros21 together
+
+To use the Vega Puls and Meter Hydro21 they must either have different addresses or be connected to different data pin.
+If both sensors are connected to the same data pin with the same address, their communication will clash and you will not get data out of either.
+
+### Option 1: Using both on the same SDI-12 bus (data pin) with different addresses
+
+For this, you leave the wiring for each sensor exactly as described in [Physical Connections](#physical-connections) but change the address of each sensor both on the sensor itself and in the example code.
+
+To change the addresses of the sensors, use "[Example B](https://github.com/EnviroDIY/Arduino-SDI-12/tree/master/examples/b_address_change)" from the SDI-12 Arduino library.
+
+- Scroll to line 17 of that address change example (`int8_t dataPin = 7;`).
+- Change the pin from `7` to `3` to match the wiring described above.
+- Leave the power pin as `22`.
+
+The new sensor addresses must be different from each other and _**neither should use address `0`**_!
+Meter devices return extra information when set to address 0.
+To prevent confusion and garbled communication, it is best to avoid this address for Meter devices, especially when used in combination with other devices.
+For more information on the Meter output with address 0, see "METER SDI-12 IMPLEMENTATION" on the bottom of page 4 of the [Hydros21 Integrator Guide](https://library.metergroup.com/Integrator%20Guide/18468%20HYDROS%2021%20Gen2%20Integrator%20Guide.pdf).
+
+To change the addresses in the NGWOS_Hydros21_HydroCam example code, change these lines to your newly assigned addresses:
+
+```cpp
+const char* VegaPulsSDI12address = "0";  // The SDI-12 Address of the VegaPuls10
+```
+
+```cpp
+const char*   hydros21SDI12address = "0";  // The SDI-12 Address of the Hydros21
+```
+
+### Option 2: Using each on a separate SDI-12 bus (data pin)
+
+In this case, you will not need to change any sensor addresses.
+Instead, you move the data wire of the Vega Puls to a different data pin and change the example code accordingly.
+The *white* SDI-12 data wire from the Vega Puls is the only wire that needs to be changed.
+
+- Disconnect the *white* Vega Puls wire from the "S2" connection of the screw terminal.
+- Reconnect the *white* Vega Puls wire to the "S1" connection of the screw terminal.
+- Keep the Grove screw terminal plugged into the same socket labeled "D2-3 & SDI12" on the Stonefly.
+
+After rewiring, change the `3` to `2` in this single line in the NGWOS_Hydros21_HydroCam example code:
+
+```cpp
+const int8_t VegaPulsData        = 3;               // The SDI-12 data pin
+                                // ^^ change to 2!
+```
+
+
 ## Switching from LTE to WiFi and back
 
 This program has code in it for both LTE and WiFi.
@@ -104,12 +168,32 @@ The default code as posted is for LTE.
 
 - Ensure that there are _**not**_ double slashes (`//`) before `#define BUILD_MODEM_ESPRESSIF_ESP32` in line 8
 - Ensure that there _**are**_ double slashes (`//`) before `#define BUILD_MODEM_SIM_COM_SIM7080` in line 9.
-- Modify lines 94-97 with your correct wifi credentials.
-  - Only WPA-2 is supported
-  - Wifi networks that require a sign-in type page before access are *not* supported.
+- Modify these lines (~96-99) with your correct wifi credentials:
+
+```cpp
+// WiFi access point name
+#define WIFI_ID "YourWifiID"
+// WiFi password (WPA2)
+#define WIFI_PASSWD "YourWifiPassword"
+```
+
+NOTE:
+- Only WPA-2 WiFi security is supported.
+- Wifi networks that require a sign-in type page before access are *not* supported.
+- Wifi networks that require special certificates are *not* supported.
 
 ## Switching to LTE
 
 - Ensure that there _**are**_ double slashes (`//`) before `#define BUILD_MODEM_ESPRESSIF_ESP32` in line 8
 - Ensure that there are _**not**_ double slashes (`//`) before `#define BUILD_MODEM_SIM_COM_SIM7080` in line 9.
-- Modify lines 92 with your proper cellular APN (Access Point Name). You must get the APN from your SIM card provider. The APN for the Hologram SIMs preferred by the Stroud Water Research Center is simply "hologram."
+- Modify this line (~94) with your proper cellular APN (Access Point Name):
+
+```cpp
+// Network connection information
+// APN for cellular connection
+#define CELLULAR_APN "hologram"
+```
+
+You must get the APN from your SIM card provider - it is usually publicly available on the providers website.
+The APN for the Hologram SIMs preferred by the Stroud Water Research Center is simply "hologram."
+This example as written does not support SIM cards that must be unlocked with a pin code or APN's that require a username or password.
