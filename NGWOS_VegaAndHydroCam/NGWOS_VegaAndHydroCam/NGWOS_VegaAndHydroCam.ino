@@ -485,7 +485,6 @@ void setup() {
         dataLogger.turnOffSDcard(true);
         // true = wait for internal housekeeping after write
     }
-    // dataLogger.logDataAndPubReliably(0x08 | 0x03);
 
     // Call the processor sleep
     PRINTOUT(F("Putting processor to sleep\n"));
@@ -516,6 +515,5 @@ void loop() {
                  mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM],
                  F("V; high enough to log and publish data"));
         dataLogger.logDataAndPublish();
-        // dataLogger.logDataAndPubReliably();  // TCP / RTL !there
     }
 }
