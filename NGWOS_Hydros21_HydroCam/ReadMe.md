@@ -22,7 +22,6 @@ The camera images are **NOT** transmitted to any endpoint.
   - [Switching to WiFi](#switching-to-wifi)
   - [Switching to LTE](#switching-to-lte)
 
-
 ## Physical Connections
 
 This program is written for an EnviroDIY Stonefly, a Vega Puls 23, a Geolux HydroCan, a Meter Hydros21, and either an EnviroDIY LTE Bee or an EnviroDIY WiFi Bee.
@@ -58,9 +57,9 @@ The Vega and HydroCam need the 12V, so save those plugs for them.
 
 ## Library Dependencies
 
-This example program is built around the **HydroCam branch** of ModularSensors library, _**NOT**_ the released version of the library!
+This example program is built around the **HydroCam branch** of ModularSensors library, ***NOT*** the released version of the library!
 
-To get all of the correct dependencies for Arduino IDE, please download them together in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/raw/refs/heads/main/NGWOS_VegaAndHydroCam/VegaHydroCamDependencies.zip) in the NGWOS_VegaAndHydroCam example folder.
+To get all of the correct dependencies for Arduino IDE, please download them together in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) in the repository main folder.
 After unzipping the dependencies, move them all to your Arduino libraries folder.
 Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
 
@@ -126,7 +125,7 @@ To change the addresses of the sensors, use "[Example B](https://github.com/Envi
 - Change the pin from `7` to `3` to match the wiring described above.
 - Leave the power pin as `22`.
 
-The new sensor addresses must be different from each other and _**neither should use address `0`**_!
+The new sensor addresses must be different from each other and ***neither should use address `0`***!
 Meter devices return extra information when set to address 0.
 To prevent confusion and garbled communication, it is best to avoid this address for Meter devices, especially when used in combination with other devices.
 For more information on the Meter output with address 0, see "METER SDI-12 IMPLEMENTATION" on the bottom of page 4 of the [Hydros21 Integrator Guide](https://library.metergroup.com/Integrator%20Guide/18468%20HYDROS%2021%20Gen2%20Integrator%20Guide.pdf).
@@ -158,7 +157,6 @@ const int8_t VegaPulsData        = 3;               // The SDI-12 data pin
                                 // ^^ change to 2!
 ```
 
-
 ## Switching from LTE to WiFi and back
 
 This program has code in it for both LTE and WiFi.
@@ -166,8 +164,8 @@ The default code as posted is for LTE.
 
 ## Switching to WiFi
 
-- Ensure that there are _**not**_ double slashes (`//`) before `#define BUILD_MODEM_ESPRESSIF_ESP32` in line 8
-- Ensure that there _**are**_ double slashes (`//`) before `#define BUILD_MODEM_SIM_COM_SIM7080` in line 9.
+- Ensure that there are ***not*** double slashes (`//`) before `#define BUILD_MODEM_ESPRESSIF_ESP32` in line 8
+- Ensure that there ***are*** double slashes (`//`) before `#define BUILD_MODEM_SIM_COM_SIM7080` in line 9.
 - Modify these lines (~96-99) with your correct wifi credentials:
 
 ```cpp
@@ -178,14 +176,15 @@ The default code as posted is for LTE.
 ```
 
 NOTE:
+
 - Only WPA-2 WiFi security is supported.
 - Wifi networks that require a sign-in type page before access are *not* supported.
 - Wifi networks that require special certificates are *not* supported.
 
 ## Switching to LTE
 
-- Ensure that there _**are**_ double slashes (`//`) before `#define BUILD_MODEM_ESPRESSIF_ESP32` in line 8
-- Ensure that there are _**not**_ double slashes (`//`) before `#define BUILD_MODEM_SIM_COM_SIM7080` in line 9.
+- Ensure that there ***are*** double slashes (`//`) before `#define BUILD_MODEM_ESPRESSIF_ESP32` in line 8
+- Ensure that there are ***not*** double slashes (`//`) before `#define BUILD_MODEM_SIM_COM_SIM7080` in line 9.
 - Modify this line (~94) with your proper cellular APN (Access Point Name):
 
 ```cpp
