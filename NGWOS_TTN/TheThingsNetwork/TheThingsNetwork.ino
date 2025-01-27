@@ -156,8 +156,8 @@ SDI12 mySDI12(sdiDataPin);
 CayenneLPP lpp(128);
 
 // Initialize a buffer for decoding Cayenne LPP messages
-// DynamicJsonDocument jsonBuffer(1024); // ArduinoJson 6
-JsonDocument jsonBuffer;  // ArduinoJson 6
+DynamicJsonDocument jsonBuffer(1024);  // ArduinoJson 6
+// JsonDocument jsonBuffer;  // ArduinoJson 7
 
 // From ArduinoJson Website:
 // https://arduinojson.org/v7/how-to/upgrade-from-v6/
