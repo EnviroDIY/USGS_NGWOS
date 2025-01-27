@@ -2,6 +2,14 @@
 
 This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to The Things Network via LoRa.
 
+- [The Things Network](#the-things-network)
+  - [Physical Connections](#physical-connections)
+  - [Library Dependencies](#library-dependencies)
+  - [Setting up in The Things Network](#setting-up-in-the-things-network)
+  - [Customizing the Example Sketch](#customizing-the-example-sketch)
+    - [ArduinoJSON 6 vs 7](#arduinojson-6-vs-7)
+  - [Compile and Upload](#compile-and-upload)
+
 ## Physical Connections
 
 This program is written for an EnviroDIY Stonefly, a Vega Puls 21, and a MultiTech mDot.
@@ -101,6 +109,10 @@ While you're customizing the sketch, you should also check/adjust the logging in
 > [!NOTE]
 > This program has pins and timings set for a MultiTech mDot and EnviroDIY Stonefly.
 > To use it with a different module or logger board, you would need to do more heavy modification of the program.
+
+### ArduinoJSON 6 vs 7
+
+This program will run with either ArduinoJSON 6 or 7, but you will get lots of processor warnings with v7.
 
 ## Compile and Upload
 
