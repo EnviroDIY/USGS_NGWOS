@@ -21,7 +21,7 @@ You **must have administrator privileges** on a Windows computer to install the 
 
 To add the EnviroDIY Stonefly board to your Arduino IDE, go to File > Preferences (for a Mac: Arduino > Preferences) and copy the following URL into the box labeled "Additional Boards Manager URLs":
 
-https://raw.githubusercontent.com/EnviroDIY/Arduino_boards/master/package_EnviroDIY_index.json
+`https://raw.githubusercontent.com/EnviroDIY/Arduino_boards/master/package_EnviroDIY_index.json`
 
 If you already have other custom board manager URL's, extend your list with the EnviroDIY link.
 
@@ -69,6 +69,23 @@ board_build.variants_dir = ${platformio.core_dir}/variants
 board_build.ldscript = ${platformio.core_dir}/variants/stonefly_m4/linker_scripts/gcc/flash_with_bootloader.ld
 ```
 
+## Reprogramming a Sleeping Logger
+
+The on-board USB used to program the logger shuts down when the logger goes to sleep.
+This creates issues because the IDE cannot find the logger to program it when the board is sleeping  - which it's doing most of the time while running a logger program.
+
+To program a sleeping board:
+
+- watch the output from the upload on the Arduino IDE
+- when you see the line "Waiting for upload port", quickly double-tap the reset button on the logger to get it to wait and enter bootloader mode where it can receive the program
+
+When the IDE attempts to upload the board, it assumes the board is in "running" mode, sends a command to the board to tell it to go to "programming" mode and then waits until a new port appears.
+The sleeping logger isn't in running mode and doesn't hear the command, so you have to do it manually.
+BUT, if you put the board into programming mode in advance, the IDE detects the board, thinks it's "running" and then errors out when the already-in-programming-mode board responds incorrectly to the "go to programming" command.
+The upload will also error out if it takes too long for the bootloader port to appear.
+So you have to watch and wait and hit the double tap just at the right time.
+It's kind of a PITA.
+
 ## Example Programs
 
 This repo contains 3 example programs for the USGS:
@@ -80,7 +97,7 @@ This repo contains 3 example programs for the USGS:
 - NGWOS_Hydros21_HydroCam
   - This is identical to the Vega and HydroCam example, but with a Meter Hydros21 instead of a Vega Puls.
 
-Within each example folder, there is a zip file of library dependencies.
+The dependencies for all of the examples are in this [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip).
 Download the zip and un-zip it.
 Move all of the files from the unzipped directory into your Arduino libraries folder.
 Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).

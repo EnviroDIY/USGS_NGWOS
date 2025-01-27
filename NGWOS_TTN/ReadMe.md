@@ -6,6 +6,7 @@ This program transmits data from a Vega Puls 21 and onboard sensors from a Stone
   - [Physical Connections](#physical-connections)
   - [Library Dependencies](#library-dependencies)
   - [Setting up in The Things Network](#setting-up-in-the-things-network)
+  - [Downloading and Setting up the Example Sketch](#downloading-and-setting-up-the-example-sketch)
   - [Customizing the Example Sketch](#customizing-the-example-sketch)
     - [ArduinoJSON 6 vs 7](#arduinojson-6-vs-7)
   - [Compile and Upload](#compile-and-upload)
@@ -42,7 +43,7 @@ For this program to compile, you need to have the following libraries and versio
 - electroniccats/CayenneLPP@^1.4.0
 - greiman/SdFat@^2.3
 
-You can download all of these dependencies together in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/raw/refs/heads/main/NGWOS_TTN/TTNDependencies.zip) in this folder.
+You can download all of these dependencies together in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) in the repository main folder.
 After unzipping the dependencies, move them all to your Arduino libraries folder.
 Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
 
@@ -72,7 +73,7 @@ If you are using PlatformIO, you can copy this list above into the lib_deps sect
     - Cluster settings: Uncheck
   - Provisioning information:
     - JoinEUI (also called App EUI)
-      - *For a MultiTech mDot, the Join EUI (AppEUI) is programmable*. That means it is not set or specified on the module packaging. I suggest you create a new random EUI for your module using this page: https://descartes.co.uk/CreateEUIKey.html.
+      - *For a MultiTech mDot, the Join EUI (AppEUI) is programmable*. That means it is not set or specified on the module packaging. I suggest you create a new random EUI for your module using [this random generator](https://descartes.co.uk/CreateEUIKey.html). Just click the "Create EUI" button.
       <!-- - For my Seeed LoRa-E5, the App EUI is confusingly labeled "KEY" on the product sticker -->
       - This must be exactly 16 hex characters (8 bytes = 64 bits).
     - DevEUI (Device EUI)
@@ -80,15 +81,36 @@ If you are using PlatformIO, you can copy this list above into the lib_deps sect
       <!-- - For my Seeed LoRa-E5, the DevEUI is labeled as "EUI" on the product sticker -->
       - This must be exactly 16 hex characters (8 bytes = 64 bits).
     - AppKey (also called Network Key)
-      - Click "Generate" to get a new, unique network key.
+      - Click "Generate" to get a new, unique network key. You could also use [this random generator](https://descartes.co.uk/CreateEUIKey.html) again with the "Create Key" button.
     - End device ID
       - This can be any combination of lower case letters, numbers, and dashes you want to use to identify the device. I suggest using the model name and the serial number.
       - You can change this device ID later if you wish.
   - Once you've entered everything, click the blue "Register end device" button.
 
+## Downloading and Setting up the Example Sketch
+
+For this example to work, you must download the entire contents of the [TheThingsNetwork folder](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_TTN/TheThingsNetwork) and put them into the folder with your sketch.
+Without *all* of the files in the folders, the sketch will not compile.
+
+If you are using the default Arduino sketch folder it should look like this:
+
+```txt
+C:\Users\{your_user_name}\Documents\Arduino
+    └ The Things Network
+        └ LoRaModemFxns.h
+        └ SDI12Master.h
+        └ TheThingsNetwork.ino
+        └ src
+            └ LoggerBase.h
+            └ LoggerBase.cpp
+            └ ModSensorDebugger.h
+            └ WatchDogSAMD.h
+            └ WatchDogSAMD.cpp
+```
+
 ## Customizing the Example Sketch
 
-Once you've set up your end device in The Things Network, you need to customize the ino file to send data to your application.
+Once you've set up your end device in The Things Network and set up your sketch folder, you need to customize the ino file to send data to your application.
 
 - Open the example TheThingsNetwork.ino in the Arduino IDE (or PlatformIO/VSCode).
 - Scroll to lines 100 - 106 in the program.
@@ -106,13 +128,35 @@ const char appKey[] = "YourAppKey";
 
 While you're customizing the sketch, you should also check/adjust the logging interval in line 71.
 
+You should *not* change anything in the cpp/h files in the sketch folder.
+
 > [!NOTE]
 > This program has pins and timings set for a MultiTech mDot and EnviroDIY Stonefly.
 > To use it with a different module or logger board, you would need to do more heavy modification of the program.
 
 ### ArduinoJSON 6 vs 7
 
-This program will run with either ArduinoJSON 6 or 7, but you will get lots of processor warnings with v7.
+This program will compile and run with either ArduinoJSON 6 or 7, but you will get processor warnings with v7.
+There are some syntax changes between the two versions of ArduinoJSON.
+The [latest version of this example sketch on GitHub](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/NGWOS_TTN/TheThingsNetwork/TheThingsNetwork.ino) attempts to automatically detect the version of the ArduinoJSON library with defines and use the appropriate syntax for it.
+If you are getting compile *errors* that appear to be related to ArduinoJSON find and modify the block of code starting with the comment `// Initialize a buffer for decoding Cayenne LPP messages` (around lines 168-173):
+
+For ArduinoJSON **7**, use this:
+
+```cpp
+// Initialize a buffer for decoding Cayenne LPP messages
+JsonDocument jsonBuffer;  // ArduinoJson 7
+```
+
+For ArduinoJSON **6**, use this:
+
+```cpp
+// Initialize a buffer for decoding Cayenne LPP messages
+DynamicJsonDocument jsonBuffer(1024);  // ArduinoJson 6
+```
+
+More detail on the difference between the two versions and migration is available [here](https://arduinojson.org/v7/how-to/upgrade-from-v6/).
+This example has warnings for version 7 because the [Cayenne LPP library](https://github.com/ElectronicCats/CayenneLPP) used to compress data and send it over LoRa was built for the smaller ArduinoJSON 6 library.
 
 ## Compile and Upload
 
