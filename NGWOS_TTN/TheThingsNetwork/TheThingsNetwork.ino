@@ -7,6 +7,13 @@
  * @brief A On-Off to send data to The Things Network
  * ======================================================================= */
 
+// Select your LoRa Module:
+#define LORA_AT_MDOT
+// #define LORA_AT_LORAE5
+// Select Sensors
+// #define USE_VEGA_PULS
+#define USE_METER_HYDROS21
+
 // Defines to help me print strings
 // this converts to string
 #define STR_(X) #X
@@ -14,25 +21,23 @@
 #define STR(X) STR_(X)
 
 // ==========================================================================
-//  Defines for LoRa_AT
+// Defines for LoRa_AT
 // ==========================================================================
-/** Start [defines] */
-// Select your LoRa Module:
-#define LORA_AT_MDOT
-
+#ifndef LORA_AT_YIELD_MS
 #define LORA_AT_YIELD_MS 2
-
+#endif
+#ifndef SDI12_YIELD_MS
 #define SDI12_YIELD_MS 16
+#endif
 
 // See all AT commands, if wanted
-#define DUMP_AT_COMMANDS
+// #define DUMP_AT_COMMANDS
 
 // Define the serial console for debug prints, if needed
-#define LORA_AT_DEBUG Serial
-/** End [defines] */
+// #define LORA_AT_DEBUG Serial
 
 // ==========================================================================
-//  Include the libraries required for any data logger
+// Include the libraries required for any data logger
 // ==========================================================================
 /** Start [includes] */
 // The Arduino library is needed for every Arduino program.
@@ -56,13 +61,11 @@
 #include "SDI12Master.h"
 #include "LoRaModemFxns.h"
 #include "src/LoggerBase.h"
-/** End [includes] */
 
 
 // ==========================================================================
-//  Data Logging Options
+// Data Logging Options
 // ==========================================================================
-/** Start [logging_options] */
 // The name of this program file
 const char* sketchName = "TheThingsNetwork.ino";
 // Logger ID, also becomes the prefix for the name of the data file on SD card
@@ -88,11 +91,10 @@ const int8_t sdCardPwrPin   = -1;  // MCU SD card power pin
 const int8_t sdCardSSPin    = 29;  // SD card chip select/slave select pin
 const int8_t flashSSPin     = 20;  // onboard flash chip select/slave select pin
 const int8_t sensorPowerPin = 22;  // MCU pin controlling main sensor power
-/** End [logging_options] */
 
 
 // ==========================================================================
-//  LoRa Modem Options
+// LoRa Modem Options
 // ==========================================================================
 
 // Network connection information
@@ -149,7 +151,7 @@ SDI12 mySDI12(sdiDataPin);
 
 
 // ==========================================================================
-//  Cayenne Low Power Protocol setup
+// Cayenne Low Power Protocol setup
 // ==========================================================================
 
 // Initialize a buffer for the Cayenne LPP message
@@ -189,18 +191,21 @@ const int8_t alsDataPin = 74;
 // ==========================================================================
 //  The Logger Object[s]
 // ==========================================================================
-/** Start [loggers] */
 // Create a new logger instance
 Logger dataLogger(LoggerID, loggingInterval);
-/** End [loggers] */
 
 
 // ==========================================================================
-//  Working Functions
+// Working Functions
 // ==========================================================================
-/** Start [working_functions] */
 // Flashes the LED's on the primary board
 void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
+    // Set up pins for the LED's
+    pinMode(greenLED, OUTPUT);
+    digitalWrite(greenLED, LOW);
+    pinMode(redLED, OUTPUT);
+    digitalWrite(redLED, LOW);
+    // Flash the lights
     for (uint8_t i = 0; i < numFlash; i++) {
         digitalWrite(greenLED, HIGH);
         digitalWrite(redLED, LOW);

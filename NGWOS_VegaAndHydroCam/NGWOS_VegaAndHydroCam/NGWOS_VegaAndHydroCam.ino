@@ -15,7 +15,7 @@
 #define STR(X) STR_(X)
 
 // ==========================================================================
-//  Defines for TinyGSM
+// Defines for TinyGSM
 // ==========================================================================
 #ifndef TINY_GSM_RX_BUFFER
 #define TINY_GSM_RX_BUFFER 64
@@ -28,7 +28,7 @@
 #endif
 
 // ==========================================================================
-//  Include the libraries required for any data logger
+// Include the libraries required for any data logger
 // ==========================================================================
 // The Arduino library is needed for every Arduino program.
 #include <Arduino.h>
@@ -37,13 +37,13 @@
 #include <ModularSensors.h>
 
 // ==========================================================================
-//  Assigning Serial Port Functionality
+// Assigning Serial Port Functionality
 // ==========================================================================
 #define modemSerial SerialBee
 #define cameraSerial Serial1
 
 // ==========================================================================
-//  Data Logging Options
+// Data Logging Options
 // ==========================================================================
 // The name of this program file
 const char* sketchName = "Stonefly_Vega_Cellular.ino";
@@ -72,7 +72,7 @@ const int8_t sensorPowerPin = 22;  // MCU pin controlling main sensor power
 const int8_t relayPowerPin = 41;  // MCU pin controlling an optional power relay
 
 // ==========================================================================
-//  The Logger Object[s]
+// The Logger Object[s]
 // ==========================================================================
 // Create a new logger instance
 // NOTE: This is an empty instance! We will need to call setLoggerID,
@@ -81,7 +81,7 @@ const int8_t relayPowerPin = 41;  // MCU pin controlling an optional power relay
 Logger dataLogger;
 
 // ==========================================================================
-//  Wifi/Cellular Modem Options
+// Wifi/Cellular Modem Options
 //    NOTE:  DON'T USE MORE THAN ONE MODEM OBJECT!
 //           Delete the sections you are not using!
 // ==========================================================================
@@ -154,7 +154,7 @@ SIMComSIM7080 modem = modem7080;
 #endif
 
 // ==========================================================================
-//  Using the Processor as a Sensor
+// Using the Processor as a Sensor
 // ==========================================================================
 #include <sensors/ProcessorStats.h>
 
@@ -163,7 +163,7 @@ const char*    mcuBoardVersion = "v0.1";
 ProcessorStats mcuBoard(mcuBoardVersion, 5);
 
 // ==========================================================================
-//  Everlight ALS-PT19 Ambient Light Sensor
+// Everlight ALS-PT19 Ambient Light Sensor
 // ==========================================================================
 #include <sensors/EverlightALSPT19.h>
 
@@ -179,7 +179,7 @@ EverlightALSPT19 alsPt19(alsPower, alsData, alsSupply, alsResistance,
                          alsNumberReadings);
 
 // ==========================================================================
-//  Geolux HydroCam camera
+// Geolux HydroCam camera
 // ==========================================================================
 #include <sensors/GeoluxHydroCam.h>
 
@@ -196,7 +196,7 @@ GeoluxHydroCam hydrocam(cameraSerial, cameraPower, dataLogger,
                         alwaysAutoFocus);
 
 // ==========================================================================
-//  Sensirion SHT4X Digital Humidity and Temperature Sensor
+// Sensirion SHT4X Digital Humidity and Temperature Sensor
 // ==========================================================================
 #include <sensors/SensirionSHT4x.h>
 
@@ -208,7 +208,7 @@ const bool   SHT4xUseHeater = true;
 SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
 
 // ==========================================================================
-//  VEGA PULS 21 Radar Sensor
+// VEGA PULS 21 Radar Sensor
 // ==========================================================================
 #include <sensors/VegaPuls21.h>
 
@@ -274,7 +274,7 @@ VariableArray varArray(variableCount, variableList, UUIDs);
 // ==========================================================================
 
 // ==========================================================================
-//  A Publisher to Monitor My Watershed / EnviroDIY Data Sharing Portal
+// A Publisher to Monitor My Watershed / EnviroDIY Data Sharing Portal
 // ==========================================================================
 // Device registration and sampling feature information can be obtained after
 // registration at https://monitormywatershed.org or https://data.envirodiy.org
@@ -289,7 +289,7 @@ EnviroDIYPublisher EnviroDIYPOST(dataLogger, &modem.gsmClient,
                                  registrationToken, samplingFeature);
 
 // ==========================================================================
-//  Working Functions
+// Working Functions
 // ==========================================================================
 // Flashes the LED's on the primary board
 void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
@@ -321,7 +321,7 @@ float getBatteryVoltage() {
 }
 
 // ==========================================================================
-//  Arduino Setup Function
+// Arduino Setup Function
 // ==========================================================================
 void setup() {
     // Blink the LEDs to show the board is on and starting up
@@ -329,7 +329,7 @@ void setup() {
 
 // Wait for USB connection to be established by PC
 // NOTE:  Only use this when debugging - if not connected to a PC, this adds an
-// unnecesary startup delay
+// unnecessary startup delay
 #if defined(SERIAL_PORT_USBVIRTUAL)
     while (!SERIAL_PORT_USBVIRTUAL && (millis() < 10000L)) {
         // wait
@@ -492,7 +492,7 @@ void setup() {
 }
 
 // ==========================================================================
-//  Arduino Loop Function
+// Arduino Loop Function
 // ==========================================================================
 // Use this short loop for simple data logging and sending
 void loop() {
