@@ -645,7 +645,7 @@ void loop() {
             vegaSDI12.end();
             dataLogger.watchDogTimer.resetWatchDog();
             // stage in m (resolution 1mm)
-            // lpp.addDistance(5, sdi12_results[0]);
+            lpp.addDistance(5, sdi12_results[0]);
             // distance in m (resolution 1mm)
             lpp.addDistance(6, sdi12_results[1]);
             // temperature in °C (resolution 0.1°C)
@@ -706,20 +706,20 @@ void loop() {
                        0);
             hydrosSDI12.end();
             dataLogger.watchDogTimer.resetWatchDog();
-            // specific conductance in µS/cm
-            // Only Supported by CayenneLPP as generic sensor
-            lpp.addGenericSensor(14, sdi12_results[0]);
-            // temperature in °C (resolution 0.1°C)
-            lpp.addTemperature(15, sdi12_results[1]);
             // distance in m (resolution 1mm)
             // must convert mm to m
-            lpp.addDistance(16, sdi12_results[2] / 1000);
-            Serial.print(F("Specific Conductance: "));
-            Serial.println(sdi12_results[0], 3);
+            lpp.addDistance(16, sdi12_results[0] / 1000);
+            // temperature in °C (resolution 0.1°C)
+            lpp.addTemperature(15, sdi12_results[1]);
+            // specific conductance in µS/cm
+            // Only Supported by CayenneLPP as generic sensor
+            lpp.addGenericSensor(14, sdi12_results[2]);
+            Serial.print(F("Water Depth: "));
+            Serial.println(sdi12_results[0], 0);
             Serial.print(F("Temperature: "));
             Serial.println(sdi12_results[1], 1);
-            Serial.print(F("Water Depth: "));
-            Serial.println(sdi12_results[2], 0);
+            Serial.print(F("Specific Conductance: "));
+            Serial.println(sdi12_results[2], 3);
             // Add to the CSV
             csvOutput += ",";
             csvOutput += String(sdi12_results[0], 3);
