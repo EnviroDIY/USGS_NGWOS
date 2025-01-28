@@ -503,8 +503,8 @@ void setup() {
 #endif
 #ifdef USE_METER_HYDROS21
         header += "Hydro21 Specific Conductance,";
-        header += "VegaPuls Temperature,";
-        header += "VegaPuls Depth,";
+        header += "Hydro21 Temperature,";
+        header += "Hydro21 Depth,";
 #endif
         header += "ALS Lux,";
         header += "Battery Voltage,";
