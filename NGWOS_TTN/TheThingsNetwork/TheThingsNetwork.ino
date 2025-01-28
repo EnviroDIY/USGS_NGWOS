@@ -422,7 +422,7 @@ void setup() {
         hydrosSDI12.begin();
         delay(500);  // allow things to settle
 
-        Serial.println(F("Timeout value for Hydros21: "));
+        Serial.print(F("Timeout value for Hydros21: "));
         Serial.println(hydrosSDI12.TIMEOUT);
         Serial.println("Waiting 500ms for Vega Puls to warm up");
         delay(500);
@@ -437,7 +437,7 @@ void setup() {
         vegaSDI12.begin();
         delay(500);  // allow things to settle
 
-        Serial.println(F("Timeout value for Vega Puls: "));
+        Serial.print(F("Timeout value for Vega Puls: "));
         Serial.println(vegaSDI12.TIMEOUT);
 
         // turn on sensor power to check Vega Puls metadata
