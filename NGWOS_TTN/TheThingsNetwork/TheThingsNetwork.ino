@@ -676,6 +676,18 @@ void loop() {
             csvOutput += ",";
             csvOutput += sdi12_results[4];
             dataLogger.watchDogTimer.resetWatchDog();
+        } else {
+            // if no data, add empty values to the csv so columns stay aligned
+            csvOutput += ",";
+            csvOutput += "-9999";
+            csvOutput += ",";
+            csvOutput += "-9999";
+            csvOutput += ",";
+            csvOutput += "-9999";
+            csvOutput += ",";
+            csvOutput += "-9999";
+            csvOutput += ",";
+            csvOutput += "-9999";
         }
 #endif
 
@@ -722,12 +734,20 @@ void loop() {
             Serial.println(sdi12_results[2], 3);
             // Add to the CSV
             csvOutput += ",";
-            csvOutput += String(sdi12_results[0], 3);
+            csvOutput += String(sdi12_results[2], 3);
             csvOutput += ",";
             csvOutput += String(sdi12_results[1], 1);
             csvOutput += ",";
-            csvOutput += String(sdi12_results[2], 0);
+            csvOutput += String(sdi12_results[0], 0);
             dataLogger.watchDogTimer.resetWatchDog();
+        } else {
+            // if no data, add empty values to the csv so columns stay aligned
+            csvOutput += ",";
+            csvOutput += "-9999";
+            csvOutput += ",";
+            csvOutput += "-9999";
+            csvOutput += ",";
+            csvOutput += "-9999";
         }
 #endif
 
