@@ -139,15 +139,46 @@ loraModemTTN ttn_modem(modemVccPin, modemSleepRqPin, modemStatusPin,
 
 
 // ==========================================================================
-//  SDI-12 Connection for the Vega Puls
+// On-board sensors
 // ==========================================================================
 
-// The pin of the SDI-12 data bus
-const int8_t sdiDataPin = 3;
+//  Analog Devices MAX17048 3µA 1-Cell Fuel Gauge
+// Create the battery monitor object
+Adafruit_MAX17048 max17048;
+
+// Everlight ALS-PT19 Ambient Light Sensor
+// Set the analog input pin
+const int8_t alsData = 74;
+
+// Sensirion SHT4X Digital Humidity and Temperature Sensor
+// Create the SHT object
+Adafruit_SHT4x sht4 = Adafruit_SHT4x();
+
+#ifdef USE_VEGA_PULS
+// ==========================================================================
+// VEGA PULS 21 Radar Sensor
+// ==========================================================================
+
 // The Vega's Address
-const char vega_address = '0';
+const char VegaPulsSDI12address = '0';
+// The pin of the SDI-12 data bus
+const int8_t VegaPulsData = 3;
 // Define the SDI-12 bus
-SDI12 mySDI12(sdiDataPin);
+SDI12 vegaSDI12(VegaPulsData);
+#endif
+
+#ifdef USE_METER_HYDROS21
+// ==========================================================================
+// Meter Hydros 21 Conductivity, Temperature, and Depth Sensor
+// ==========================================================================
+
+// The Hydros 21's Address
+const char hydros21SDI12address = '0';
+// The pin of the SDI-12 data bus
+const int8_t hydros21Data = 3;
+// Define the SDI-12 bus
+SDI12 hydrosSDI12(hydros21Data);
+#endif
 
 
 // ==========================================================================
@@ -176,20 +207,7 @@ JsonDocument jsonBuffer;  // ArduinoJson 7
 
 
 // ==========================================================================
-//  Other on-board sensors
-// ==========================================================================
-
-// Create the SHT object
-Adafruit_SHT4x sht4 = Adafruit_SHT4x();
-
-// Create the battery monitor object
-Adafruit_MAX17048 max17048;
-
-const int8_t alsDataPin = 74;
-
-
-// ==========================================================================
-//  The Logger Object[s]
+// The Logger Object[s]
 // ==========================================================================
 // Create a new logger instance
 Logger dataLogger(LoggerID, loggingInterval);
@@ -264,20 +282,17 @@ void buttonISR(void) {
     Serial.println(F("\nButton interrupt!"));
     Serial1.println(F("\nButton interrupt!"));
 }
-/** End [working_functions] */
-
 
 // ==========================================================================
 // Arduino Setup Function
 // ==========================================================================
-/** Start [setup] */
 void setup() {
     // Blink the LEDs to show the board is on and starting up
     greenRedFlash(3, 35);
 
 // Wait for USB connection to be established by PC
 // NOTE:  Only use this when debugging - if not connected to a PC, this adds an
-// unnecesary startup delay
+// unnecessary startup delay
 #if defined(SERIAL_PORT_USBVIRTUAL)
     while (!SERIAL_PORT_USBVIRTUAL && (millis() < 10000L));
 #endif
@@ -396,21 +411,43 @@ void setup() {
             Serial.println(max17048.getChipID(), HEX);
         }
 
+
+        // turn on sensor power
+        sensorPowerOn();
+
+#ifdef USE_METER_HYDROS21
         Serial.print("Opening SDI-12 bus on pin ");
-        Serial.print(String(sdiDataPin));
-        Serial.println("...");
-        mySDI12.begin();
+        Serial.print(String(hydros21Data));
+        Serial.println(" for Vega Puls...");
+        hydrosSDI12.begin();
         delay(500);  // allow things to settle
 
-        Serial.println(F("Timeout value: "));
-        Serial.println(mySDI12.TIMEOUT);
+        Serial.println(F("Timeout value for Hydros21: "));
+        Serial.println(hydrosSDI12.TIMEOUT);
+        Serial.println("Waiting 500ms for Vega Puls to warm up");
+        delay(500);
+        // Print SDI-12 sensor info
+        printInfo(hydrosSDI12, hydros21SDI12address, false);
+#endif
+
+#ifdef USE_VEGA_PULS
+        Serial.print("Opening SDI-12 bus on pin ");
+        Serial.print(String(VegaPulsData));
+        Serial.println(" for Vega Puls...");
+        vegaSDI12.begin();
+        delay(500);  // allow things to settle
+
+        Serial.println(F("Timeout value for Vega Puls: "));
+        Serial.println(vegaSDI12.TIMEOUT);
 
         // turn on sensor power to check Vega Puls metadata
         sensorPowerOn();
         Serial.println("Waiting 5.2s for Vega Puls to warm up");
         delay(5200);
         // Print SDI-12 sensor info
-        printInfo(mySDI12, vega_address, false);
+        printInfo(vegaSDI12, VegaPulsSDI12address, false);
+#endif
+
         // Turn off sensor power
         sensorPowerOff();
     }
@@ -457,11 +494,18 @@ void setup() {
         header += "mDOT RSSI,";
         header += "SHT Temperature,";
         header += "SHT Humidity,";
+#ifdef USE_VEGA_PULS
         header += "VegaPuls Stage,";
         header += "VegaPuls Distance,";
         header += "VegaPuls Temperature,";
         header += "VegaPuls Reliability,";
         header += "VegaPuls Error Code,";
+#endif
+#ifdef USE_METER_HYDROS21
+        header += "Hydro21 Specific Conductance,";
+        header += "VegaPuls Temperature,";
+        header += "VegaPuls Depth,";
+#endif
         header += "ALS Lux,";
         header += "Battery Voltage,";
         header += "Battery Percent,";
@@ -572,9 +616,12 @@ void loop() {
         csvOutput += String(humidity.relative_humidity, 2);
         dataLogger.watchDogTimer.resetWatchDog();
 
+
+#ifdef USE_VEGA_PULS
         // Get SDI-12 Data
-        startMeasurementResult startResult =
-            startMeasurement(mySDI12, vega_address, false, true, "", true);
+        vegaSDI12.begin();
+        startMeasurementResult startResult = startMeasurement(
+            vegaSDI12, VegaPulsSDI12address, false, true, "", true);
         dataLogger.watchDogTimer.resetWatchDog();
         if (startResult.numberResults > 0) {
             uint32_t timerStart = millis();
@@ -582,18 +629,20 @@ void loop() {
             while ((millis() - timerStart) <
                    (static_cast<uint32_t>(startResult.meas_time_s) + 1) *
                        1000) {
-                if (mySDI12.available()) {
+                if (vegaSDI12.available()) {
                     break;
                 }  // sensor can interrupt us to let us know it is done
                    // early
             }
-            String interrupt_response = mySDI12.readStringUntil('\n');
+            String interrupt_response = vegaSDI12.readStringUntil('\n');
 
             // array to hold sdi-12 results
             float sdi12_results[10];
 
-            getResults(mySDI12, vega_address, startResult.numberResults,
-                       sdi12_results, true, true, 4, 0);
+            getResults(vegaSDI12, VegaPulsSDI12address,
+                       startResult.numberResults, sdi12_results, true, true, 4,
+                       0);
+            vegaSDI12.end();
             dataLogger.watchDogTimer.resetWatchDog();
             // stage in m (resolution 1mm)
             // lpp.addDistance(5, sdi12_results[0]);
@@ -628,13 +677,66 @@ void loop() {
             csvOutput += sdi12_results[4];
             dataLogger.watchDogTimer.resetWatchDog();
         }
+#endif
+
+#ifdef USE_METER_HYDROS21
+        // Get SDI-12 Data
+        hydrosSDI12.begin();
+        startMeasurementResult startResult = startMeasurement(
+            hydrosSDI12, hydros21SDI12address, false, true, "", true);
+        dataLogger.watchDogTimer.resetWatchDog();
+        if (startResult.numberResults > 0) {
+            uint32_t timerStart = millis();
+            // wait up to 1 second longer than the specified return time
+            while ((millis() - timerStart) <
+                   (static_cast<uint32_t>(startResult.meas_time_s) + 1) *
+                       1000) {
+                if (hydrosSDI12.available()) {
+                    break;
+                }  // sensor can interrupt us to let us know it is done
+                   // early
+            }
+            String interrupt_response = hydrosSDI12.readStringUntil('\n');
+
+            // array to hold sdi-12 results
+            float sdi12_results[10];
+
+            getResults(hydrosSDI12, hydros21SDI12address,
+                       startResult.numberResults, sdi12_results, true, true, 0,
+                       0);
+            hydrosSDI12.end();
+            dataLogger.watchDogTimer.resetWatchDog();
+            // specific conductance in µS/cm
+            // Only Supported by CayenneLPP as generic sensor
+            lpp.addGenericSensor(14, sdi12_results[0]);
+            // temperature in °C (resolution 0.1°C)
+            lpp.addTemperature(15, sdi12_results[1]);
+            // distance in m (resolution 1mm)
+            // must convert mm to m
+            lpp.addDistance(16, sdi12_results[2] / 1000);
+            Serial.print(F("Specific Conductance: "));
+            Serial.println(sdi12_results[0], 3);
+            Serial.print(F("Temperature: "));
+            Serial.println(sdi12_results[1], 1);
+            Serial.print(F("Water Depth: "));
+            Serial.println(sdi12_results[2], 0);
+            // Add to the CSV
+            csvOutput += ",";
+            csvOutput += String(sdi12_results[0], 3);
+            csvOutput += ",";
+            csvOutput += String(sdi12_results[1], 1);
+            csvOutput += ",";
+            csvOutput += String(sdi12_results[2], 0);
+            dataLogger.watchDogTimer.resetWatchDog();
+        }
+#endif
 
         // measure from the als
         analogReadResolution(12);
         // First reading will be low - discard
-        analogRead(alsDataPin);
+        analogRead(alsData);
         // Take the reading we'll keep
-        uint32_t sensor_adc = analogRead(alsDataPin);
+        uint32_t sensor_adc = analogRead(alsData);
         // convert bits to volts
         float volt_val = (3.3 / static_cast<float>(((1 << 12) - 1))) *
             static_cast<float>(sensor_adc);
