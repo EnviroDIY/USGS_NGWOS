@@ -143,6 +143,7 @@ function lppDecode(bytes) {
 
     var sensors = {};
     var i = 0;
+    var timestamp = 0;
     while (i < bytes.length) {
 
         // Read the channel N=number
@@ -193,6 +194,11 @@ function lppDecode(bytes) {
                 };
                 break;
 
+            case 133: // timestamp
+                s_value = arrayToDecimal(bytes.slice(i, i + type.size), type.signed, type.divisor);
+                timestamp = s_value;
+                break;
+
             default:    // All the rest
                 s_value = arrayToDecimal(bytes.slice(i, i + type.size), type.signed, type.divisor);
                 break;
@@ -216,7 +222,7 @@ function lppDecode(bytes) {
         i += type.size;
     }
 
-    return sensors;
+    return { "timestamp": timestamp, "sensors": sensors };
 
 }
 
