@@ -9,11 +9,13 @@ This program transmits data from a Vega Puls 21 and onboard sensors from a Stone
   - [Downloading and Setting up the Example Sketch](#downloading-and-setting-up-the-example-sketch)
   - [Customizing the Example Sketch](#customizing-the-example-sketch)
     - [ArduinoJSON 6 vs 7](#arduinojson-6-vs-7)
-  - [Compile and Upload](#compile-and-upload)
+    - [Vega Puls and Hydros 21](#vega-puls-and-hydros-21)
 
 ## Physical Connections
 
-This program is written for an EnviroDIY Stonefly, a Vega Puls 21, and a MultiTech mDot.
+This program is written for an EnviroDIY Stonefly, a Vega Puls 21, a Meter Hydros 21, and a MultiTech mDot.
+
+The physical connections needed are nearly identical to those described in the [Monitor My Watershed ReadMe](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_Hydros21_HydroCam), but with the mDot replacing the modem and no camera.
 
 The mDot should be installed in the "bee" socket on the Stonefly.
 The antenna connection for the mDot should be at the top, so that the antenna is hanging off the end of the board.
@@ -24,6 +26,18 @@ The Grove plug from the Vega Puls should be connected to one of the two sockets 
 - The *brown* wire of the Vega Puls should be connected to the "V+" connection of the screw terminal.
 - Both the *blue* and thick black/grey *shield* wires should be connected to "Gnd" on the screw terminal.
 - The *white* SDI-12 data wire should be connected to the "S2" connection of the screw terminal.
+- There should be nothing connected to the "S1" connection of the screw terminal.
+
+The Hydros21 should be connected to either a screw-terminal-to-Grove adapter or a Grove-to-headphone adapter.
+The Grove plug from the Hydros21 should be connected to the D2-3/SDI12 Grove plug on the bottom left of the Stonefly.
+*Use the Grove socket all the way on the bottom, not the 12V plugs used by the Vega and HydroCam.*
+The jumper next to the plug should be connecting the middle two pins to supply the Hydros21 with 3.3V.
+The Hydros21 can use a 12V power supply, but it is also satisfied with only 3.3V.
+The Vega and HydroCam need the 12V, so save those plugs for them.
+
+- The *brown* wire of the Hydros21 should be connected to the "V+" connection of the screw terminal.
+- The *bare grey* wire should be connected to "Gnd" on the screw terminal.
+- The *orange* SDI-12 data wire should be connected to the "S2" connection of the screw terminal.
 - There should be nothing connected to the "S1" connection of the screw terminal.
 
 ## Library Dependencies
@@ -56,8 +70,9 @@ If you are using PlatformIO, you can copy this list above into the lib_deps sect
   - If you already have an application you want to join the data from this program to, feel free to use it.
 - After creating the application, [create a default payload formatter](https://www.thethingsindustries.com/docs/integrations/payload-formatters/create/) for the application.
   - Select "Custom Javascript Formatter"
-  - Add the code from [LoRaNotes/TTNDecoder.js](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/NGWOS_TTN/LoRa%20Notes/TTNDecoder.js) as the formatter code.
-  - This custom formatter is an expansion of the original CayenneLPP formatter.
+  - Add the code from either [LoRaNotes/TTNDecoder.js](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/NGWOS_TTN/LoRa%20Notes/TTNDecoder.js) or [LoRaNotes/TTNDecoder_withInstruments.js](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/NGWOS_TTN/LoRa%20Notes/TTNDecoder_withInstruments.js)as the formatter code.
+    - This custom formatter is an expansion of the original CayenneLPP formatter.
+    - The "with instruments" version adds fields for the sensor model, specific parameter, and units. These fields will only be valid for *this specific example sketch*. The other version will work to expand any Cayenne LPP format.
   - If you did not create a new application for this example, you can [add the formatter as a device specific formatter](https://www.thethingsindustries.com/docs/integrations/payload-formatters/create/#create-a-device-specific-payload-formatter) after registering the end device.
 - Now [register a new end device](https://www.thethingsindustries.com/docs/hardware/devices/adding-devices/) on your application.
   - Select "Enter end device specifics manually"
@@ -158,6 +173,12 @@ DynamicJsonDocument jsonBuffer(1024);  // ArduinoJson 6
 More detail on the difference between the two versions and migration is available [here](https://arduinojson.org/v7/how-to/upgrade-from-v6/).
 This example has warnings for version 7 because the [Cayenne LPP library](https://github.com/ElectronicCats/CayenneLPP) used to compress data and send it over LoRa was built for the smaller ArduinoJSON 6 library.
 
-## Compile and Upload
 
-Once you've properly installed your libraries and modified your sketch with credentials for The Things Network, you should be ready to compile and upload.
+### Vega Puls and Hydros 21
+
+This program includes code for both the Vega Puls and the Hydros 21.
+To enable the Vega Puls, remove the leading double slashes (`//`) before `#define USE_VEGA_PULS` in line 14.
+To enable the Hydros 21, remove the leading double slashes (`//`) before `#define USE_METER_HYDROS21` in line 15.
+Either sensor can be disabled by adding slashes to comment out the define.
+
+To use the Vega Puls and Hydros 21 together, follow the instructions in the [Monitor My Watershed sketch ReadMe](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_Hydros21_HydroCam#using-the-vega-puls-and-meter-hydros21-together).
