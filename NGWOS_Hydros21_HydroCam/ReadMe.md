@@ -26,6 +26,8 @@ The camera images are **NOT** transmitted to any endpoint.
 
 This program is written for an EnviroDIY Stonefly, a Vega Puls 23, a Geolux HydroCan, a Meter Hydros21, and either an EnviroDIY LTE Bee or an EnviroDIY WiFi Bee.
 
+The physical connections needed are nearly identical to those described in the [The Things Network ReadMe](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_TTN), but with the a different Bee replacing the mDot and the addition of the camera.
+
 The LTE (or wifi) bee should be installed in the "bee" socket on the Stonefly.
 The cut corners should be at the top of the module, following the traced lines on the Stonefly
 
