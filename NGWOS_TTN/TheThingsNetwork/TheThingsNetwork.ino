@@ -71,7 +71,7 @@ const char* sketchName = "TheThingsNetwork.ino";
 // Logger ID, also becomes the prefix for the name of the data file on SD card
 const char* LoggerID = "24008";
 // How frequently (in minutes) to log data
-const uint8_t loggingInterval = 1;
+const uint8_t loggingInterval = 5;
 // Your logger's timezone.
 const int8_t timeZone = -5;  // Eastern Standard Time
 // NOTE:  Daylight savings time will not be applied!  Please use standard time!
@@ -173,7 +173,7 @@ SDI12 vegaSDI12(VegaPulsData);
 // ==========================================================================
 
 // The Hydros 21's Address
-const char hydros21SDI12address = '0';
+const char hydros21SDI12address = '2';
 // The pin of the SDI-12 data bus
 const int8_t hydros21Data = 3;
 // Define the SDI-12 bus
@@ -265,19 +265,55 @@ float getBatteryVoltage() {
     // Get the battery voltage
     // The return value from analogRead() is IN BITS NOT IN VOLTS!!
     float  sensorValue_battery = -9999;
-    int8_t _batteryPin         = 75;
+    float  _batteryMultiplier  = 4.7;
+    float  _operatingVoltage   = 3.3;
+    int8_t _batteryPin         = 75;  // A9
+    pinMode(_batteryPin, INPUT);
+    if (_batteryPin >= 0 && _batteryMultiplier > 0) {
+        // Get the battery voltage
+        MS_DBG(F("Getting battery voltage from pin"), _batteryPin);
     pinMode(_batteryPin, INPUT);
     analogRead(_batteryPin);  // priming reading
+        // The return value from analogRead() is IN BITS NOT IN VOLTS!!
+        analogRead(_batteryPin);  // another priming reading
+        float rawBattery = analogRead(_batteryPin);
+        MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
+        // convert bits to volts
+        sensorValue_battery =
+            (_operatingVoltage / static_cast<float>(((1 << 12) - 1))) *
+            _batteryMultiplier * rawBattery;
+        MS_DBG(F("Battery in Volts:"), sensorValue_battery);
+    } else {
+        MS_DBG(F("No battery pin specified!"));
+    }
+    return sensorValue_battery;
+}
+
+float readExtraBattery() {
+    float  _batteryMultiplier  = 5.88;
+    float  _operatingVoltage   = 3.3;
+    int8_t _batteryPin         = A0;
+    float  sensorValue_battery = -9999;
+    if (_batteryPin >= 0 && _batteryMultiplier > 0) {
+        // Get the battery voltage
+        MS_DBG(F("Getting battery voltage from pin"), _batteryPin);
+        pinMode(_batteryPin, INPUT);
     analogRead(_batteryPin);  // priming reading
-    analogRead(_batteryPin);  // priming reading
+        // The return value from analogRead() is IN BITS NOT IN VOLTS!!
+        analogRead(_batteryPin);  // another priming reading
     float rawBattery = analogRead(_batteryPin);
     MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
     // convert bits to volts
-    sensorValue_battery = (3.3 / 1024.) * 4.7 * rawBattery;
+        sensorValue_battery =
+            (_operatingVoltage / static_cast<float>(((1 << 12) - 1))) *
+            _batteryMultiplier * rawBattery;
     MS_DBG(F("Battery in Volts:"), sensorValue_battery);
-    // return sensorValue_battery;
-    return 4;
+    } else {
+        MS_DBG(F("No battery pin specified!"));
 }
+    return sensorValue_battery;
+}
+
 void buttonISR(void) {
     Serial.println(F("\nButton interrupt!"));
     Serial1.println(F("\nButton interrupt!"));
@@ -510,6 +546,7 @@ void setup() {
         header += "Battery Voltage,";
         header += "Battery Percent,";
         header += "Battery (Dis)Charge Rate,";
+        header += "Analog Battery Voltage,";
         header += "Encoded LPP Buffer";
         Serial.println(F("Writing header to SD card"));
         Serial.println(header);
@@ -799,6 +836,30 @@ void loop() {
         csvOutput += String(cellPercent, 1);
         csvOutput += ",";
         csvOutput += String(chargeRate, 1);
+        dataLogger.watchDogTimer.resetWatchDog();
+
+        // Read the real battery voltage monitor
+        float analogBatt = getBatteryVoltage();
+        Serial.print(F("Analog 3.3V Batt Voltage: "));
+        Serial.print(analogBatt, 3);
+        Serial.println(" V");
+        // Add to LPP buffer
+        lpp.addVoltage(14, analogBatt);
+        // Add to the CSV
+        csvOutput += ",";
+        csvOutput += String(analogBatt, 3);
+        dataLogger.watchDogTimer.resetWatchDog();
+
+        // Read the real battery voltage monitor
+        float analogBatt2 = readExtraBattery();
+        Serial.print(F("Analog 12V Batt Voltage: "));
+        Serial.print(analogBatt2, 3);
+        Serial.println(" V");
+        // Add to LPP buffer
+        lpp.addVoltage(15, analogBatt2);
+        // Add to the CSV
+        csvOutput += ",";
+        csvOutput += String(analogBatt2, 3);
         dataLogger.watchDogTimer.resetWatchDog();
 
         // decode and print the Cayenne LPP buffer we just created

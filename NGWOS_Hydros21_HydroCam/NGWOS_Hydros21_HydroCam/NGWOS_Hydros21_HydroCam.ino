@@ -106,7 +106,7 @@ Logger dataLogger;
 
 // NOTE: Extra hardware and software serial ports are created in the "Settings
 // for Additional Serial Ports" section
-const int32_t modemBaud = 57600;  // Communication speed of the modem
+const int32_t modemBaud = 115200;  // Communication speed of the modem
 // NOTE:  This baud rate too fast for an 8MHz board, like the Mayfly!  The
 // module should be programmed to a slower baud rate or set to auto-baud using
 // the AT+UART_CUR or AT+UART_DEF command.
@@ -237,7 +237,7 @@ VegaPuls21 VegaPuls(*VegaPulsSDI12address, VegaPulsPower, VegaPulsData);
 #include <sensors/MeterHydros21.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const char*   hydros21SDI12address = "0";  // The SDI-12 Address of the Hydros21
+const char*   hydros21SDI12address = "1";  // The SDI-12 Address of the Hydros21
 const uint8_t hydros21NumberReadings = 6;  // The number of readings to average
 const int8_t  hydros21Power          = sensorPowerPin;  // Power pin
 const int8_t  hydros21Data           = 3;               // The SDI-12 data pin

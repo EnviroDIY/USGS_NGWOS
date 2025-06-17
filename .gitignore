@@ -89,3 +89,17 @@ NGWOS_VegaAndHydroCam/NGWOS_VegaAndHydroCam/NGWOS_VegaAndHydroCam_withUUIDs.ino
 NGWOS_Hydros21_HydroCam/NGWOS_Hydros21_HydroCam/NGWOS_Hydros21_HydroCam_withUUIDs.ino
 NGWOS_VegaAndHydroCam/NGWOS_VegaAndHydroCam_withUUIDs/NGWOS_VegaAndHydroCam_withUUIDs.ino
 NGWOS_Hydros21_HydroCam/NGWOS_Hydros21_HydroCam_withUUIDs/NGWOS_Hydros21_HydroCam_withUUIDs.ino
+NGWOS_Hydros21_HydroCam/teraterm_ms.log
+NGWOS_Hydros21_HydroCam/teraterm.log
+NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/.ttn-lw-cli.yml
+NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/LICENSE
+NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/README.md
+NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/ttn-lw-cli.exe
+NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/config/completion/bash/ttn-lw-cli
+NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/config/completion/bash/ttn-lw-cli-snap
+NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/config/completion/fish/ttn-lw-cli.fish
+NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/config/completion/zsh/_ttn-lw-cli
+NGWOS_TTN/TTNDownloader/download_20250221_1139.csv
+NGWOS_TTN/TTNDownloader/download.py
+.gitignore
+NGWOS_VegaAndHydroCam/NGWOS_VegaAndHydroCam_SWRC_UUIDs/NGWOS_VegaAndHydroCam_SWRC_UUIDs.ino
