@@ -8,7 +8,7 @@ The ["menu a la carte" example](https://github.com/EnviroDIY/ModularSensors/tree
 As of 6/17/2025, this program depends on the [aws_iot](https://github.com/EnviroDIY/ModularSensors/tree/aws_iot) branch of the library, but that branch should be merged into the main branch soon.
 
 > [!WARNING]
-> You should have loaded and **successfully** run the NGWOS_AWS_Certs.ino sketch *before* running this program.
+> You should have loaded and **successfully** run the NGWOS_AWS_MQTT_Certs.ino sketch *before* running this program.
 > This program depends on correct certificates being pre-loaded onto the modem.
 
 - [NGWOS AWS](#ngwos-aws)
@@ -59,8 +59,8 @@ If you are using PlatformIO, using the example platformio.ini in this folder sho
 ## Confirm that you can connect to AWS
 
 Before running this program, you must upload certificates to your modem.
-You should have done this with the NGWOS_AWS_Certs sketch.
-Do not proceed to this program until you have successfully connected to and published a message to AWS IoT Core using the NGWOS_AWS_Certs sketch.
+You should have done this with the NGWOS_AWS_MQTT_Certs sketch.
+Do not proceed to this program until you have successfully connected to and published a message to AWS IoT Core using the NGWOS_AWS_MQTT_Certs sketch.
 
 You need your thing name and endpoint again for this sketch.
 
@@ -70,19 +70,19 @@ You need your thing name and endpoint again for this sketch.
 
 In line 57, find and replace the text `YOUR_ENDPOINT-ats.iot.us-west-2.amazonaws.com` with your real endpoint.
 Make sure there are quotation marks around the endpoint string, as there are in the example.
-This must be the same value you used in the NGWOS_AWS_Certs sketch.
+This must be the same value you used in the NGWOS_AWS_MQTT_Certs sketch.
 
 ### Set your Thing Name
 
 In line 58, find and replace the text `YOUR_THING_NAME` with your assigned thing name.
 Make sure there are quotation marks around the name string, as there are in the example.
-This must be the same value you used in the NGWOS_AWS_Certs sketch.
+This must be the same value you used in the NGWOS_AWS_MQTT_Certs sketch.
 
 ### Set your Sampling Feature (Site) ID
 
 In line 70, find and replace the text `YOUR_SAMPLING_FEATURE_ID` with your assigned sampling feature ID or UUID.
 Make sure there are quotation marks around the name string, as there are in the example.
-There was no sampling feature ID used in the NGWOS_AWS_Certs sketch, so you don't need to worry about it matching.
+There was no sampling feature ID used in the NGWOS_AWS_MQTT_Certs sketch, so you don't need to worry about it matching.
 
 #### Set your cellular APN
 

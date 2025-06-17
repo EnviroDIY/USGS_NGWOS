@@ -59,7 +59,7 @@ static const char AWS_IOT_ENDPOINT[] TINY_GSM_PROGMEM =
 
 // The name of this program file - this is used only for console printouts at
 // start-up
-const char* sketchName = "NGWOS_AWS.ino";
+const char* sketchName = "NGWOS_AWS_MQTT.ino";
 // Logger ID, also becomes the prefix for the name of the data file on SD card
 // This is also used as the Thing Name, MQTT Client ID, and topic for AWS IOT
 // Core

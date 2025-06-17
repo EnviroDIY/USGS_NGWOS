@@ -54,7 +54,7 @@ Someone needs to generate the certificates and provide them to you, along with t
 ## Customizing the Example Sketch
 
 This "sketch" consists of *TWO* files that you need to modify.
-You must edit both files and have both files in the NGWOS_AWS_Certs folder!
+You must edit both files and have both files in the NGWOS_AWS_MQTT_Certs folder!
 
 ### Setup AWS IOT Config
 
