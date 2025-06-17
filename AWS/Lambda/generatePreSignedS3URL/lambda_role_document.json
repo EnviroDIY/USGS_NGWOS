@@ -1,0 +1,168 @@
+{
+  "partial": false,
+  "policies": [
+    {
+      "type": "inline",
+      "name": "PutToS3_PublishToIoT",
+      "document": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+              "iot:RetainPublish",
+              "s3:PutObject",
+              "s3:GetObject",
+              "s3:PutObjectTagging",
+              "iot:Publish"
+            ],
+            "Resource": [
+              "arn:aws:iot:us-east-1:YOUR_ACCOUNT_NUMBER:topic/*",
+              "arn:aws:s3:::YOUR_BUCKET_ID/*"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "managed",
+      "name": "AWSLambdaBasicExecutionRole-Lambda",
+      "arn": "arn:aws:iam::YOUR_ACCOUNT_NUMBER:policy/service-role/AWSLambdaBasicExecutionRole-Lambda",
+      "id": "ANPAXGZAMEVT56WBRNSVL",
+      "document": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "arn:aws:logs:us-east-1:YOUR_ACCOUNT_NUMBER:*"
+          },
+          {
+            "Effect": "Allow",
+            "Action": ["logs:CreateLogStream", "logs:PutLogEvents"],
+            "Resource": [
+              "arn:aws:logs:us-east-1:YOUR_ACCOUNT_NUMBER:log-group:/aws/lambda/generatePreSignedS3URL:*"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "resources": {
+    "iot": {
+      "service": {
+        "name": "AWS IoT",
+        "icon": "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAAAAAAALAAAAAABAAEAAAICRAEAOw"
+      },
+      "statements": [
+        {
+          "service": "iot",
+          "effect": "Allow",
+          "action": "iot:RetainPublish",
+          "resource": "arn:aws:iot:us-east-1:YOUR_ACCOUNT_NUMBER:topic/*",
+          "source": {
+            "policyName": "PutToS3_PublishToIoT",
+            "policyType": "inline",
+            "index": "VisualEditor0"
+          }
+        },
+        {
+          "service": "iot",
+          "effect": "Allow",
+          "action": "iot:Publish",
+          "resource": "arn:aws:iot:us-east-1:YOUR_ACCOUNT_NUMBER:topic/*",
+          "source": {
+            "policyName": "PutToS3_PublishToIoT",
+            "policyType": "inline",
+            "index": "VisualEditor0"
+          }
+        }
+      ]
+    },
+    "s3": {
+      "service": {
+        "name": "Amazon S3",
+        "icon": "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAAAAAAALAAAAAABAAEAAAICRAEAOw"
+      },
+      "statements": [
+        {
+          "service": "s3",
+          "effect": "Allow",
+          "action": "s3:PutObject",
+          "resource": "arn:aws:s3:::YOUR_BUCKET_ID/*",
+          "source": {
+            "policyName": "PutToS3_PublishToIoT",
+            "policyType": "inline",
+            "index": "VisualEditor0"
+          }
+        },
+        {
+          "service": "s3",
+          "effect": "Allow",
+          "action": "s3:GetObject",
+          "resource": "arn:aws:s3:::YOUR_BUCKET_ID/*",
+          "source": {
+            "policyName": "PutToS3_PublishToIoT",
+            "policyType": "inline",
+            "index": "VisualEditor0"
+          }
+        },
+        {
+          "service": "s3",
+          "effect": "Allow",
+          "action": "s3:PutObjectTagging",
+          "resource": "arn:aws:s3:::YOUR_BUCKET_ID/*",
+          "source": {
+            "policyName": "PutToS3_PublishToIoT",
+            "policyType": "inline",
+            "index": "VisualEditor0"
+          }
+        }
+      ]
+    },
+    "logs": {
+      "service": {
+        "name": "Amazon CloudWatch Logs",
+        "icon": "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAAAAAAALAAAAAABAAEAAAICRAEAOw"
+      },
+      "statements": [
+        {
+          "service": "logs",
+          "effect": "Allow",
+          "action": "logs:CreateLogGroup",
+          "resource": "arn:aws:logs:us-east-1:YOUR_ACCOUNT_NUMBER:*",
+          "source": {
+            "policyName": "AWSLambdaBasicExecutionRole-Lambda",
+            "policyType": "managed",
+            "index": "0"
+          }
+        },
+        {
+          "service": "logs",
+          "effect": "Allow",
+          "action": "logs:CreateLogStream",
+          "resource": "arn:aws:logs:us-east-1:YOUR_ACCOUNT_NUMBER:log-group:/aws/lambda/generatePreSignedS3URL:*",
+          "source": {
+            "policyName": "AWSLambdaBasicExecutionRole-Lambda",
+            "policyType": "managed",
+            "index": "1"
+          }
+        },
+        {
+          "service": "logs",
+          "effect": "Allow",
+          "action": "logs:PutLogEvents",
+          "resource": "arn:aws:logs:us-east-1:YOUR_ACCOUNT_NUMBER:log-group:/aws/lambda/generatePreSignedS3URL:*",
+          "source": {
+            "policyName": "AWSLambdaBasicExecutionRole-Lambda",
+            "policyType": "managed",
+            "index": "1"
+          }
+        }
+      ]
+    }
+  },
+  "roleName": "generatePreSignedS3URL-role-5vkdcvjg",
+  "trustedEntities": ["lambda.amazonaws.com"]
+}

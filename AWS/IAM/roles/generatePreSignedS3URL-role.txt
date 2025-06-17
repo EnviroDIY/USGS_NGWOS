@@ -1,0 +1,27 @@
+RoleName:  generatePreSignedS3URL-role
+
+policies:
+- AWSLambdaBasicExecutionRole-Lambda
+
+- Inline: PutToS3_PublishToIoT:
+
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "VisualEditor0",
+			"Effect": "Allow",
+			"Action": [
+				"iot:RetainPublish",
+				"s3:PutObject",
+				"s3:GetObject",
+				"s3:PutObjectTagging",
+				"iot:Publish"
+			],
+			"Resource": [
+				"arn:aws:iot:us-east-1:YOUR_ACCOUNT_NUMBER:topic/*",
+				"arn:aws:s3:::YOUR_BUCKET_ID/*"
+			]
+		}
+	]
+}
