@@ -1,0 +1,4 @@
+RoleName:  iot_to_s3
+
+Policies:
+- aws-iot-rule-TransferToS3-action-1-role-iot_to_s3
