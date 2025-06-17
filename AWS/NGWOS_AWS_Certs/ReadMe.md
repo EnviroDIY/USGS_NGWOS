@@ -27,7 +27,7 @@ This program loads the required certificates for communication with AWS IoT Core
 
 ## Physical Connections
 
-This program is written for an EnviroDIY Stonefly and an EnviroDIY LTE Bee or an EnviroDIY WiFi Bee.
+This program is written for an EnviroDIY Stonefly and an EnviroDIY LTE Bee.
 The LTE bee should be installed in the "bee" socket on the Stonefly.
 The cut corners should be at the top of the module, following the traced lines on the Stonefly
 
