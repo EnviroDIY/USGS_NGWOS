@@ -10,7 +10,7 @@
  * You should run this program once to load your certificates and confirm that
  * you can connect to AWS IoT Core over MQTT.  Once you have confirmed your
  * certificates are loaded and working, there is no reason to rerun this program
- * unless you have a new modom, reset your modem, or your certificates change.
+ * unless you have a new modem, reset your modem, or your certificates change.
  * Most modules store the certificates in flash, which has a limited number of
  * read/write cycles. To avoid wearing out the flash unnecessarily, you should
  * only run this program when necessarily, don't re-write the certificates every
@@ -179,6 +179,15 @@ void setup() {
     String modemInfo = modem.getModemInfo();
     SerialMon.print("Modem Info: ");
     SerialMon.println(modemInfo);
+    String modemManufacturer = modem.getModemManufacturer();
+    SerialMon.print("Modem Manufacturer: ");
+    SerialMon.println(modemManufacturer);
+    String modemModel = modem.getModemModel();
+    SerialMon.print("Modem Model: ");
+    SerialMon.println(modemModel);
+    String modemRevision = modem.getModemRevision();
+    SerialMon.print("Modem Revision: ");
+    SerialMon.println(modemRevision);
 
     // Unlock your SIM card with a PIN if needed
     if (GSM_PIN && modem.getSimStatus() != 3) { modem.simUnlock(GSM_PIN); }
@@ -198,48 +207,79 @@ void setup() {
     // NOTE: The certificate names as they are downloaded from AWS IoT Core
     // are often too long for the modem to handle. Pick something shorter.
     const char* root_ca_name     = "AmazonRootCA1.pem";
-    const char* client_cert_name = "THING_NAME-certificate.pem.crt";
-    const char* client_key_name  = "THING_NAME-private-key.pem.key";
+    const char* client_cert_name = THING_NAME "-certificate.pem.crt";
+    const char* client_key_name  = THING_NAME "-private-key.pem.key";
 
     // ======================== CA CERTIFICATE LOADING ========================
-    bool cert_success = true;
+    bool ca_cert_success = true;
     // add the server's certificate authority certificate to the modem
-    SerialMon.println("Loading Certificate Authority Certificate");
-    cert_success &= modem.loadCertificate(root_ca_name, root_ca,
-                                          strlen(root_ca));
+    SerialMon.print("Loading Certificate Authority Certificate");
+    ca_cert_success &= modem.loadCertificate(root_ca_name, root_ca,
+                                             strlen(root_ca));
+    if (!ca_cert_success) {  // modem.init();
+        SerialMon.println(" ...failed to load CA certificate!");
+        delay(10000);
+        return;
+    }
+    SerialMon.println(" ...success");
     // print out the certificate to make sure it matches
     SerialMon.println(
         "Printing Certificate Authority Certificate to confirm it matches");
     modem.printCertificate(root_ca_name, SerialMon);
     // convert the certificate to the modem's format
-    SerialMon.println("Converting Certificate Authority Certificate");
-    cert_success &= modem.convertCACertificate(root_ca_name);
+    SerialMon.print("Converting Certificate Authority Certificate");
+    ca_cert_success &= modem.convertCACertificate(root_ca_name);
+    if (!ca_cert_success) {  // modem.init();
+        SerialMon.println(" ...failed to convert CA certificate!");
+        delay(10000);
+        return;
+    }
+    SerialMon.println(" ...success");
+
     // NOTE: some modems suggest that you delete the certificate file from the
     // file system after converting the certificate.  Do NOT do this with an
     // ESP32!  The certificate must be in the file system to be used. On
     // Espressif modules, the certificate must be in the file system to be used.
-    // cert_success &= modem.deleteCertificate(root_ca_name);
+    // ca_cert_success &= modem.deleteCertificate(root_ca_name);
 
     // ======================= CLIENT CERTIFICATE LOADING
     // ======================= add the client's certificate and private key to
     // the modem
-    cert_success &= modem.loadCertificate(client_cert_name, client_cert,
-                                          strlen(client_cert));
+    SerialMon.print("Loading Client Certificate");
+    client_cert_success &= modem.loadCertificate(client_cert_name, client_cert,
+                                                 strlen(client_cert));
+    ca_cert_success &= modem.loadCertificate(root_ca_name, root_ca,
+                                             strlen(root_ca));
     // print out the certificate to make sure it matches
     modem.printCertificate(client_cert_name, SerialMon);
-    cert_success &= modem.loadCertificate(client_key_name, client_key,
-                                          strlen(client_key));
+    SerialMon.print(" and Client Private Key ");
+    client_cert_success &= modem.loadCertificate(client_key_name, client_key,
+                                                 strlen(client_key));
     // print out the certificate to make sure it matches
     modem.printCertificate(client_key_name, SerialMon);
+    if (!ca_cert_success) {  // modem.init();
+        SerialMon.println(" ...failed to load client certificate or key!");
+        delay(10000);
+        return;
+    }
+    SerialMon.println(" ...success");
     // convert the client certificate pair to the modem's format
-    cert_success &= modem.convertClientCertificates(client_cert_name,
-                                                    client_key_name);
+    client_cert_success &= modem.convertClientCertificates(client_cert_name,
+                                                           client_key_name);
+    ca_cert_success &= modem.convertCACertificate(root_ca_name);
+    if (!ca_cert_success) {  // modem.init();
+        SerialMon.println(" ...failed to convert client certificate and key!");
+        delay(10000);
+        return;
+    }
+    SerialMon.println(" ...success");
+
     // NOTE: some modems suggest that you delete the certificate file from the
     // file system after converting the certificate.  Do NOT do this with an
     // ESP32!  On Espressif modules, the certificate must be in the file system
     // to be used.
-    // cert_success &= modem.deleteCertificate(client_cert_name);
-    // cert_success &= modem.deleteCertificate(client_key_name);
+    // client_cert_success &= modem.deleteCertificate(client_cert_name);
+    // client_cert_success &= modem.deleteCertificate(client_key_name);
 
     // =================== SET CERTIFICATES FOR THE CONNECTION
     // =================== AWS IoT Core requires mutual authentication
@@ -255,7 +295,7 @@ void setup() {
 
     // =================== WAIT FOR NETWORK REGISTRATION ===================
     SerialMon.print("Waiting for network...");
-    if (!modem.waitForNetwork()) {
+    if (!modem.waitForNetwork(300000L, false)) {
         SerialMon.println(" ...failed to connect to network!");
         delay(10000);
         return;
