@@ -53,17 +53,21 @@
 //  Data Logging Options
 // ==========================================================================
 /** Start [logging_options] */
+static const char AWS_IOT_ENDPOINT[] TINY_GSM_PROGMEM =
+    "YOUR_ENDPOINT-ats.iot.us-west-2.amazonaws.com";
+#define THING_NAME "YOUR_THING_NAME"
+
 // The name of this program file - this is used only for console printouts at
 // start-up
 const char* sketchName = "NGWOS_AWS.ino";
 // Logger ID, also becomes the prefix for the name of the data file on SD card
 // This is also used as the Thing Name, MQTT Client ID, and topic for AWS IOT
 // Core
-const char* LoggerID = "THING_NAME";
+const char* LoggerID = THING_NAME;
 // Sampling feature UUID
 // This is used as the UUID for the sampling feature on Monitor My Watershed and
 // the sub-topic for AWS IOT Core
-const char* samplingFeature = "e7999b21-52d0-49a3-9bdf-d2a2e6375ef8";
+const char* samplingFeature = "YOUR_SAMPLING_FEATURE_ID";
 // How frequently (in minutes) to log data
 const uint8_t loggingInterval = 5;
 // Your logger's timezone.
@@ -140,8 +144,7 @@ SIMComSIM7080 modem = modem7080;
 
 /** Start [modem_variables] */
 // Create RSSI and signal strength variable pointers for the modem
-Variable* modemSignalPct = new Modem_SignalPercent(
-    &modem, "a5a6b476-78a1-44f4-bc9b-81a6aa19e671", "signalPercent");
+Variable* modemSignalPct = new Modem_SignalPercent(&modem, "", "signalPercent");
 /** End [modem_variables] */
 
 
@@ -157,12 +160,9 @@ ProcessorStats mcuBoard(mcuBoardVersion, 5);
 
 // Create sample number, battery voltage, free RAM, and reset cause variable
 // pointers for the processor
-Variable* mcuBoardBatt = new ProcessorStats_Battery(
-    &mcuBoard, "4567aefc-4c03-4ae1-89fb-518fd1101ef7");
-Variable* mcuBoardSampNo = new ProcessorStats_SampleNumber(
-    &mcuBoard, "f0255b0f-3d3d-4dc6-a781-64a810ec3fb3");
-// Variable* mcuBoardReset = new ProcessorStats_ResetCode(
-//     &mcuBoard, "12345678-abcd-1234-ef00-1234567890ab");
+Variable* mcuBoardBatt   = new ProcessorStats_Battery(&mcuBoard, "");
+Variable* mcuBoardSampNo = new ProcessorStats_SampleNumber(&mcuBoard, "");
+// Variable* mcuBoardReset  = new ProcessorStats_ResetCode(&mcuBoard, "");
 /** End [processor_stats] */
 
 
@@ -187,12 +187,9 @@ EverlightALSPT19 alsPt19(alsPower, alsData, alsSupply, alsResistance,
 // EverlightALSPT19 alsPt19(alsNumberReadings);
 
 // Create voltage, current, and illuminance variable pointers for the ALS-PT19
-Variable* alsPt19Volt = new EverlightALSPT19_Voltage(
-    &alsPt19, "841bcc51-61d5-40f0-b4cf-070802299e63");
-Variable* alsPt19Current = new EverlightALSPT19_Current(
-    &alsPt19, "c952b49d-2ab0-429e-bd7e-c0f7d6904104");
-Variable* alsPt19Lux = new EverlightALSPT19_Illuminance(
-    &alsPt19, "afc8567d-3671-4ed3-a04c-74fafc659d75");
+Variable* alsPt19Volt    = new EverlightALSPT19_Voltage(&alsPt19, "");
+Variable* alsPt19Current = new EverlightALSPT19_Current(&alsPt19, "");
+Variable* alsPt19Lux     = new EverlightALSPT19_Illuminance(&alsPt19, "");
 /** End [everlight_alspt19] */
 
 
@@ -217,8 +214,7 @@ GeoluxHydroCam hydrocam(cameraSerial, cameraPower, dataLogger,
                         alwaysAutoFocus);
 
 // Create image size and byte error variables for the Geolux HydroCam
-Variable* hydrocamImageSize = new GeoluxHydroCam_ImageSize(
-    &hydrocam, "5f46be2c-83c3-4b3a-ab49-25c5b011ef54");
+Variable* hydrocamImageSize = new GeoluxHydroCam_ImageSize(&hydrocam, "");
 /** End [geolux_hydro_cam] */
 
 
@@ -236,10 +232,8 @@ const bool   SHT4xUseHeater = true;
 SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
 
 // Create humidity and temperature variable pointers for the SHT4X
-Variable* sht4xHumid =
-    new SensirionSHT4x_Humidity(&sht4x, "7fab9089-2b2f-4164-8a7a-979329b20f3b");
-Variable* sht4xTemp =
-    new SensirionSHT4x_Temp(&sht4x, "baff4e27-e5ae-4ef1-a165-8fe8b9ea31e9");
+Variable* sht4xHumid = new SensirionSHT4x_Humidity(&sht4x, "");
+Variable* sht4xTemp  = new SensirionSHT4x_Temp(&sht4x, "");
 /** End [sensirion_sht4x] */
 
 
@@ -261,16 +255,11 @@ VegaPuls21 VegaPuls(*VegaPulsSDI12address, VegaPulsPower, VegaPulsData);
 
 // Create stage, distance, temperature, reliability, and error variable pointers
 // for the VegaPuls21
-Variable* VegaPulsStage =
-    new VegaPuls21_Stage(&VegaPuls, "e71d65be-1abe-4560-9859-be5666b66002");
-Variable* VegaPulsDistance =
-    new VegaPuls21_Distance(&VegaPuls, "e9ca624c-4252-4781-b06b-8e10ebab6842");
-Variable* VegaPulsTemp =
-    new VegaPuls21_Temp(&VegaPuls, "3252ad55-ca28-49a5-a977-8da6f3244358");
-Variable* VegaPulsRelia = new VegaPuls21_Reliability(
-    &VegaPuls, "6b4e3bcf-3a25-43a2-9290-2ab11441fdbe");
-Variable* VegaPulsError =
-    new VegaPuls21_ErrorCode(&VegaPuls, "d0ee6b9c-9497-48c3-b4b8-b12dc674210d");
+Variable* VegaPulsStage       = new VegaPuls21_Stage(&VegaPuls, "");
+Variable* VegaPulsDistance    = new VegaPuls21_Distance(&VegaPuls, "");
+Variable* VegaPulsTemp        = new VegaPuls21_Temp(&VegaPuls, "");
+Variable* VegaPulsReliability = new VegaPuls21_Reliability(&VegaPuls, "");
+Variable* VegaPulsError       = new VegaPuls21_ErrorCode(&VegaPuls, "");
 /** End [vega_puls21] */
 
 
@@ -318,7 +307,7 @@ const char* extraBatteryUnit = "volt";
 // A short code for the variable
 const char* extraBatteryCode = "12VBattery";
 // The (optional) universally unique identifier
-const char* extraBatteryUUID = "499c7e9a-b556-44ee-8eb4-f198e8ca8113";
+const char* extraBatteryUUID = "";
 
 // Finally, Create a calculated variable and return a variable pointer to it
 Variable* extraBattery = new Variable(readExtraBattery, extraBatteryResolution,
@@ -330,10 +319,10 @@ Variable* extraBattery = new Variable(readExtraBattery, extraBatteryResolution,
 /** Start [variables_pre_named] */
 // Version 3: Fill array with already created and named variable pointers
 Variable* variableList[] = {
-    VegaPulsStage,  hydrocamImageSize, mcuBoardBatt,     extraBattery,
-    modemSignalPct, sht4xTemp,         sht4xHumid,       alsPt19Lux,
-    alsPt19Current, alsPt19Volt,       VegaPulsDistance, VegaPulsTemp,
-    VegaPulsRelia,  VegaPulsError,     mcuBoardSampNo,
+    VegaPulsStage,       hydrocamImageSize, mcuBoardBatt,     extraBattery,
+    modemSignalPct,      sht4xTemp,         sht4xHumid,       alsPt19Lux,
+    alsPt19Current,      alsPt19Volt,       VegaPulsDistance, VegaPulsTemp,
+    VegaPulsReliability, VegaPulsError,     mcuBoardSampNo,
 };
 // Count up the number of pointers in the array
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
@@ -371,15 +360,15 @@ S3PresignedPublisher s3pub;
 // ==========================================================================
 /** Start [aws_io_t_publisher] */
 // The endpoint for your AWS IoT instance
-const char* awsIoTEndpoint = "YOUR_ENDPOINT-ats.iot.us-east-1.amazonaws.com";
+const char* awsIoTEndpoint = AWS_IOT_ENDPOINT;
 // Sampling feature UUID, this will be the sub-topic for your data
 // NOTE: Because we already set the sampling feature with the logger
 // constructor, don't do it here.
-// const char* samplingFeature = "12345678-abcd-1234-ef00-1234567890ab";
+// const char* samplingFeature = "";
 // The name of your client certificate file
-const char* clientCertName = "THING_NAME-certificate.pem.crt";
+const char* clientCertName = THING_NAME "-certificate.pem.crt";
 // The name of your client private key file
-const char* clientKeyName = "THING_NAME-private.pem.key";
+const char* clientKeyName = THING_NAME "-private-key.pem.key";
 
 // Create a data publisher for AWS IoT Core
 #include <publishers/AWS_IoT_Publisher.h>
