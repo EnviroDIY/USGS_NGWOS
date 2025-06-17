@@ -4,13 +4,13 @@
 // Get the broker host/endpoint from AWS IoT Core / Connect / Domain
 // Configurations
 static const char AWS_IOT_ENDPOINT[] TINY_GSM_PROGMEM =
-    "YOUR_ENDPOINT-ats.iot.us-east-1.amazonaws.com";
+    "YOUR_ENDPOINT-ats.iot.us-west-2.amazonaws.com";
 // the client ID should be the name of your "thing" in AWS IoT Core
 #define THING_NAME "YOUR_THING_NAME"
 
 // https://docs.aws.amazon.com/iot/latest/developerguide/server-authentication.html"
 // RSA 2048 bit key: Amazon Root CA 1"
-// NOTE: This is the root CA certificate for AWS IoT Core, it's publically
+// NOTE: This is the root CA certificate for AWS IoT Core, it's publicly
 // available and does not need to be kept secret.
 static const char AWS_SERVER_CERTIFICATE[] TINY_GSM_PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
