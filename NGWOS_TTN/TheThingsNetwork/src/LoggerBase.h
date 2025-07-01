@@ -490,17 +490,6 @@ class Logger {
      * @return The number of seconds from 1970-01-01T00:00:00Z0000
      */
     static uint32_t getNowUTCEpoch(void);
-    /**
-     * @brief Set the real time clock to the given number of seconds from
-     * January 1, 1970.
-     *
-     * The validity of the timestamp is not checked in any way!  In practice,
-     * setRTClock(ts) should be used to avoid setting the clock to an obviously
-     * invalid value.  The input value should be *in the timezone of the RTC.*
-     *
-     * @param ts The number of seconds since 1970.
-     */
-    static void setNowUTCEpoch(uint32_t ts);
 
     /**
      * @brief Convert an epoch time (unix time) into a ISO8601 formatted string.
@@ -512,6 +501,18 @@ class Logger {
      * @return An ISO8601 formatted String.
      */
     static String formatDateTime_ISO8601(uint32_t epochTime);
+
+    /**
+     * @brief Set the real time clock to the given number of seconds from
+     * January 1, 1970.
+     *
+     * The validity of the timestamp is not checked in any way!  In practice,
+     * setRTClock(ts) should be used to avoid setting the clock to an obviously
+     * invalid value.  The input value should be *in the timezone of the RTC.*
+     *
+     * @param ts The number of seconds since 1970.
+     */
+    static void setNowUTCEpoch(uint32_t ts);
 
     /**
      * @brief Veify that the input value is sane and if so sets the real time
