@@ -19,7 +19,7 @@ As of 6/17/2025, this program depends on the [aws_iot](https://github.com/Enviro
     - [Set your AWS IoT Core Endpoint](#set-your-aws-iot-core-endpoint)
     - [Set your Thing Name](#set-your-thing-name)
     - [Set your Sampling Feature (Site) ID](#set-your-sampling-feature-site-id)
-      - [Set your cellular APN](#set-your-cellular-apn)
+    - [Set your cellular APN](#set-your-cellular-apn)
 
 ## Physical Connections
 
@@ -84,7 +84,7 @@ In line 70, find and replace the text `YOUR_SAMPLING_FEATURE_ID` with your assig
 Make sure there are quotation marks around the name string, as there are in the example.
 There was no sampling feature ID used in the NGWOS_AWS_MQTT_Certs sketch, so you don't need to worry about it matching.
 
-#### Set your cellular APN
+### Set your cellular APN
 
 If you are using a SIM card *other than the [Hologram](https://www.hologram.io/) SIM card* provided by The Stroud Water Research Center, you must provide the [APN](https://en.wikipedia.org/wiki/Access_Point_Name) for your network.
 In line 113, find and replace the text `hologram` with the APN for your SIM card.
