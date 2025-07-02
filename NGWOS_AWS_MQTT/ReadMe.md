@@ -5,7 +5,7 @@ This program transmits data from a Vega Puls 21, a Geolux camera, and onboard se
 While this program is set for the above sensors, modem, and endpoints, the [ModularSensors library](https://github.com/EnviroDIY/ModularSensors/) this program is built on supports many more sensors, modems, and data endpoints.
 Look at the [GitHub repository](https://github.com/EnviroDIY/ModularSensors/) and [documentation](https://envirodiy.github.io/ModularSensors/) for ModularSensors for help in adding more sensors.
 The ["menu a la carte" example](https://github.com/EnviroDIY/ModularSensors/tree/master/examples/menu_a_la_carte) is a collection of code snippets for all of the supported units for ModularSensors.
-As of 6/17/2025, this program depends on the [aws_iot](https://github.com/EnviroDIY/ModularSensors/tree/aws_iot) branch of the library, but that branch should be merged into the main branch soon.
+As of 7/1/2025, this program depends on the [develop](https://github.com/EnviroDIY/ModularSensors/tree/develop) branch of the library, but that branch should be merged into the main branch soon.
 
 > [!WARNING]
 > You should have loaded and **successfully** run the NGWOS_AWS_MQTT_Certs.ino sketch *before* running this program.
