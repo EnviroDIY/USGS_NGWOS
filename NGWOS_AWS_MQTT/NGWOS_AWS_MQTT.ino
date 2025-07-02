@@ -352,7 +352,6 @@ String s3URLMsgGetter() {
 #include <publishers/S3PresignedPublisher.h>
 S3PresignedPublisher s3pub;
 /** End [s3_presigned_publisher] */
-#endif
 
 
 // ==========================================================================
