@@ -275,8 +275,8 @@ void setup() {
     SerialMon.println(" ...success");
     delay(1000);
 
-    // =================== SET CERTIFICATES FOR THE CONNECTION
-    // =================== AWS IoT Core requires mutual authentication
+    // ================= SET CERTIFICATES FOR THE CONNECTION =================
+    // AWS IoT Core requires mutual authentication
     DBG("Requiring mutual authentication on socket");
     secureClient.setSSLAuthMode(SSLAuthMode::MUTUAL_AUTHENTICATION);
     DBG("Requesting TLS 1.3 on socket");

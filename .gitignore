@@ -110,3 +110,4 @@ NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs/AmazonRootCA1.pem
 NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs/AmazonRootCA3.pem
 NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs.zip
 NGWOS_AWS_Certs/AWS_Stroud1_certs.zip
+NGWOS_AWS_LORA/LoRa Connection/*
