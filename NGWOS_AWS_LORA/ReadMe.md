@@ -46,6 +46,7 @@ If you are using PlatformIO, using the example platformio.ini in this folder sho
 - OPTIONAL: An AWS administrator can create a new Think within AWS IoT Core that is linked to your LoRa module
 
 After your AWS administrator configures everything for you, in addition to the hardware you will need:
+
 - The *AppEUI* associated with your LoRa module
 - The *AppKey* associated with your LoRa module
 - The Thing name for the Thing associated with your device, if your AWS administrator gave you one
