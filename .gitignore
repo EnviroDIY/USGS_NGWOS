@@ -91,23 +91,11 @@ NGWOS_VegaAndHydroCam/NGWOS_VegaAndHydroCam_withUUIDs/NGWOS_VegaAndHydroCam_with
 NGWOS_Hydros21_HydroCam/NGWOS_Hydros21_HydroCam_withUUIDs/NGWOS_Hydros21_HydroCam_withUUIDs.ino
 NGWOS_Hydros21_HydroCam/teraterm_ms.log
 NGWOS_Hydros21_HydroCam/teraterm.log
-NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/.ttn-lw-cli.yml
-NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/LICENSE
-NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/README.md
-NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/ttn-lw-cli.exe
-NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/config/completion/bash/ttn-lw-cli
-NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/config/completion/bash/ttn-lw-cli-snap
-NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/config/completion/fish/ttn-lw-cli.fish
-NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/config/completion/zsh/_ttn-lw-cli
-NGWOS_TTN/TTNDownloader/download_20250221_1139.csv
-NGWOS_TTN/TTNDownloader/download.py
-.gitignore
+NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/*
+NGWOS_TTN/TTNDownloader/*
 NGWOS_VegaAndHydroCam/NGWOS_VegaAndHydroCam_SWRC_UUIDs/NGWOS_VegaAndHydroCam_SWRC_UUIDs.ino
-NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs/084fa5050d6f88079f08012e3becd7fef14357fd8a6c6a9725761cb43c84b72b-certificate.pem.crt
-NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs/084fa5050d6f88079f08012e3becd7fef14357fd8a6c6a9725761cb43c84b72b-private.pem.key
-NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs/084fa5050d6f88079f08012e3becd7fef14357fd8a6c6a9725761cb43c84b72b-public.pem.key
-NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs/AmazonRootCA1.pem
-NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs/AmazonRootCA3.pem
+NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs/*
 NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs.zip
 NGWOS_AWS_Certs/AWS_Stroud1_certs.zip
 NGWOS_AWS_LORA/LoRa Connection/*
+*/platformio.ini
