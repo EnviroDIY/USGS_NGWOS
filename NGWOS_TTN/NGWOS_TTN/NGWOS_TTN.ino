@@ -1,5 +1,5 @@
 /** =========================================================================
- * @example{lineno} TheThingsNetwork.ino
+ * @example{lineno} NGWOS_TTN.ino
  * @copyright Stroud Water Research Center
  * @license This example is published under the BSD-3 license.
  * @author Sara Geleskie Damiano <sdamiano@stroudcenter.org>
