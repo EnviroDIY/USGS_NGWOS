@@ -75,8 +75,6 @@ jobs:
       # Run the script to compile the examples
       - name: Compile
         id: compile_arduino_cli
-        env:
-          ACTION_RUN_ID: ${{ github.run_id }}
         run: |
           if [ "$RUNNER_DEBUG" = "1" ]; then
               echo "Enabling debugging!"
@@ -92,7 +90,7 @@ jobs:
           echo ::endgroup::
 
           echo ::group::Compiling ${{ matrix.sketch }}
-          arduino-cli compile --warnings more --config-file "continuous_integration/arduino_cli.yaml" --format text --fqbn EnviroDIY:samd:stonefly_m4 "${{ matrix.sketch }}/${{ matrix.sketch }}" 2>&1 | tee output.log
+          arduino-cli compile --warnings more --config-file "continuous_integration/arduino_cli.yaml" --format text --fqbn EnviroDIY:samd:stonefly_m4 "${{ matrix.sketch }}/${{ matrix.sketch }}"
           echo ::endgroup::
 
       - name: Cache Arduino platforms
