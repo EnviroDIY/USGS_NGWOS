@@ -272,8 +272,8 @@ float getBatteryVoltage() {
     if (_batteryPin >= 0 && _batteryMultiplier > 0) {
         // Get the battery voltage
         MS_DBG(F("Getting battery voltage from pin"), _batteryPin);
-    pinMode(_batteryPin, INPUT);
-    analogRead(_batteryPin);  // priming reading
+        pinMode(_batteryPin, INPUT);
+        analogRead(_batteryPin);  // priming reading
         // The return value from analogRead() is IN BITS NOT IN VOLTS!!
         analogRead(_batteryPin);  // another priming reading
         float rawBattery = analogRead(_batteryPin);
@@ -298,19 +298,19 @@ float readExtraBattery() {
         // Get the battery voltage
         MS_DBG(F("Getting battery voltage from pin"), _batteryPin);
         pinMode(_batteryPin, INPUT);
-    analogRead(_batteryPin);  // priming reading
+        analogRead(_batteryPin);  // priming reading
         // The return value from analogRead() is IN BITS NOT IN VOLTS!!
         analogRead(_batteryPin);  // another priming reading
-    float rawBattery = analogRead(_batteryPin);
-    MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
-    // convert bits to volts
+        float rawBattery = analogRead(_batteryPin);
+        MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
+        // convert bits to volts
         sensorValue_battery =
             (_operatingVoltage / static_cast<float>(((1 << 12) - 1))) *
             _batteryMultiplier * rawBattery;
-    MS_DBG(F("Battery in Volts:"), sensorValue_battery);
+        MS_DBG(F("Battery in Volts:"), sensorValue_battery);
     } else {
         MS_DBG(F("No battery pin specified!"));
-}
+    }
     return sensorValue_battery;
 }
 
