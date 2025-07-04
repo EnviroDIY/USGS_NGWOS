@@ -76,6 +76,10 @@ In line 65, find and replace the text YOUR_LORA_THING_NAME with your assigned th
 Make sure there are quotation marks around the name string, as there are in the example.
 If your AWS administrator did not assign you a Thing name, you can use any short string for this.
 
+> [!NOTE]
+> The thing name is *not* included in any of the transmitted messages.
+> It is only added to the file name of the csv file.
+
 ### Set your LoRa connection Credentials
 
 - Scroll to lines 108 - 113 in the program.

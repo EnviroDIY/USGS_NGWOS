@@ -1,5 +1,5 @@
 /** =========================================================================
- * @example{lineno} TheThingsNetwork.ino
+ * @example{lineno} NGWOS_AWS_LORA.ino
  * @copyright Stroud Water Research Center
  * @license This example is published under the BSD-3 license.
  * @author Sara Geleskie Damiano <sdamiano@stroudcenter.org>
@@ -634,19 +634,20 @@ void loop() {
         // Create a JsonArray object for decoding/debugging
         JsonObject root = jsonBuffer.to<JsonObject>();
 
-        // get the time from the on-board RTC
         // Add the time to the Cayenne LPP Buffer
         lpp.addUnixTime(1, Logger::markedUTCUnixTime);
         extendedWatchDog::resetWatchDog();
 
-        // Get modem signal quality
-        // NOTE: This is trivial, because the quality is added automatically
+        // Add the RSSI to the Cayenne LPP Buffer
+        // NOTE: There is no reason to add the RSSI to the LPP buffer
+        // the gateway can automatically add the RSSI to the message metadata
+        // when it forwards the message to IoT Core.
+        // But we'll print the RSSI to the serial console.
         Serial.print(F("Signal quality: "));
         Serial.println(modemRSSI->getValueString(false));
 
-        // Add the RSSI to the Cayenne LPP Buffer
-        lpp.addGenericSensor(2, modemRSSI->getValue(false));
-        extendedWatchDog::resetWatchDog();
+        // lpp.addGenericSensor(2, modemRSSI->getValue(false));
+        // extendedWatchDog::resetWatchDog();
 
         // Add the SHT40 data to the Cayenne LPP buffer
         Serial.print(F("Temperature: "));
