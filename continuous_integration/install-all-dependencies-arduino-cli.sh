@@ -12,11 +12,18 @@ echo "\e[32mCurrent Arduino CLI version:\e[0m"
 arduino-cli version
 
 echo "\e[32mUnzipping the library\e[0m"
+if [ ! -d "home/arduino/downloads/libs" ]; then
+    # Create the directory if it doesn't exist
+    mkdir -p "home/arduino/downloads/libs"
+fi
 unzip -o AllDependencies.zip -d home/arduino/downloads/libs -x "*.git/*" "continuous_integration/*" "docs/*" "examples/*" "*.history/*"
 
 if [ -d "home/arduino/user/libraries" ]; then
     echo "\e[32mEnsuring no old directories exist\e[0m"
     rm -rf home/arduino/user/libraries/*
+else
+    # Create the directory if it doesn't exist
+    mkdir -p "home/arduino/user/libraries"
 fi
 
 echo "\e[32mMoving the unzipped libraries to the libraries directory\e[0m"
