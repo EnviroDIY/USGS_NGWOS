@@ -96,7 +96,7 @@ const int8_t sdi12DataPin  = 3;
 // Create a new logger instance
 // NOTE: We haven't set the pins or variable array here! We will need to call
 // setVariableArray and the various pin assignment functions in the setup!
-Logger dataLogger();
+Logger dataLogger;
 /** End [loggers] */
 
 
