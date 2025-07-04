@@ -3,14 +3,15 @@
 This new logger board was developed by the Stroud Water Research center with funding from the USGS's [NGWOS](https://www.usgs.gov/mission-areas/water-resources/science/next-generation-water-observing-system-ngwos) [External R&D](https://www.usgs.gov/mission-areas/water-resources/science/ngwos-external-research-and-development) Program.
 The brain of the new board is a Microchip Technology's [ATSAMD51N19A](https://www.microchip.com/en-us/product/ATSAMD51N19A).
 
-## UF2 bootloader
+- [The EnviroDIY Stonefly](#the-envirodiy-stonefly)
+  - [Setting up the Stonefly in the Arduino IDE](#setting-up-the-stonefly-in-the-arduino-ide)
+    - [Installing or Updating Libraries for the Examples in the Arduino IDE](#installing-or-updating-libraries-for-the-examples-in-the-arduino-ide)
+  - [Setting up the Stonefly in PlatformIO on VSCode](#setting-up-the-stonefly-in-platformio-on-vscode)
+    - [Installing Libraries for the Examples in PlatformIO](#installing-libraries-for-the-examples-in-platformio)
+  - [Example Programs](#example-programs)
+  - [UF2 bootloader](#uf2-bootloader)
+  - [Reprogramming a Sleeping Logger](#reprogramming-a-sleeping-logger)
 
-The bootloader we are using on the board is Adafruit's fork of Microsoft's UF2 bootloader.
-Adafruit has more information on the bootloader [here](https://learn.adafruit.com/adafruit-feather-m0-express-designed-for-circuit-python-circuitpython/uf2-bootloader-details).
-The bootloader was built with help of a python toolchain, forked [here](https://github.com/SRGDamia1/SAMD-custom-board).
-The final bootloader files are available on GitHub [here](https://github.com/EnviroDIY/Arduino_boards/tree/master/EnviroDIYSAMDBoards).
-There are detailed instructions for reinstalling the bootloader [here](https://github.com/SRGDamia1/SAMD-custom-board/blob/main/Install%20Bootloader.md), but there generally shouldn't be any reason to reinstall it.
-You must have a special programmer or debugger board to install the bootloader.
 
 ## Setting up the Stonefly in the Arduino IDE
 
@@ -39,6 +40,37 @@ Once the board and core packages are installed, when you click Tools > Board you
 If you get a board error when trying to compile for the Stonefly for the first time, the IDE probably did not correctly install the Adafruit SAMD core.
 To add the Adafruit SAMD core, follow the directions linked above to add Adafruit's board URL to your boards list.
 Then select and install the "Adafruit SAMD Boards" package.
+
+### Installing or Updating Libraries for the Examples in the Arduino IDE
+
+The examples in this repository require a large number of Arduino libraries to compile.
+Managing library dependencies using the Arduino IDE can be tricky as the Arduino IDE does not support any sort of virtual environments for different sketches.
+The correct version of all of the dependencies for all of the examples are in this [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip).
+
+> [!NOTE]
+> To ensure that you have the right version of all of the dependencies after any updates are made, you _**must completely delete the contents of your Arduino libraries folder every time you install updates**_.
+> If you have made changes to any libraries or have a different set of libraries that you use for other sketches, you *must* copy or move the contents of your Arduino libraries folder to a different location!
+> If you do not empty your libraries folder and instead try to write over what you have, you may end up with multiple versions of libraries or completely non-functional libraries that contain fails from mixed library versions.
+
+To install all of the libraries, download the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) and un-zip it.
+The result of the unzipping should be a bunch of sub-directories.
+Move all of the sub-directories from the unzipped directory into your Arduino libraries folder.
+Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
+The final folder structure should be have one subfolder of your libraries folder for each library.
+You should *not* have a single "AllDependencies" folder in your libraries folder.
+You also should *not* have any bare files in your libraries folder, only folders.
+
+A correct example (using the default Windows folder location):
+
+```txt
+C:\Users\{your_user_name}\Documents\Arduino\libraries
+    └ Adafruit ADS1x15
+      └ ... library files ...
+    ... lots more libraries in folders ...
+    └ Yosemitech Modbus
+      └ src
+        └ ... library files ...
+```
 
 ## Setting up the Stonefly in PlatformIO on VSCode
 
@@ -69,22 +101,10 @@ board_build.variants_dir = ${platformio.core_dir}/variants
 board_build.ldscript = ${platformio.core_dir}/variants/stonefly_m4/linker_scripts/gcc/flash_with_bootloader.ld
 ```
 
-## Reprogramming a Sleeping Logger
+### Installing Libraries for the Examples in PlatformIO
 
-The on-board USB used to program the logger shuts down when the logger goes to sleep.
-This creates issues because the IDE cannot find the logger to program it when the board is sleeping  - which it's doing most of the time while running a logger program.
-
-To program a sleeping board:
-
-- watch the output from the upload on the Arduino IDE
-- when you see the line "Waiting for upload port", quickly double-tap the reset button on the logger to get it to wait and enter bootloader mode where it can receive the program
-
-When the IDE attempts to upload the board, it assumes the board is in "running" mode, sends a command to the board to tell it to go to "programming" mode and then waits until a new port appears.
-The sleeping logger isn't in running mode and doesn't hear the command, so you have to do it manually.
-BUT, if you put the board into programming mode in advance, the IDE detects the board, thinks it's "running" and then errors out when the already-in-programming-mode board responds incorrectly to the "go to programming" command.
-The upload will also error out if it takes too long for the bootloader port to appear.
-So you have to watch and wait and hit the double tap just at the right time.
-It's kind of a PITA.
+Managing libraries in PlatformIO is much easier because of the package manager.
+You should be able to get all the correct versions of dependencies by using the platformio_example.ino file (after renaming the file to platformio.ini).
 
 ## Example Programs
 
@@ -112,3 +132,29 @@ Move all of the files from the unzipped directory into your Arduino libraries fo
 Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
 
 Detailed instructions for each example are in the ReadMe files in the respective subfolders.
+
+## UF2 bootloader
+
+The bootloader we are using on the board is Adafruit's fork of Microsoft's UF2 bootloader.
+Adafruit has more information on the bootloader [here](https://learn.adafruit.com/adafruit-feather-m0-express-designed-for-circuit-python-circuitpython/uf2-bootloader-details).
+The bootloader was built with help of a python toolchain, forked [here](https://github.com/SRGDamia1/SAMD-custom-board).
+The final bootloader files are available on GitHub [here](https://github.com/EnviroDIY/Arduino_boards/tree/master/EnviroDIYSAMDBoards).
+There are detailed instructions for reinstalling the bootloader [here](https://github.com/SRGDamia1/SAMD-custom-board/blob/main/Install%20Bootloader.md), but there generally shouldn't be any reason to reinstall it.
+You must have a special programmer or debugger board to install the bootloader.
+
+## Reprogramming a Sleeping Logger
+
+The on-board USB used to program the logger shuts down when the logger goes to sleep.
+This creates issues because the IDE cannot find the logger to program it when the board is sleeping  - which it's doing most of the time while running a logger program.
+
+To program a sleeping board:
+
+- watch the output from the upload on the Arduino IDE
+- when you see the line "Waiting for upload port", quickly double-tap the reset button on the logger to get it to wait and enter bootloader mode where it can receive the program
+
+When the IDE attempts to upload the board, it assumes the board is in "running" mode, sends a command to the board to tell it to go to "programming" mode and then waits until a new port appears.
+The sleeping logger isn't in running mode and doesn't hear the command, so you have to do it manually.
+BUT, if you put the board into programming mode in advance, the IDE detects the board, thinks it's "running" and then errors out when the already-in-programming-mode board responds incorrectly to the "go to programming" command.
+The upload will also error out if it takes too long for the bootloader port to appear.
+So you have to watch and wait and hit the double tap just at the right time.
+It's kind of a PITA.
