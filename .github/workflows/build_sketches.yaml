@@ -1,0 +1,110 @@
+name: Build NGWOS Sketches
+
+# Triggers the workflow on push or pull request events
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_ex_arduino:
+    name: ${{ matrix.sketch }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sketch:
+          - NGWOS_AWS_LORA
+          - NGWOS_AWS_MQTT
+          - NGWOS_AWS_MQTT_Certs
+          - NGWOS_Hydros21_HydroCam
+          - NGWOS_TTN
+          - NGWOS_VegaAndHydroCam
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Write the requirements file
+        run: |
+          echo "wheel" > requirements.txt
+          echo "adafruit-nrfutil" >> requirements.txt
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: Install python dependencies, including NRF-Utils needed for Adafruit Feathers
+        run: |
+          pip install -r requirements.txt
+
+      # We use the `arduino/setup-arduino-cli` action to install and
+      # configure the Arduino CLI on the system.
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v2.0.0
+
+      - name: Restore Arduino platforms
+        uses: actions/cache/restore@v4
+        id: restore_platforms
+        with:
+          path: |
+            home/arduino/data
+          key: arduino_platforms-${{ hashFiles('continuous_integration/install-platforms-arduino-cli.sh') }}
+
+      # Install cores for the Arduino CLI, iff no cache
+      - name: Install the Arduino Platforms
+        id: install_platforms
+        if: steps.restore_platforms.outputs.cache-hit != 'true'
+        run: |
+          chmod +x continuous_integration/install-platforms-arduino-cli.sh
+          sh continuous_integration/install-platforms-arduino-cli.sh
+
+      # Install any library dependencies for the Arduino CLI, iff no cache
+      # NOTE: Don't update the dependencies beyond what's in the install script!
+      - name: Install the Arduino libraries
+        id: install_libraries
+        run: |
+          chmod +x continuous_integration/install-all-dependencies-arduino-cli.sh
+          sh continuous_integration/install-all-dependencies-arduino-cli.sh
+
+      - name: Include problem matcher
+        uses: ammaraskar/gcc-problem-matcher@master
+
+      # Run the script to compile the examples
+      - name: Compile
+        id: compile_arduino_cli
+        env:
+          ACTION_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -e # Exit with nonzero exit code if anything fails
+          if [ "$RUNNER_DEBUG" = "1" ]; then
+              echo "Enabling debugging!"
+              set -v # Prints shell input lines as they are read.
+              set -x # Print command traces before executing command.
+          fi
+
+          status=0
+
+          echo ::group::Installed Cores
+          arduino-cli --config-file continuous_integration/arduino_cli.yaml core list
+          echo ::endgroup::
+          echo ::group::Installed Libraries
+          arduino-cli --config-file continuous_integration/arduino_cli.yaml lib list
+          echo ::endgroup::
+
+          echo ::group::Compiling ${{ matrix.sketch }}
+          arduino-cli compile --warnings more --config-file "continuous_integration/arduino_cli.yaml" --format text --fqbn EnviroDIY:samd:stonefly_m4 "${{ matrix.sketch }}/${{ matrix.sketch }}" 2>&1 | tee output.log
+          result_code=${PIPESTATUS[0]}
+          echo ::endgroup::
+          if [ "$result_code" -eq "0" ]; then echo -e "\e[32m${{ matrix.sketch }} successfully compiled\e[0m"; else echo -e "\e[31m${{ matrix.sketch }} failed to compile\e[0m"; fi
+
+      - name: Cache Arduino platforms
+        uses: actions/cache/save@v4
+        id: cache_platforms
+        if: (${{ always() }}) && ( ${{ steps.restore_platforms.outcome }} == 'skipped' || ${{ steps.restore_platforms.outcome }} == 'success')
+        with:
+          path: |
+            home/arduino/data
+          key: ${{ steps.restore_platforms.outputs.cache-primary-key }}
