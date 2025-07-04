@@ -89,9 +89,8 @@ jobs:
           arduino-cli --config-file continuous_integration/arduino_cli.yaml lib list
           echo ::endgroup::
 
-          echo ::group::Compiling ${{ matrix.sketch }}
+          echo ""
           arduino-cli compile --warnings more --config-file "continuous_integration/arduino_cli.yaml" --format text --fqbn EnviroDIY:samd:stonefly_m4 "${{ matrix.sketch }}/${{ matrix.sketch }}"
-          echo ::endgroup::
 
       - name: Cache Arduino platforms
         uses: actions/cache/save@v4

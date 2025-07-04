@@ -50,7 +50,7 @@
 // The SDI-12 library for the Vega Puls
 #include <SDI12.h>
 // Local H files with separated fxns
-#include "loraModemFxns.h"
+#include "LoRaModemFxns.h"
 
 // Include the main header for ModularSensors
 #include <ModularSensors.h>
