@@ -17,6 +17,8 @@ arduino-cli --config-file continuous_integration/arduino_cli.yaml core update-in
 echo "::group::Installing EnviroDIY Cores"
 echo "\e[32mInstalling the EnviroDIY AVR Core\e[0m"
 arduino-cli --config-file continuous_integration/arduino_cli.yaml core install EnviroDIY:avr
+echo "\e[32mInstalling the EnviroDIY SAMD Core\e[0m"
+arduino-cli --config-file continuous_integration/arduino_cli.yaml core install EnviroDIY:samd
 echo "::endgroup::"
 
 echo "::group::Adafruit SAMD"

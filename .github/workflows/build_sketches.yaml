@@ -85,8 +85,6 @@ jobs:
               set -x # Print command traces before executing command.
           fi
 
-          status=0
-
           echo ::group::Installed Cores
           arduino-cli --config-file continuous_integration/arduino_cli.yaml core list
           echo ::endgroup::
@@ -96,9 +94,7 @@ jobs:
 
           echo ::group::Compiling ${{ matrix.sketch }}
           arduino-cli compile --warnings more --config-file "continuous_integration/arduino_cli.yaml" --format text --fqbn EnviroDIY:samd:stonefly_m4 "${{ matrix.sketch }}/${{ matrix.sketch }}" 2>&1 | tee output.log
-          result_code=${PIPESTATUS[0]}
           echo ::endgroup::
-          if [ "$result_code" -eq "0" ]; then echo -e "\e[32m${{ matrix.sketch }} successfully compiled\e[0m"; else echo -e "\e[31m${{ matrix.sketch }} failed to compile\e[0m"; fi
 
       - name: Cache Arduino platforms
         uses: actions/cache/save@v4
