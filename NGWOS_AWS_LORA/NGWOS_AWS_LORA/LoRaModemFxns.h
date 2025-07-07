@@ -153,10 +153,15 @@ class loraModemAWS {
 
     bool modemWake(LoRa_AT& _lora_modem) {
         if (_arduino_wake_pin >= 0) {
-            delay(5000L);
+            delay(5000);
+            DBG("Waking LoRa modem with a 100ms LOW pulse on pin",
+                _arduino_wake_pin);
+            // reset the pin mode - pins tri-state at sleep
+            pinMode(_arduino_wake_pin, OUTPUT);
             digitalWrite(_arduino_wake_pin, LOW);
-            delay(50L);
+            delay(100L);
             digitalWrite(_arduino_wake_pin, HIGH);
+            DBG("Testing AT to see if modem woke up");
             if (_lora_modem.testAT()) {
                 Serial.println(F("  Woke up LoRa modem"));
                 return true;

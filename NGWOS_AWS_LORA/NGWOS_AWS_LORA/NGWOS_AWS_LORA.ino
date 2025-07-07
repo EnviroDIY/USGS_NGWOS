@@ -99,7 +99,6 @@ const int8_t sdi12DataPin  = 3;
 Logger dataLogger;
 /** End [loggers] */
 
-
 // ==========================================================================
 // LoRa Modem Options
 // ==========================================================================
@@ -277,11 +276,12 @@ const char* modemRSSIName = "RSSI";
 const char* modemRSSIUnit = "RSSI";
 // A short code for the variable
 const char* modemRSSICode = "loraRSSI";
-
+float       getLoRaSignalQuality() {
+    return static_cast<float>(loraAT.getSignalQuality());
+}
 // Finally, Create a calculated variable and return a variable pointer to it
-Variable* modemRSSI = new Variable(loraAT.getSignalQuality(),
-                                   modemRSSIResolution, modemRSSIName,
-                                   modemRSSIUnit, modemRSSICode);
+Variable* modemRSSI = new Variable(getLoRaSignalQuality, modemRSSIResolution,
+                                   modemRSSIName, modemRSSIUnit, modemRSSICode);
 
 // ==========================================================================
 //  Extra Battery as an Analog Input via Calculated Variable
@@ -326,7 +326,6 @@ Variable* secondBatteryVar =
     new Variable(readExtraBattery, secondBatteryResolution, secondBatteryName,
                  secondBatteryUnit, secondBatteryCode);
 
-
 // ==========================================================================
 //  Creating the Variable Array[s] and Filling with Variable Objects
 //  NOTE:  This shows three different ways of creating the same variable array
@@ -369,7 +368,6 @@ JsonDocument jsonBuffer;  // ArduinoJson 7
 // bigger than version 6.
 // If your program targets 8-bit micro-controllers, I recommend keeping
 // version 6.
-
 
 // ==========================================================================
 // Working Functions
@@ -431,11 +429,6 @@ void printFrameHex(byte modbusFrame[], int frameLength) {
         Serial.print(modbusFrame[i], HEX);
     }
     Serial.println();
-}
-
-void buttonISR(void) {
-    Serial.println(F("\nButton interrupt!"));
-    Serial1.println(F("\nButton interrupt!"));
 }
 
 // ==========================================================================
@@ -579,9 +572,6 @@ void setup() {
         // true = wait for internal housekeeping after write
     }
 
-    // pinMode(buttonPin, INPUT_PULLDOWN);
-    // attachInterrupt(buttonPin, buttonISR, RISING);
-
     // Call the processor sleep
     PRINTOUT(F("Putting processor to sleep\n"));
     dataLogger.systemSleep();
@@ -607,8 +597,10 @@ void loop() {
         dataLogger.turnOnSDcard(false);
         extendedWatchDog::resetWatchDog();
 
+        // restart the serial connection with the modem
+        SerialBee.begin(modemBaud);
         // wake up the modem
-        loraModem.modemWake(loraAT);
+        bool successful_wake = loraModem.modemWake(loraAT);
         extendedWatchDog::resetWatchDog();
 
         // Confirm the date and time using the ISO 8601 timestamp
@@ -716,7 +708,9 @@ void loop() {
 
 
         // Send out the Cayenne LPP buffer
-        if (loraStream.write(lpp.getBuffer(), lpp.getSize()) == lpp.getSize()) {
+        if (successful_wake) {
+            if (loraStream.write(lpp.getBuffer(), lpp.getSize()) ==
+                lpp.getSize()) {
             Serial.println(F("  Successfully sent data"));
             extendedWatchDog::resetWatchDog();
             if ((Logger::markedLocalUnixTime != 0 &&
@@ -740,6 +734,10 @@ void loop() {
             Serial.print(F("Network status: "));
             Serial.println(res ? "connected" : "not connected");
             extendedWatchDog::resetWatchDog();
+            }
+        } else {
+            Serial.println(
+                F("--Failed to send data! Can not communicate with modem!"));
         }
 
         while (loraStream.available()) { Serial.write(loraStream.read()); }
