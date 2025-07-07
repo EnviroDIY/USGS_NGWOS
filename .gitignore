@@ -99,3 +99,4 @@ NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs.zip
 NGWOS_AWS_Certs/AWS_Stroud1_certs.zip
 NGWOS_AWS_LORA/LoRa Connection/*
 */platformio.ini
+pio_extra_libs/*
