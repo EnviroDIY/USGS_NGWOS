@@ -57,7 +57,7 @@
 
 
 // ==========================================================================
-// Data Logging Options
+//  Data Logging Options
 // ==========================================================================
 // The name of this program file
 const char* sketchName = "NGWOS_AWS_LORA.ino";
@@ -99,6 +99,7 @@ const int8_t sdi12DataPin  = 3;
 Logger dataLogger;
 /** End [loggers] */
 
+
 // ==========================================================================
 // LoRa Modem Options
 // ==========================================================================
@@ -128,7 +129,7 @@ const int8_t lora_wake_pin = 8;  // NDTR_SLEEPRQ_DI8 (Default)
 // The LoRa module's wake pin's pullup mode (0=NOPULL, 1=PULLUP, 2=PULLDOWN)
 const int8_t lora_wake_pullup = 1;
 // The LoRa module's wake trigger mode (ie, 0=ANY, 1=RISE, 2=FALL)
-const int8_t lora_wake_edge = 0;
+const int8_t lora_wake_edge = 1;
 
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
@@ -151,68 +152,14 @@ loraModemAWS loraModem(modemVccPin, modemSleepRqPin, modemStatusPin,
 #include <sensors/ProcessorStats.h>
 
 // Create the main processor chip "sensor" - for general metadata
-#if defined(ENVIRODIY_STONEFLY_M4)
-const char* mcuBoardVersion = "v0.1";
-#elif defined(ARDUINO_AVR_ENVIRODIY_MAYFLY)
-const char* mcuBoardVersion = "v1.1";
-#else
-const char* mcuBoardVersion = "unknown";
-#endif
+const char*    mcuBoardVersion = "v0.1";
 ProcessorStats mcuBoard(mcuBoardVersion, 5);
 
 // Create sample number, battery voltage, free RAM, and reset cause variable
 // pointers for the processor
 Variable* mcuBoardBatt   = new ProcessorStats_Battery(&mcuBoard);
 Variable* mcuBoardSampNo = new ProcessorStats_SampleNumber(&mcuBoard);
-Variable* mcuBoardReset  = new ProcessorStats_ResetCode(&mcuBoard);
-
-
-// ==========================================================================
-// VEGA PULS 21 Radar Sensor
-// ==========================================================================
-#include <sensors/VegaPuls21.h>
-
-// NOTE: Use -1 for any pins that don't apply or aren't being used.
-const char* VegaPulsSDI12address = "0";  // The SDI-12 Address of the VegaPuls21
-const int8_t VegaPulsPower       = sensorPowerPin;  // Power pin
-const int8_t VegaPulsData        = sdi12DataPin;    // The SDI-12 data pin
-// NOTE:  you should NOT take more than one readings.  THe sensor already takes
-// and averages 8 by default.
-
-// Create a Vega Puls21 sensor object
-VegaPuls21 VegaPuls(*VegaPulsSDI12address, VegaPulsPower, VegaPulsData);
-
-// Create stage, distance, temperature, reliability, and error variable pointers
-// for the VegaPuls21
-Variable* VegaPulsStage    = new VegaPuls21_Stage(&VegaPuls);
-Variable* VegaPulsDistance = new VegaPuls21_Distance(&VegaPuls);
-Variable* VegaPulsTemp     = new VegaPuls21_Temp(&VegaPuls);
-Variable* VegaPulsRelia    = new VegaPuls21_Reliability(&VegaPuls);
-Variable* VegaPulsError    = new VegaPuls21_ErrorCode(&VegaPuls);
-
-
-// ==========================================================================
-//  Geolux HydroCam camera
-// ==========================================================================
-#include <sensors/GeoluxHydroCam.h>
-
-#define cameraSerial Serial1
-
-// NOTE: Use -1 for any pins that don't apply or aren't being used.
-const int8_t cameraPower        = sensorPowerPin;  // Power pin
-const int8_t cameraAdapterPower = sensorPowerPin;  // RS232 adapter power pin
-const char*  imageResolution    = "800x600";
-const char*  filePrefix         = LoggerID;
-bool         alwaysAutoFocus    = false;
-
-// Create a GeoluxHydroCam sensor object
-GeoluxHydroCam hydrocam(cameraSerial, cameraPower, dataLogger,
-                        cameraAdapterPower, imageResolution, filePrefix,
-                        alwaysAutoFocus);
-
-// Create image size and byte error variables for the Geolux HydroCam
-Variable* hydrocamImageSize = new GeoluxHydroCam_ImageSize(&hydrocam);
-Variable* hydrocamByteError = new GeoluxHydroCam_ByteError(&hydrocam);
+// Variable* mcuBoardReset  = new ProcessorStats_ResetCode(&mcuBoard);
 
 
 // ==========================================================================
@@ -222,12 +169,8 @@ Variable* hydrocamByteError = new GeoluxHydroCam_ByteError(&hydrocam);
 #include <sensors/EverlightALSPT19.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const int8_t alsPower = sensorPowerPin;  // Power pin
-#if defined(ENVIRODIY_STONEFLY_M4)
-const int8_t alsData = A8;  // The ALS PT-19 data pin
-#else
-const int8_t alsData = A4;  // The ALS PT-19 data pin
-#endif
+const int8_t  alsPower      = sensorPowerPin;  // Power pin
+const int8_t  alsData       = A8;              // The ALS PT-19 data pin
 const int8_t  alsSupply     = 3.3;  // The ALS PT-19 supply power voltage
 const int8_t  alsResistance = 10;   // The ALS PT-19 loading resistance (in kΩ)
 const uint8_t alsNumberReadings = 10;
@@ -246,6 +189,30 @@ Variable* alsPt19Lux     = new EverlightALSPT19_Illuminance(&alsPt19);
 
 
 // ==========================================================================
+//  Geolux HydroCam camera
+// ==========================================================================
+#include <sensors/GeoluxHydroCam.h>
+
+// NOTE: Use -1 for any pins that don't apply or aren't being used.
+const int8_t cameraPower        = relayPowerPin;  // Power pin
+const int8_t cameraAdapterPower = relayPowerPin;  // RS232 adapter power pin
+// const char*  imageResolution    = "640x480";
+// const char* imageResolution = "1600x1200";
+const char* imageResolution = "1280x960";
+const char* filePrefix      = LoggerID;
+bool        alwaysAutoFocus = false;
+
+// Create a GeoluxHydroCam sensor object
+GeoluxHydroCam hydrocam(cameraSerial, cameraPower, dataLogger,
+                        cameraAdapterPower, imageResolution, filePrefix,
+                        alwaysAutoFocus);
+
+// Create image size and byte error variables for the Geolux HydroCam
+Variable* hydrocamImageSize = new GeoluxHydroCam_ImageSize(&hydrocam);
+// Variable* hydrocamByteError = new GeoluxHydroCam_ByteError(&hydrocam);
+
+
+// ==========================================================================
 //  Sensirion SHT4X Digital Humidity and Temperature Sensor
 // ==========================================================================
 /** Start [sensirion_sht4x] */
@@ -261,6 +228,30 @@ SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
 // Create humidity and temperature variable pointers for the SHT4X
 Variable* sht4xHumid = new SensirionSHT4x_Humidity(&sht4x);
 Variable* sht4xTemp  = new SensirionSHT4x_Temp(&sht4x);
+
+
+// ==========================================================================
+//  VEGA PULS 21 Radar Sensor
+// ==========================================================================
+#include <sensors/VegaPuls21.h>
+
+// NOTE: Use -1 for any pins that don't apply or aren't being used.
+const char* VegaPulsSDI12address = "0";  // The SDI-12 Address of the VegaPuls21
+const int8_t VegaPulsPower       = sensorPowerPin;  // Power pin
+const int8_t VegaPulsData        = sdi12DataPin;    // The SDI-12 data pin
+// NOTE:  you should NOT take more than one readings.  THe sensor already takes
+// and averages 8 by default.
+
+// Create a Vega Puls21 sensor object
+VegaPuls21 VegaPuls(*VegaPulsSDI12address, VegaPulsPower, VegaPulsData);
+
+// Create stage, distance, temperature, reliability, and error variable pointers
+// for the VegaPuls21
+Variable* VegaPulsStage       = new VegaPuls21_Stage(&VegaPuls);
+Variable* VegaPulsDistance    = new VegaPuls21_Distance(&VegaPuls);
+Variable* VegaPulsTemp        = new VegaPuls21_Temp(&VegaPuls);
+Variable* VegaPulsReliability = new VegaPuls21_Reliability(&VegaPuls);
+Variable* VegaPulsError       = new VegaPuls21_ErrorCode(&VegaPuls);
 
 
 // ==========================================================================
@@ -302,7 +293,7 @@ float readExtraBattery() {
         MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
         // convert bits to volts
         sensorValue_battery =
-            (_operatingVoltage / static_cast<float>(((1 << 12) - 1))) *
+            (_operatingVoltage / static_cast<float>(PROCESSOR_ADC_MAX)) *
             _batteryMultiplier * rawBattery;
         MS_DBG(F("Battery in Volts:"), sensorValue_battery);
     } else {
@@ -313,18 +304,18 @@ float readExtraBattery() {
 
 // Properties of the calculated variable for the extra battery
 // The number of digits after the decimal place
-const uint8_t secondBatteryResolution = 3;
+const uint8_t extraBatteryResolution = 3;
 // This must be a value from http://vocabulary.odm2.org/variablename/
-const char* secondBatteryName = "batteryVoltage";
+const char* extraBatteryName = "batteryVoltage";
 // This must be a value from http://vocabulary.odm2.org/units/
-const char* secondBatteryUnit = "volt";
+const char* extraBatteryUnit = "volt";
 // A short code for the variable
-const char* secondBatteryCode = "secondBattery";
+const char* extraBatteryCode = "12VBattery";
 
 // Finally, Create a calculated variable and return a variable pointer to it
-Variable* secondBatteryVar =
-    new Variable(readExtraBattery, secondBatteryResolution, secondBatteryName,
-                 secondBatteryUnit, secondBatteryCode);
+Variable* extraBatteryVar =
+    new Variable(readExtraBattery, extraBatteryResolution, extraBatteryName,
+                 extraBatteryUnit, extraBatteryCode);
 
 // ==========================================================================
 //  Creating the Variable Array[s] and Filling with Variable Objects
@@ -332,11 +323,10 @@ Variable* secondBatteryVar =
 //         and filling it with variables
 // ==========================================================================
 Variable* variableList[] = {
-    alsPt19Volt,       alsPt19Current, alsPt19Lux,    hydrocamImageSize,
-    hydrocamByteError, sht4xHumid,     sht4xTemp,     VegaPulsStage,
-    VegaPulsDistance,  VegaPulsTemp,   VegaPulsRelia, VegaPulsError,
-    modemRSSI,         mcuBoardSampNo, mcuBoardBatt,  mcuBoardReset,
-    secondBatteryVar,
+    alsPt19Volt,    alsPt19Current,      alsPt19Lux,      hydrocamImageSize,
+    sht4xHumid,     sht4xTemp,           VegaPulsStage,   VegaPulsDistance,
+    VegaPulsTemp,   VegaPulsReliability, VegaPulsError,   modemRSSI,
+    mcuBoardSampNo, mcuBoardBatt,        extraBatteryVar,
 };
 // Count up the number of pointers in the array
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
@@ -370,7 +360,7 @@ JsonDocument jsonBuffer;  // ArduinoJson 7
 // version 6.
 
 // ==========================================================================
-// Working Functions
+//  Working Functions
 // ==========================================================================
 // Flashes the LED's on the primary board
 void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
@@ -390,6 +380,7 @@ void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
     }
     digitalWrite(redLED, LOW);
 }
+
 
 // Uses the processor sensor object to read the battery voltage
 // NOTE: This will actually return the battery level from the previous update!
@@ -432,7 +423,7 @@ void printFrameHex(byte modbusFrame[], int frameLength) {
 }
 
 // ==========================================================================
-// Arduino Setup Function
+//  Arduino Setup Function
 // ==========================================================================
 void setup() {
     // Blink the LEDs to show the board is on and starting up
@@ -467,7 +458,7 @@ void setup() {
 
     // Start the serial connection with the modem
     PRINTOUT(F("Starting LoRa module connection at"), modemBaud, F("baud"));
-    SerialBee.begin(modemBaud);
+    modemSerial.begin(modemBaud);
 
     // Start the stream for the camera; it will always be at 115200 baud
     PRINTOUT(F("Starting camera connection at"), 115200, F("baud"));
@@ -501,6 +492,8 @@ void setup() {
     PRINTOUT(F("Setting logger pins"));
     dataLogger.setLoggerPins(wakePin, sdCardSSPin, sdCardPwrPin, buttonPin,
                              greenLED, wakePinMode, buttonPinMode);
+    // Don't allow pins to "tri-state" when sleeping
+    Logger::disablePinTristate(true);
 
     // Set the timezones for the logger/data and the RTC
     // Logging in the given time zone
@@ -577,6 +570,10 @@ void setup() {
     dataLogger.systemSleep();
 }
 
+
+// ==========================================================================
+//  Arduino Loop Function
+// ==========================================================================
 void loop() {
     // Reset the watchdog
     extendedWatchDog::resetWatchDog();
@@ -598,10 +595,14 @@ void loop() {
         extendedWatchDog::resetWatchDog();
 
         // restart the serial connection with the modem
-        SerialBee.begin(modemBaud);
+        modemSerial.begin(modemBaud);
         // wake up the modem
         bool successful_wake = loraModem.modemWake(loraAT);
         extendedWatchDog::resetWatchDog();
+        if (successful_wake) {
+            PRINTOUT(F("Attempting to connect to LoRa network..."));
+            successful_wake &= loraModem.modemConnect(loraAT, appEui, appKey);
+        }
 
         // Confirm the date and time using the ISO 8601 timestamp
         uint32_t currentEpoch = dataLogger.getNowLocalEpoch();
@@ -659,7 +660,7 @@ void loop() {
         Serial.print(F("Temperature: "));
         Serial.println(VegaPulsTemp->getValueString(false));
         Serial.print(F("Reliability: "));
-        Serial.println(VegaPulsRelia->getValueString(false));
+        Serial.println(VegaPulsReliability->getValueString(false));
         Serial.print(F("Error Code: "));
         Serial.println(VegaPulsError->getValueString(false));
         // stage in m (resolution 1mm)
@@ -669,7 +670,7 @@ void loop() {
         // temperature in °C (resolution 0.1°C)
         lpp.addTemperature(7, VegaPulsTemp->getValue(false));
         // reliability in dB (resolution 0.1db)
-        // lpp.addGenericSensor(8, VegaPulsRelia->getValue(false));
+        // lpp.addGenericSensor(8, VegaPulsReliability->getValue(false));
         // error code
         // lpp.addGenericSensor(9, VegaPulsError->getValue(false));
         extendedWatchDog::resetWatchDog();
@@ -691,10 +692,10 @@ void loop() {
 
         // Add the secondary battery voltage monitor to the Cayenne LPP buffer
         Serial.print(F("Analog 12V Batt Voltage: "));
-        Serial.print(secondBatteryVar->getValueString(false));
+        Serial.print(extraBatteryVar->getValueString(false));
         Serial.println(" V");
         // Add to LPP buffer
-        lpp.addVoltage(15, secondBatteryVar->getValue(false));
+        lpp.addVoltage(15, extraBatteryVar->getValue(false));
         extendedWatchDog::resetWatchDog();
 
         // decode and print the Cayenne LPP buffer we just created

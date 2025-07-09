@@ -135,7 +135,7 @@ For more information on the Meter output with address 0, see "METER SDI-12 IMPLE
 To change the addresses in the NGWOS_Hydros21_HydroCam example code, change these lines to your newly assigned addresses:
 
 ```cpp
-const char* VegaPulsSDI12address = "0";  // The SDI-12 Address of the VegaPuls10
+const char* VegaPulsSDI12address = "0";  // The SDI-12 Address of the VegaPuls21
 ```
 
 ```cpp
