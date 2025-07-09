@@ -4,7 +4,7 @@
  * @license This example is published under the BSD-3 license.
  * @author Sara Geleskie Damiano <sdamiano@stroudcenter.org>
  *
- * @brief A On-Off to send data to The Things Network
+ * @brief A testing program for the USGS with LoRa.
  * ======================================================================= */
 
 // Select your LoRa Module:
@@ -55,6 +55,16 @@
 // Include the main header for ModularSensors
 #include <ModularSensors.h>
 
+// ==========================================================================
+//  Assigning Serial Port Functionality
+// ==========================================================================
+/** Start [assign_ports_hw] */
+// If there are additional hardware Serial ports possible - use them!
+// We give the modem first priority and assign it to hardware serial
+// All of the supported processors have a hardware port available named Serial1
+#define modemSerial SerialBee
+#define cameraSerial Serial1
+
 
 // ==========================================================================
 //  Data Logging Options
@@ -70,8 +80,6 @@ const uint8_t loggingInterval = 5;
 const int8_t timeZone = -5;  // Eastern Standard Time
 // NOTE:  Daylight savings time will not be applied!  Please use standard time!
 
-// Set the input and output pins for the logger
-// NOTE:  Use -1 for pins that do not apply
 const int32_t serialBaud    = 115200;  // Baud rate for debugging
 const int8_t  greenLED      = 8;       // Pin for the green LED
 const int8_t  redLED        = 9;       // Pin for the red LED
