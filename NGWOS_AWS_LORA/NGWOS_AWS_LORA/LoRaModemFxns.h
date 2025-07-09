@@ -29,21 +29,28 @@ class loraModemAWS {
     // The LoRa module's wake trigger mode (ie, 0=ANY, 1=RISE, 2=FALL)
     int8_t _lora_wake_edge;
 
+    void setPinModes() {
+        if (_power_pin_for_module >= 0) {
+            pinMode(_power_pin_for_module, OUTPUT);
+        }
+        if (_arduino_wake_pin >= 0) {
+            pinMode(_arduino_wake_pin, OUTPUT);
+            pinMode(_lora_wake_pin,
+                    _lora_wake_pullup == 1
+                        ? INPUT_PULLUP
+                        : (_lora_wake_pullup == 2 ? INPUT_PULLDOWN : INPUT));
+        }
+        if (_modemStatusPin >= 0) { pinMode(_modemStatusPin, INPUT); }
+    }
+
     void modemPowerOn() {
+        setPinModes();
         if (_power_pin_for_module >= 0) {
             Serial.print("Powering LoRa module with pin ");
             Serial.println(_power_pin_for_module);
             pinMode(_power_pin_for_module, OUTPUT);
             digitalWrite(_power_pin_for_module, HIGH);
 
-            Serial.println(F("Wait..."));
-            delay(1000L);
-        }
-        if (_arduino_wake_pin >= 0) {
-            Serial.print("Waking LoRa module with pin ");
-            Serial.println(_arduino_wake_pin);
-            pinMode(_arduino_wake_pin, OUTPUT);
-            digitalWrite(_arduino_wake_pin, HIGH);
             Serial.println(F("Wait..."));
             delay(1000L);
         }
@@ -152,14 +159,17 @@ class loraModemAWS {
     }
 
     bool modemWake(LoRa_AT& _lora_modem) {
+        // verify we have the power pin set
+        setPinModes();
         if (_arduino_wake_pin >= 0) {
             delay(5000);
-            DBG("Waking LoRa modem with a 100ms LOW pulse on pin",
+            DBG("Waking LoRa modem with a 50ms LOW pulse on pin",
                 _arduino_wake_pin);
             // reset the pin mode - pins tri-state at sleep
+            pinMode(_power_pin_for_module, OUTPUT);
             pinMode(_arduino_wake_pin, OUTPUT);
             digitalWrite(_arduino_wake_pin, LOW);
-            delay(100L);
+            delay(50L);
             digitalWrite(_arduino_wake_pin, HIGH);
             DBG("Testing AT to see if modem woke up");
             if (_lora_modem.testAT()) {

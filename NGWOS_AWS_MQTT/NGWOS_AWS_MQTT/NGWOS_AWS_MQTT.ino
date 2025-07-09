@@ -160,9 +160,9 @@ ProcessorStats mcuBoard(mcuBoardVersion, 5);
 
 // Create sample number, battery voltage, free RAM, and reset cause variable
 // pointers for the processor
-Variable* mcuBoardBatt   = new ProcessorStats_Battery(&mcuBoard, "");
-Variable* mcuBoardSampNo = new ProcessorStats_SampleNumber(&mcuBoard, "");
-// Variable* mcuBoardReset  = new ProcessorStats_ResetCode(&mcuBoard, "");
+Variable* mcuBoardBatt   = new ProcessorStats_Battery(&mcuBoard);
+Variable* mcuBoardSampNo = new ProcessorStats_SampleNumber(&mcuBoard);
+// Variable* mcuBoardReset  = new ProcessorStats_ResetCode(&mcuBoard);
 /** End [processor_stats] */
 
 
@@ -187,9 +187,9 @@ EverlightALSPT19 alsPt19(alsPower, alsData, alsSupply, alsResistance,
 // EverlightALSPT19 alsPt19(alsNumberReadings);
 
 // Create voltage, current, and illuminance variable pointers for the ALS-PT19
-Variable* alsPt19Volt    = new EverlightALSPT19_Voltage(&alsPt19, "");
-Variable* alsPt19Current = new EverlightALSPT19_Current(&alsPt19, "");
-Variable* alsPt19Lux     = new EverlightALSPT19_Illuminance(&alsPt19, "");
+Variable* alsPt19Volt    = new EverlightALSPT19_Voltage(&alsPt19);
+Variable* alsPt19Current = new EverlightALSPT19_Current(&alsPt19);
+Variable* alsPt19Lux     = new EverlightALSPT19_Illuminance(&alsPt19);
 /** End [everlight_alspt19] */
 
 
@@ -214,7 +214,8 @@ GeoluxHydroCam hydrocam(cameraSerial, cameraPower, dataLogger,
                         alwaysAutoFocus);
 
 // Create image size and byte error variables for the Geolux HydroCam
-Variable* hydrocamImageSize = new GeoluxHydroCam_ImageSize(&hydrocam, "");
+Variable* hydrocamImageSize = new GeoluxHydroCam_ImageSize(&hydrocam);
+// Variable* hydrocamByteError = new GeoluxHydroCam_ByteError(&hydrocam);
 /** End [geolux_hydro_cam] */
 
 
@@ -232,8 +233,8 @@ const bool   SHT4xUseHeater = true;
 SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
 
 // Create humidity and temperature variable pointers for the SHT4X
-Variable* sht4xHumid = new SensirionSHT4x_Humidity(&sht4x, "");
-Variable* sht4xTemp  = new SensirionSHT4x_Temp(&sht4x, "");
+Variable* sht4xHumid = new SensirionSHT4x_Humidity(&sht4x);
+Variable* sht4xTemp  = new SensirionSHT4x_Temp(&sht4x);
 /** End [sensirion_sht4x] */
 
 
@@ -244,22 +245,22 @@ Variable* sht4xTemp  = new SensirionSHT4x_Temp(&sht4x, "");
 #include <sensors/VegaPuls21.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const char* VegaPulsSDI12address = "4";  // The SDI-12 Address of the VegaPuls10
+const char* VegaPulsSDI12address = "4";  // The SDI-12 Address of the VegaPuls21
 const int8_t VegaPulsPower       = sensorPowerPin;  // Power pin
 const int8_t VegaPulsData        = sdi12DataPin;    // The SDI-12 data pin
 // NOTE:  you should NOT take more than one readings.  THe sensor already takes
 // and averages 8 by default.
 
-// Create a Campbell VegaPusl21 sensor object
+// Create a Vega Puls21 sensor object
 VegaPuls21 VegaPuls(*VegaPulsSDI12address, VegaPulsPower, VegaPulsData);
 
 // Create stage, distance, temperature, reliability, and error variable pointers
 // for the VegaPuls21
-Variable* VegaPulsStage       = new VegaPuls21_Stage(&VegaPuls, "");
-Variable* VegaPulsDistance    = new VegaPuls21_Distance(&VegaPuls, "");
-Variable* VegaPulsTemp        = new VegaPuls21_Temp(&VegaPuls, "");
-Variable* VegaPulsReliability = new VegaPuls21_Reliability(&VegaPuls, "");
-Variable* VegaPulsError       = new VegaPuls21_ErrorCode(&VegaPuls, "");
+Variable* VegaPulsStage       = new VegaPuls21_Stage(&VegaPuls);
+Variable* VegaPulsDistance    = new VegaPuls21_Distance(&VegaPuls);
+Variable* VegaPulsTemp        = new VegaPuls21_Temp(&VegaPuls);
+Variable* VegaPulsReliability = new VegaPuls21_Reliability(&VegaPuls);
+Variable* VegaPulsError       = new VegaPuls21_ErrorCode(&VegaPuls);
 /** End [vega_puls21] */
 
 
@@ -297,7 +298,7 @@ float readExtraBattery() {
     return sensorValue_battery;
 }
 
-// Properties of the calculated variable
+// Properties of the calculated variable for the extra battery
 // The number of digits after the decimal place
 const uint8_t extraBatteryResolution = 3;
 // This must be a value from http://vocabulary.odm2.org/variablename/
@@ -484,6 +485,7 @@ void setup() {
     modemSerial.begin(modemBaud);
 
     // Start the stream for the camera; it will always be at 115200 baud
+    PRINTOUT(F("Starting camera connection at"), 115200, F("baud"));
     cameraSerial.begin(115200);
 
     /** End [setup_serial_begins] */
@@ -492,11 +494,9 @@ void setup() {
     PRINTOUT(F("Starting SPI"));
     SPI.begin();
 
-#if defined(EXTERNAL_FLASH_DEVICES)
     PRINTOUT(F("Setting onboard flash pin modes"));
     pinMode(flashSSPin,
             OUTPUT);  // for proper operation of the onboard flash memory
-#endif
 
     PRINTOUT(F("Starting I2C (Wire)"));
     Wire.begin();
@@ -605,9 +605,10 @@ void setup() {
 
     /** Start [setup_file] */
     // Create the log file, adding the default header to it
-    // Do this last so we have the best chance of getting the time correct
-    // and all sensor names correct Writing to the SD card can be power
-    // intensive, so if we're skipping the sensor setup we'll skip this too.
+    // Do this last so we have the best chance of getting the time correct and
+    // all sensor names correct.
+    // Writing to the SD card can be power intensive, so if we're skipping the
+    // sensor setup we'll skip this too.
     if (getBatteryVoltage() > 3.4) {
         PRINTOUT(F("Setting up file on SD card"));
         dataLogger.turnOnSDcard(true);

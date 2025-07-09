@@ -213,7 +213,7 @@ SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
 #include <sensors/VegaPuls21.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const char* VegaPulsSDI12address = "0";  // The SDI-12 Address of the VegaPuls10
+const char* VegaPulsSDI12address = "0";  // The SDI-12 Address of the VegaPuls21
 const int8_t VegaPulsPower       = sensorPowerPin;  // Power pin
 const int8_t VegaPulsData        = 3;               // The SDI-12 data pin
 // NOTE:  you should NOT take more than one readings.  THe sensor already takes
