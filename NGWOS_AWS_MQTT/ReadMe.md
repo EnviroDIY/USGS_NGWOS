@@ -1,6 +1,7 @@
 # NGWOS AWS
 
 This program transmits data from a Vega Puls 21, a Geolux camera, and onboard sensors from a Stonefly data logger to AWS IoT Core (for numeric data) and S3 (for images).
+This program uses an EnviroDIY LTE Bee based on a SIMCom SIM7080G LTE module.
 
 While this program is set for the above sensors, modem, and endpoints, the [ModularSensors library](https://github.com/EnviroDIY/ModularSensors/) this program is built on supports many more sensors, modems, and data endpoints.
 Look at the [GitHub repository](https://github.com/EnviroDIY/ModularSensors/) and [documentation](https://envirodiy.github.io/ModularSensors/) for ModularSensors for help in adding more sensors.
@@ -48,7 +49,7 @@ TODO: Add instructions for connecting the secondary battery monitor!
 
 ## Library Dependencies
 
-This example program is built around the **AWS IoT branch** of ModularSensors library, ***NOT*** the released version of the library!
+This example program is built around the **develop branch** of ModularSensors library, ***NOT*** the released version of the library!
 
 To get all of the correct dependencies for Arduino IDE, please download them together in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) in the repository main folder.
 After unzipping the dependencies, move them all to your Arduino libraries folder.

@@ -1,6 +1,6 @@
 # NGWOS AWS Certificates
 
-This program loads the required certificates for communication with AWS IoT Core onto the EnviroDIY LTE Bee modem.
+This program loads the required certificates for communication with AWS IoT Core onto the EnviroDIY Wi-Fi Bee modem.
 
 - [NGWOS AWS Certificates](#ngwos-aws-certificates)
   - [Physical Connections](#physical-connections)
@@ -39,7 +39,7 @@ The cut corners should be at the top of the module, following the traced lines o
 
 ## Library Dependencies
 
-This example program is built around the **AWS IoT branch** of ModularSensors library, ***NOT*** the released version of the library!
+This example program is built around the **develop branch** of ModularSensors library, ***NOT*** the released version of the library!
 
 To get all of the correct dependencies for Arduino IDE, please download them together in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) in the repository main folder.
 After unzipping the dependencies, move them all to your Arduino libraries folder.

@@ -1,5 +1,5 @@
 /** =========================================================================
- * @example{lineno} USGS_AWS.ino
+ * @example{lineno} USGS_AWS_MQTT.ino
  * @copyright Stroud Water Research Center
  * @license This example is published under the BSD-3 license.
  * @author Sara Geleskie Damiano <sdamiano@stroudcenter.org>
@@ -361,10 +361,8 @@ S3PresignedPublisher s3pub;
 /** Start [aws_io_t_publisher] */
 // The endpoint for your AWS IoT instance
 const char* awsIoTEndpoint = AWS_IOT_ENDPOINT;
-// Sampling feature UUID, this will be the sub-topic for your data
 // NOTE: Because we already set the sampling feature with the logger
 // constructor, don't do it here.
-// const char* samplingFeature = "";
 // The name of your client certificate file
 const char* clientCertName = THING_NAME "-certificate.pem.crt";
 // The name of your client private key file

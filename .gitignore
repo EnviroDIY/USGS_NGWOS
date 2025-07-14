@@ -94,9 +94,8 @@ NGWOS_Hydros21_HydroCam/teraterm.log
 NGWOS_TTN/lorawan-stack-cli_3.33.0_windows_amd64/*
 NGWOS_TTN/TTNDownloader/*
 NGWOS_VegaAndHydroCam/NGWOS_VegaAndHydroCam_SWRC_UUIDs/NGWOS_VegaAndHydroCam_SWRC_UUIDs.ino
-NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs/*
-NGWOS_AWS_MQTT_Certs/AWS_Stroud1_certs.zip
-NGWOS_AWS_Certs/AWS_Stroud1_certs.zip
+*/AWS_Stroud1_certs/*
+*/AWS_Stroud1_certs.zip
 NGWOS_AWS_LORA/LoRa Connection/*
 */platformio.ini
 pio_extra_libs/*
