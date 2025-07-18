@@ -50,9 +50,6 @@
 #include <PubSubClient.h>
 #include "aws_iot_config.h"
 
-// set GSM PIN, if any
-#define GSM_PIN ""
-
 // Your GPRS credentials, if any
 const char apn[]      = "hologram";
 const char gprsUser[] = "";
@@ -77,8 +74,10 @@ static const char msgInit[] TINY_GSM_PROGMEM   = "{\"" THING_NAME
 
 // For most modules the actual filename doesn't matter much but it CANNOT
 // HAVE SPACES and should be less than 64 characters.
-// NOTE: The certificate names as they are downloaded from AWS IoT Core
-// are often too long for the modem to handle. Pick something shorter.
+// Some modules will not accept filenames with special characters so avoid
+// those, too.
+// NOTE: The certificate names as they are downloaded from AWS IoT Core are
+// often too long for the modem to handle. Pick something shorter.
 const char* root_ca_name     = "AmazonRootCA1.pem";
 const char* client_cert_name = THING_NAME "-certificate.pem.crt";
 const char* client_key_name  = THING_NAME "-private-key.pem.key";
@@ -91,50 +90,24 @@ TinyGsm        modem(debugger);
 TinyGsm modem(SerialAT);
 #endif
 
-TinyGsmClientSecure secureClient(modem);
+TinyGsmClientSecure secureClient(modem, (uint8_t)0);
 PubSubClient        mqtt(secureClient);
 
 #define LED_PIN 13
 int ledStatus = LOW;
 
+// ======================== CERTIFICATE NAMES ========================
+
+const char* root_ca     = AWS_SERVER_CERTIFICATE;
+const char* client_cert = AWS_CLIENT_CERTIFICATE;
+const char* client_key  = AWS_CLIENT_PRIVATE_KEY;
+
 uint32_t lastReconnectAttempt = 0;
+bool     setupSuccess         = false;
+bool     certificateSuccess   = false;
 
-boolean mqttConnect() {
-    SerialMon.print("Connecting to ");
-    SerialMon.print(broker);
-    SerialMon.print(" with client ID ");
-    SerialMon.println(clientId);
-
-    // Connect to MQTT Broker
-    boolean status = mqtt.connect(clientId);
-
-    if (status == false) {
-        SerialMon.println(" ...failed to connect to AWS IoT MQTT broker!");
-        return false;
-    }
-    SerialMon.println(" ...success");
-
-    SerialMon.print("Publishing a message to ");
-    SerialMon.println(topicInit);
-    bool got_pub = mqtt.publish(topicInit, msgInit);
-    SerialMon.println(got_pub ? "published" : "failed to publish");
-
-    return mqtt.connected();
-}
-
-
-void setup() {
-    // Set console baud rate
-    SerialMon.begin(921600);
-    delay(10);
-
-    while (!SerialMon && millis() < 10000L) {}
-
-    pinMode(LED_PIN, OUTPUT);
-
-    // !!!!!!!!!!!
-    // Set your reset, enable, power pins here
-    // pins
+bool wakeModem() {
+    // Set your reset, enable, and power pins here
     int8_t _modemPowerPin   = 18;  // Mayfly 1.1 & Stonefly
     int8_t _modemSleepRqPin = 23;  // Mayfly 1.1 & Stonefly
     int8_t _modemStatusPin  = 19;  // Mayfly 1.1 & Stonefly
@@ -168,34 +141,24 @@ void setup() {
     delay(_wakePulse_ms);  // >1s
     digitalWrite(_modemSleepRqPin, !_wakeLevel);
 
-    DBG("Wait...");
-    delay(500L);
+    return true;
+}
 
-    // Set GSM module baud rate
-    TinyGsmAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);
-    // SerialAT.begin(57600);
-
-    // Restart takes quite some time
-    // To skip it, call init() instead of restart()
-    SerialMon.print("Initializing modem...");
-    if (!modem.restart()) {  // modem.init();
-        SerialMon.println(" ...failed to initialize modem!");
-        delay(10000);
-        return;
+bool setModemBaud(uint32_t baud) {
+    SerialMon.print(F("Setting modem baud rate to "));
+    SerialMon.println(baud);
+    if (!modem.setBaud(baud)) {
+        SerialMon.println(F("...failed!"));
+        return false;
     }
-    SerialMon.println(" ...success");
-
-    // Max out the baud rate, if desired
-    // NOTE: Do this **AFTER** the modem has been restarted - many modules
-    // revert to default baud rates when reset or powered off. 921600, 460800,
-    // 230400, 115200
-    modem.setBaud(921600);
-    SerialAT.end();
+    SerialMon.println(F("...success!"));
+    // Set the serial port to the new baud rate
+    SerialAT.begin(baud);
     delay(100);
-    SerialAT.begin(921600);
-    delay(100);
-    modem.init();  // May need to re-init to turn off echo, etc
+    return modem.init();  // May need to re-init to turn off echo, etc
+}
 
+void printModemInfo() {
     String modemInfo = modem.getModemInfo();
     SerialMon.print("Modem Info: ");
     SerialMon.println(modemInfo);
@@ -208,39 +171,44 @@ void setup() {
     String modemRevision = modem.getModemRevision();
     SerialMon.print("Modem Revision: ");
     SerialMon.println(modemRevision);
+    String modemSerial = modem.getModemSerialNumber();
+    SerialMon.print("Modem Serial: ");
+    SerialMon.println(modemSerial);
+    String modemIMEI = modem.getIMEI();
+    SerialMon.print("Modem IMEI: ");
+    SerialMon.println(modemIMEI);
+    String modemIMSI = modem.getIMSI();
+    SerialMon.print("Modem IMSI: ");
+    SerialMon.println(modemIMSI);
+}
 
-    // Unlock your SIM card with a PIN if needed
-    if (GSM_PIN && modem.getSimStatus() != 3) { modem.simUnlock(GSM_PIN); }
-
-    // ======================== CERTIFICATE NAMES ========================
-    // The certificates are stored in the "certificates.h" file
-
-    const char* root_ca     = AWS_SERVER_CERTIFICATE;
-    const char* client_cert = AWS_CLIENT_CERTIFICATE;
-    const char* client_key  = AWS_CLIENT_PRIVATE_KEY;
+bool setupCertificates() {
     // ======================== CA CERTIFICATE LOADING ========================
     bool ca_cert_success = true;
     // add the server's certificate authority certificate to the modem
     SerialMon.print("Loading Certificate Authority Certificate");
     ca_cert_success &= modem.loadCertificate(root_ca_name, root_ca,
                                              strlen(root_ca));
+    delay(250);
     if (!ca_cert_success) {
         SerialMon.println(" ...failed to load CA certificate!");
-        delay(10000);
-        return;
+        return false;
     }
     SerialMon.println(" ...success");
+
     // print out the certificate to make sure it matches
     SerialMon.println(
         "Printing Certificate Authority Certificate to confirm it matches");
     modem.printCertificate(root_ca_name, SerialMon);
+    delay(1000);
+
     // convert the certificate to the modem's format
     SerialMon.print("Converting Certificate Authority Certificate");
     ca_cert_success &= modem.convertCACertificate(root_ca_name);
+    delay(250);
     if (!ca_cert_success) {
         SerialMon.println(" ...failed to convert CA certificate!");
-        delay(10000);
-        return;
+        return false;
     }
     SerialMon.println(" ...success");
 
@@ -250,30 +218,35 @@ void setup() {
     SerialMon.print("Loading Client Certificate");
     client_cert_success &= modem.loadCertificate(client_cert_name, client_cert,
                                                  strlen(client_cert));
+    delay(250);
+
     // print out the certificate to make sure it matches
     modem.printCertificate(client_cert_name, SerialMon);
     delay(1000);
+
     SerialMon.print(" and Client Private Key ");
     client_cert_success &= modem.loadCertificate(client_key_name, client_key,
                                                  strlen(client_key));
+    delay(250);
+
     // print out the certificate to make sure it matches
     modem.printCertificate(client_key_name, SerialMon);
+    delay(1000);
+
     if (!client_cert_success) {
         SerialMon.println(" ...failed to load client certificate or key!");
-        delay(10000);
-        return;
+        return false;
     }
     SerialMon.println(" ...success");
     // convert the client certificate pair to the modem's format
     client_cert_success &= modem.convertClientCertificates(client_cert_name,
                                                            client_key_name);
+    delay(250);
     if (!client_cert_success) {
         SerialMon.println(" ...failed to convert client certificate and key!");
-        delay(10000);
-        return;
+        return false;
     }
     SerialMon.println(" ...success");
-    delay(1000);
 
     // ================= SET CERTIFICATES FOR THE CONNECTION =================
     // AWS IoT Core requires mutual authentication
@@ -289,84 +262,189 @@ void setup() {
     DBG("Assigning", client_key_name, "as client key on socket");
     secureClient.setPrivateKeyName(client_key_name);
 
-    // =================== WAIT FOR NETWORK REGISTRATION ===================
-    SerialMon.print("Waiting for network...");
-    if (!modem.waitForNetwork(300000L)) {
-        SerialMon.println(" ...failed to connect to network!");
-        delay(10000);
-        return;
+    return ca_cert_success & client_cert_success;
+}
+
+bool mqttConnect() {
+    SerialMon.print("Connecting to ");
+    SerialMon.print(broker);
+    SerialMon.print(" with client ID ");
+    SerialMon.println(clientId);
+
+    // Connect to MQTT Broker
+    bool status = mqtt.connect(clientId);
+
+    if (status == false) {
+        SerialMon.println(" ...failed to connect to AWS IoT MQTT broker!");
+        return false;
     }
     SerialMon.println(" ...success");
 
-    if (modem.isNetworkConnected()) { SerialMon.println("Network connected"); }
+    SerialMon.print("Publishing a message to ");
+    SerialMon.println(topicInit);
+    bool got_pub = mqtt.publish(topicInit, msgInit);
+    SerialMon.println(got_pub ? "published" : "failed to publish");
 
-    // ====================== MAKE DATA CONNECTION =======================
-    // GPRS connection parameters are usually set after network registration
-    SerialMon.print(F("Connecting to "));
-    SerialMon.println(apn);
-    if (!modem.gprsConnect(apn, gprsUser, gprsPass)) {
-        SerialMon.println(" ...failed to connect to GPRS!");
-        delay(10000);
-        return;
+    return mqtt.connected();
+}
+
+bool setupModem() {
+    bool success = true;
+
+    // Attempt to autobaud the modem
+    TinyGsmAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);
+
+    // Restart takes quite some time
+    // To skip it, call init() instead of restart()
+    SerialMon.print("Initializing modem...");
+    if (!modem.init()) {  // modem.restart();
+        SerialMon.println(" ...failed to initialize modem!");
+        delay(30000);
+        return false;
     }
     SerialMon.println(" ...success");
 
-    if (modem.isGprsConnected()) { SerialMon.println("GPRS connected"); }
+    // Max out the baud rate, if desired
+    // NOTE: Do this **AFTER** the modem has been restarted - many modules
+    // revert to default baud rates when reset or powered off.
+    success &= setModemBaud(921600L);
 
+    printModemInfo();
+
+    return success;
+}
+
+bool setupNetwork() {
     // enable/force time sync with NTP server
     // This is **REQUIRED** for validated SSL connections
     DBG("Enabling time sync with NTP server");
-    modem.NTPServerSync("pool.ntp.org", -5);
+    modem.NTPServerSync("pool.ntp.org", -4);
+    return true;
+}
 
+bool getInternetConnection() {
+    // Make sure we're registered on the network
+    if (!modem.isNetworkConnected()) {
+        SerialMon.println("Network disconnected");
+        if (!modem.waitForNetwork(180000L, true)) {
+            SerialMon.println(" ...failed to reconnect to network!");
+            delay(30000);
+            return false;
+        }
+        if (modem.isNetworkConnected()) {
+            SerialMon.println("Network connected");
+        }
+    }
+
+    // Make sure GPRS/EPS is connected
+    if (!modem.isGprsConnected()) {
+        SerialMon.println("GPRS disconnected!");
+        SerialMon.print(F("Connecting to "));
+        SerialMon.println(apn);
+        if (!modem.gprsConnect(apn, gprsUser, gprsPass)) {
+            SerialMon.println(" ...failed to connect to GPRS!");
+            delay(30000);
+            return false;
+        }
+        if (modem.isGprsConnected()) { SerialMon.println("GPRS reconnected"); }
+    }
+
+    // check and print the signal quality for debugging
+    uint16_t modemService = modem.getSignalQuality();
+    SerialMon.print("Signal Quality: ");
+    SerialMon.println(modemService);
+
+    // check and print the current network time to ensure that the modem has
+    // synchronized with the NTP server
     String time = modem.getGSMDateTime(TinyGSMDateTimeFormat::DATE_FULL);
     DBG("Current Network Time:", time);
 
+    return true;
+}
+
+
+void setup() {
+    // Set console baud rate
+    SerialMon.begin(921600);
+    delay(10);
+
+    while (!SerialMon && millis() < 10000L) {}
+
+    pinMode(LED_PIN, OUTPUT);
+
     // MQTT Broker setup
+    // NOTE: This is only configuring the server within the PubSubClient object.
+    // It does not take any action.
     mqtt.setServer(broker, port);
+
+    wakeModem();
+
+    DBG("Wait...");
+    delay(500L);
+
+    SerialMon.println("Setting up modem...");
+    setupSuccess = setupModem();
+    if (!setupSuccess) {
+        SerialMon.println(" ...failed to set up modem!");
+        delay(30000);
+        return;
+    }
+    SerialMon.println(" ...success");
+
+    SerialMon.println("Loading and configuring certificates...");
+    certificateSuccess = setupCertificates();
+    if (!certificateSuccess) {
+        SerialMon.println(" ...failed to set up certificates!");
+        delay(30000);
+        return;
+    }
+    SerialMon.println(" ...success");
+
+    SerialMon.println("Setting up network...");
+    if (!setupNetwork()) {
+        SerialMon.println(" ...failed to set up network!");
+        delay(30000);
+        return;
+    }
+    SerialMon.println(" ...success");
+
+    getInternetConnection();
 
     delay(500);
     DBG("Finished setup");
 }
 
 void loop() {
-    // Make sure we're still registered on the network
-    if (!modem.isNetworkConnected()) {
-        SerialMon.println("Network disconnected");
-        if (!modem.waitForNetwork(180000L, true)) {
-            SerialMon.println(" ...failed to reconnect to network!");
-            delay(10000);
+    if (!setupSuccess) {
+        SerialMon.println("Modem setup failed, re-trying...");
+        setupSuccess = setupModem();
+        if (!setupSuccess) {
+            SerialMon.println(" ...failed to set up modem!");
+            delay(30000);
             return;
         }
-        if (modem.isNetworkConnected()) {
-            SerialMon.println("Network re-connected");
-        }
-
-        // and make sure GPRS/EPS is still connected
-        if (!modem.isGprsConnected()) {
-            SerialMon.println("GPRS disconnected!");
-            SerialMon.print(F("Connecting to "));
-            SerialMon.println(apn);
-            if (!modem.gprsConnect(apn, gprsUser, gprsPass)) {
-                SerialMon.println(" ...failed to reconnect to GPRS!");
-                delay(10000);
-                return;
-            }
-            if (modem.isGprsConnected()) {
-                SerialMon.println("GPRS reconnected");
-            }
-        }
+        SerialMon.println(" ...success");
     }
 
-    if (!mqtt.connected()) {
-        SerialMon.println("=== MQTT NOT CONNECTED ===");
-        // Reconnect every 10 seconds
-        uint32_t t = millis();
-        if (t - lastReconnectAttempt > 30000L) {
-            lastReconnectAttempt = t;
-            if (mqttConnect()) { lastReconnectAttempt = 0; }
+    if (!certificateSuccess) {
+        SerialMon.println(
+            "Modem certificate configuration failed, re-trying...");
+        certificateSuccess = setupCertificates();
+        if (!certificateSuccess) {
+            SerialMon.println(" ...failed to set up certificates!");
+            delay(30000);
+            return;
         }
-        delay(5000L);
-        return;
+        SerialMon.println(" ...success");
+    }
+
+    // Re-test and reconnect if necessary every 10 seconds
+    if (millis() - lastReconnectAttempt > 10000L) {
+        lastReconnectAttempt = millis();
+        if (!mqtt.connected()) {
+            SerialMon.println("=== MQTT NOT CONNECTED ===");
+            if (getInternetConnection()) { mqttConnect(); }
+        }
     }
 
     mqtt.loop();

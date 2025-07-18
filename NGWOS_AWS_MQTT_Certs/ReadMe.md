@@ -146,7 +146,7 @@ These are the messages you should see on the serial monitor as your program runs
 
 - First there will be a several second delay and wait for the modem to wake.
 - After warm up, the modem will initialize and you should see the message `Initializing modem... ...success`.
-- Next you will see a print out of the modem info; `Modem Info:` followed by the serial number and other info about your modem. This is just for your imformation.
+- Next you will see a print out of the modem info; `Modem Info:` followed by the serial number and other info about your modem. This is just for your information.
 - The Stonefly will then load the CA certificate, client certificate, and key onto the modem, convert them to the modem's internal file format, and print back the loaded text so you can confirm it matches later if there are problems.
 - After the certificates are loaded, the modem waits for a network connection.  If the connection succeeds, you'll see the message `Waiting for network... ...success`
 
