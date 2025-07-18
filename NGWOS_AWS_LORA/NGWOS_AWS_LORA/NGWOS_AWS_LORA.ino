@@ -720,29 +720,29 @@ void loop() {
         if (successful_wake) {
             if (loraStream.write(lpp.getBuffer(), lpp.getSize()) ==
                 lpp.getSize()) {
-            Serial.println(F("  Successfully sent data"));
-            extendedWatchDog::resetWatchDog();
-            if ((Logger::markedLocalUnixTime != 0 &&
-                 Logger::markedLocalUnixTime % 86400 == 43200) ||
-                !dataLogger.isRTCSane()) {
-                Serial.println(F("Running a daily clock sync..."));
-                // get the epoch time from the LoRa network
-                uint32_t epochTime = loraModem.modemGetTime(loraAT);
-                // set the RTC time from the epoch
-                if (epochTime != 0) {
-                    Serial.print(F("Setting RTC epoch to "));
-                    Serial.println(epochTime);
-                    loggerClock::setRTClock(epochTime, UNIX,
-                                            epochStart::unix_epoch);
-                }
+                Serial.println(F("  Successfully sent data"));
                 extendedWatchDog::resetWatchDog();
-            }
-        } else {
-            Serial.println(F("--Failed to send data!"));
-            bool res = loraAT.isNetworkConnected();
-            Serial.print(F("Network status: "));
-            Serial.println(res ? "connected" : "not connected");
-            extendedWatchDog::resetWatchDog();
+                if ((Logger::markedLocalUnixTime != 0 &&
+                     Logger::markedLocalUnixTime % 86400 == 43200) ||
+                    !dataLogger.isRTCSane()) {
+                    Serial.println(F("Running a daily clock sync..."));
+                    // get the epoch time from the LoRa network
+                    uint32_t epochTime = loraModem.modemGetTime(loraAT);
+                    // set the RTC time from the epoch
+                    if (epochTime != 0) {
+                        Serial.print(F("Setting RTC epoch to "));
+                        Serial.println(epochTime);
+                        loggerClock::setRTClock(epochTime, UNIX,
+                                                epochStart::unix_epoch);
+                    }
+                    extendedWatchDog::resetWatchDog();
+                }
+            } else {
+                Serial.println(F("--Failed to send data!"));
+                bool res = loraAT.isNetworkConnected();
+                Serial.print(F("Network status: "));
+                Serial.println(res ? "connected" : "not connected");
+                extendedWatchDog::resetWatchDog();
             }
         } else {
             Serial.println(
