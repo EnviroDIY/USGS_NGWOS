@@ -7,18 +7,21 @@
  * @brief An program to load certificates for AWS IoT Core on to your modem to
  * use for later connection.
  *
+ * This program writes new certificates to the modem, connects to AWS IoT Core,
+ * publishes an initial message, and then subscribes to a topic to toggle an
+ * LED. After the initial connection, the board will check and try to reconnect
+ * every 10 seconds and republish its status every 60 seconds.  If it receives
+ * any messages on the subscribed topic, it will toggle the LED state.  The
+ * content of any received messages is ignored.
+ *
  * You should run this program once to load your certificates and confirm that
- * you can connect to AWS IoT Core over MQTT.  Once you have confirmed your
+ * you can connect to AWS IoT Core over MQTT. Once you have confirmed your
  * certificates are loaded and working, there is no reason to rerun this program
  * unless you have a new modem, reset your modem, or your certificates change.
  * Most modules store the certificates in flash, which has a limited number of
  * read/write cycles. To avoid wearing out the flash unnecessarily, you should
  * only run this program when necessarily, don't re-write the certificates every
  * time you want to connect to AWS IoT Core.
- *
- * @note This only works for modules that have support for both using and
- * **loading** certificates in TinyGSM. Modules that support SSL, but not
- *writing certificates, cannot use this example!
  **************************************************************/
 
 // Select your modem:
@@ -63,10 +66,9 @@ uint16_t port = 8883;
 // the client ID should be the name of your "thing" in AWS IoT Core
 const char* clientId = THING_NAME;
 
-static const char topicInit[] TINY_GSM_PROGMEM = THING_NAME "/init";
-static const char msgInit[] TINY_GSM_PROGMEM   = "{\"" THING_NAME
-                                               "\":\"connected\"}";
-
+static const char topicInit[] TINY_GSM_PROGMEM      = THING_NAME "/init";
+static const char topicLed[] TINY_GSM_PROGMEM       = THING_NAME "/led";
+static const char topicLedStatus[] TINY_GSM_PROGMEM = THING_NAME "/ledStatus";
 
 // The certificates should generally be formatted as ".pem", ".der", or (for
 // some modules) ".p7b" files.
@@ -99,6 +101,7 @@ const char* client_cert = AWS_CLIENT_CERTIFICATE;
 const char* client_key  = AWS_CLIENT_PRIVATE_KEY;
 
 uint32_t lastReconnectAttempt = 0;
+uint32_t lastStatusPublished  = 0;
 bool     setupSuccess         = false;
 bool     certificateSuccess   = false;
 
@@ -238,6 +241,55 @@ bool setupCertificates() {
     return ca_cert_success & client_cert_success;
 }
 
+String createStatusMessage() {
+    String msgStatus = "{\"clientId\":\"" THING_NAME "\"";
+    msgStatus += ",\"LED status\":\"" + String(ledStatus) + "\"";
+    uint16_t modemService = modem.getSignalQuality();
+    msgStatus += ",\"modemSignalQuality\":\"" + String(modemService) + "\"";
+    String time = modem.getGSMDateTime(TinyGSMDateTimeFormat::DATE_FULL);
+    msgStatus += ",\"modemTime\":\"" + time + "\"";
+    msgStatus += "}";
+    return msgStatus;
+}
+
+String createInitMessage() {
+    String msgInit = "{\"clientId\":\"" THING_NAME "\"";
+
+    String modemInfo = modem.getModemInfo();
+    msgInit += ",\"modemInfo\":\"" + modemInfo + "\"";
+    String modemManufacturer = modem.getModemManufacturer();
+    msgInit += ",\"modemManufacturer\":\"" + modemManufacturer + "\"";
+    String modemModel = modem.getModemModel();
+    msgInit += ",\"modemModel\":\"" + modemModel + "\"";
+    String modemRevision = modem.getModemRevision();
+    msgInit += ",\"modemRevision\":\"" + modemRevision + "\"";
+    uint16_t modemService = modem.getSignalQuality();
+    msgInit += ",\"modemSignalQuality\":\"" + String(modemService) + "\"";
+    String time = modem.getGSMDateTime(TinyGSMDateTimeFormat::DATE_FULL);
+    msgInit += ",\"modemTime\":\"" + time + "\"";
+    msgInit += "}";
+
+    return msgInit;
+}
+
+void mqttCallback(char* topic, byte* payload, unsigned int len) {
+    SerialMon.print("Message arrived [");
+    SerialMon.print(topic);
+    SerialMon.print("]: ");
+    SerialMon.write(payload, len);
+    SerialMon.println();
+
+    // Only proceed if incoming message's topic matches
+    if (String(topic) == topicLed) {
+        ledStatus = !ledStatus;
+        digitalWrite(LED_PIN, ledStatus);
+
+        // Create a status message to send to the broker
+        String msgStatus = createStatusMessage();
+        mqtt.publish(topicLedStatus, msgStatus.c_str());
+    }
+}
+
 bool mqttConnect() {
     SerialMon.print("Connecting to ");
     SerialMon.print(broker);
@@ -253,12 +305,46 @@ bool mqttConnect() {
     }
     SerialMon.println(" ...success");
 
+    // Create a init message to send to the broker
+    String msgInit = createInitMessage();
+
+    // Make sure the MQTT buffer is large enough to hold the
+    // initial message and the topic name.
+    uint16_t neededBuffer = MQTT_MAX_HEADER_SIZE + 2 +
+        strnlen(topicInit, mqtt.getBufferSize()) + msgInit.length() + 1;
+    if (mqtt.getBufferSize() < neededBuffer) {
+        SerialMon.print("Increasing MQTT buffer size from ");
+        SerialMon.print(mqtt.getBufferSize());
+        SerialMon.print(" to ");
+        SerialMon.println(neededBuffer);
+        mqtt.setBufferSize(neededBuffer);
+    }
+
     SerialMon.print("Publishing a message to ");
     SerialMon.println(topicInit);
-    bool got_pub = mqtt.publish(topicInit, msgInit);
+    SerialMon.print("Message content: ");
+    SerialMon.println(msgInit);
+
+    bool got_pub = mqtt.publish(topicInit, msgInit.c_str());
     SerialMon.println(got_pub ? "published" : "failed to publish");
+    SerialMon.print("Subscribing to ");
+    SerialMon.println(topicLed);
+    bool got_sub = mqtt.subscribe(topicLed);
+    SerialMon.println(got_sub ? "subscribed" : "failed to subscribe");
 
     return mqtt.connected();
+}
+
+bool mqttPublishStatus() {
+    SerialMon.print("Publishing a message to ");
+    SerialMon.println(topicLedStatus);
+
+    // Create a status message to send to the broker
+    String msgStatus = createStatusMessage();
+    bool   got_pub   = mqtt.publish(topicLedStatus, msgStatus.c_str());
+
+    SerialMon.println(got_pub ? "published" : "failed to publish");
+    return got_pub;
 }
 
 bool setupModem() {
@@ -272,7 +358,7 @@ bool setupModem() {
     SerialMon.print("Initializing modem...");
     if (!modem.init()) {  // modem.restart();
         SerialMon.println(" ...failed to initialize modem!");
-        delay(30000);
+        delay(15000L);
         return false;
     }
     SerialMon.println(" ...success");
@@ -308,9 +394,10 @@ bool getInternetConnection() {
     // Make sure we're connected to the network
     if (!modem.isNetworkConnected()) {
         SerialMon.println("Network disconnected");
-        if (!modem.waitForNetwork(180000L, true)) {
+        SerialMon.println("Waiting up to 5 minutes for network connection...");
+        if (!modem.waitForNetwork(300000L, true)) {
             SerialMon.println(" ...failed to reconnect to network!");
-            delay(30000);
+            delay(15000L);
             return false;
         }
         if (modem.isNetworkConnected()) {
@@ -342,9 +429,11 @@ void setup() {
     pinMode(LED_PIN, OUTPUT);
 
     // MQTT Broker setup
-    // NOTE: This is only configuring the server within the PubSubClient object.
+    // NOTE: This is only configuring the server and callback within the
+    // PubSubClient object.
     // It does not take any action.
     mqtt.setServer(broker, port);
+    mqtt.setCallback(mqttCallback);
 
     wakeModem();
 
@@ -355,7 +444,7 @@ void setup() {
     setupSuccess = setupModem();
     if (!setupSuccess) {
         SerialMon.println(" ...failed to set up modem!");
-        delay(30000);
+        delay(15000L);
         return;
     }
     SerialMon.println(" ...success");
@@ -364,7 +453,7 @@ void setup() {
     certificateSuccess = setupCertificates();
     if (!certificateSuccess) {
         SerialMon.println(" ...failed to set up certificates!");
-        delay(30000);
+        delay(15000L);
         return;
     }
     SerialMon.println(" ...success");
@@ -372,7 +461,7 @@ void setup() {
     SerialMon.println("Setting up network...");
     if (!setupNetwork()) {
         SerialMon.println(" ...failed to set up network!");
-        delay(30000);
+        delay(15000L);
         return;
     }
     SerialMon.println(" ...success");
@@ -389,7 +478,7 @@ void loop() {
         setupSuccess = setupModem();
         if (!setupSuccess) {
             SerialMon.println(" ...failed to set up modem!");
-            delay(30000);
+            delay(15000L);
             return;
         }
         SerialMon.println(" ...success");
@@ -401,7 +490,7 @@ void loop() {
         certificateSuccess = setupCertificates();
         if (!certificateSuccess) {
             SerialMon.println(" ...failed to set up certificates!");
-            delay(30000);
+            delay(15000L);
             return;
         }
         SerialMon.println(" ...success");
@@ -414,6 +503,12 @@ void loop() {
             SerialMon.println("=== MQTT NOT CONNECTED ===");
             if (getInternetConnection()) { mqttConnect(); }
         }
+    }
+
+    // publish the current LED status every 60 seconds
+    if (millis() - lastStatusPublished > 60000L) {
+        lastStatusPublished = millis();
+        if (mqtt.connected()) { mqttPublishStatus(); }
     }
 
     mqtt.loop();

@@ -109,7 +109,6 @@ Logger dataLogger(LoggerID, samplingFeature, loggingInterval);
 // ==========================================================================
 
 // Network connection information
-// APN for cellular connection
 #define WIFI_ID "YOUR-WIFI-SSID"
 #define WIFI_PASSWD "YOUR-WIFI-PASSWORD"
 
