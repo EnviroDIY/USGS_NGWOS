@@ -32,9 +32,7 @@ The Wi-Fi bee should be installed in the "bee" socket on the Stonefly.
 The cut corners should be at the top of the module, following the traced lines on the Stonefly
 
 > [!WARNING]
-> The firmware the EnviroDIY Wi-Fi Bee's ship with from the factory is *too old* to work correctly with AWS's mutual authentication!
-> You should be running firmware version 1951B**17**SIM7080 or later.
-> The modems provided with your Stonefly should already have been upgraded to this version.
+> You should be running AT firmware version 3.2.0 or later to use this example
 
 ## Library Dependencies
 
@@ -110,7 +108,7 @@ From the required files mentioned above, find and open the file with a name that
 As before, you need to see the file in a text editor and you may get a security warning when you open it.
 
 Once you have the file open, it should look like a bunch of random characters sandwiched between the lines `-----BEGIN RSA PRIVATE KEY-----` and `-----END RSA PRIVATE KEY-----`.
-Find and replace the text `paste the private key here` in approximately line 66 of with the text of your certificate.
+Find and replace the text `paste the private key here` in approximately line 67 of with the text of your certificate.
 Make sure that the text begins and ends with the lines `-----BEGIN RSA PRIVATE KEY-----` and `-----END RSA PRIVATE KEY-----` as it does in the example and in your certificate text.
 
 > [!NOTE]
@@ -124,8 +122,8 @@ Since all of the private information went into the config file modified above, o
 #### Set your Wi-Fi credentials
 
 You must provide the SSID (Wi-Fi network name) for your network.
-In line 54, find and replace the text `YOUR-WIFI-SSID` with the SSID of your Wi-Fi network.
-In line 55, find and replace the text `YOUR-WIFI-PASSWORD` with the password of your Wi-Fi network.
+In line 57, find and replace the text `YOUR-WIFI-SSID` with the SSID of your Wi-Fi network.
+In line 58, find and replace the text `YOUR-WIFI-PASSWORD` with the password of your Wi-Fi network.
 Make sure there are quotation marks around the SSID and password string, as there are in the example.
 
 > [!WARNING]
@@ -146,15 +144,18 @@ Instructions for opening the Arduino IDE's serial monitor are on [their support 
 These are the messages you should see on the serial monitor as your program runs:
 
 - First there will be a several second delay and wait for the modem to wake.
+You may see messages about setting the pin values.
 - After warm up, the modem will initialize and you should see the message `Initializing modem... ...success`.
+- The program will then maximize the baud rate of the modem and you'll see messages to that effect.
 - Next you will see a print out of the modem info; `Modem Info:` followed by the serial number and other info about your modem. This is just for your information.
 - The Stonefly will then load the CA certificate, client certificate, and key onto the modem, convert them to the modem's internal file format, and print back the loaded text so you can confirm it matches later if there are problems.
-- After the certificates are loaded, the modem waits for a Wi-Fi network connection.  If the connection succeeds, you'll see the message `Waiting for network... ...success`
+  - You will see several success messages as the certificates are loaded.
+- After the certificates are loaded, the modem waits for a Wi-Fi network connection.  If the connection succeeds, you'll see the message `Network connected`
 - Once connected, the modem will sync its timestamp with NTP. This is required for later secured connections.
 - You'll see a message `=== MQTT NOT CONNECTED ===` because you haven't connected yet.
 - The modem will connect to MQTT, giving the message `Connecting to {your_endpoint} with client ID {your_thing_name} ...success`
 - Finally, the modem will publish a message, telling you: `Publishing a message to {your_thing_name}/init`.
-- If all is well, someone watching your AWS IoT Core's MQTT broker will see the message `{"{your_thing_name}":"connected"}"`from your device on the topic `{your_thing_name}/init`.
+- If all is well, someone watching your AWS IoT Core's MQTT broker will see a message with a lot of metadata about your device on the topic `{your_thing_name}/init`.
 
 ## Troubleshooting
 
@@ -185,7 +186,8 @@ If you still get a failure after confirming the placement of the bee, contact St
 
 ### The Stonefly doesn't attempt to load certificates
 
-If the modem fails to initialize
+This is probably a firmware version issue.
+Ensure your firmware is AT version 3.2.0 or later.
 
 ### The certificates fail to load on the modem
 
@@ -211,10 +213,6 @@ Have someone with permissions on the AWS account check that the security policie
 Also confirm with your AWS administrator that they have not assigned the same certificates and thing name to a second user.
 Two devices with the same client id may not connect at the same time.
 In this case, we use the thing name as the client id.
-
-Scroll up in the serial monitor output and look for the `Modem Revision:` output.
-If the firmware revision is not 1951B**17**SIM7080 or later, your modem firmware must be upgraded!
-Upgrading the firmware on the Wi-Fi Bee requires solder connections and special firmware files; contact Stroud for this.
 
 ### There is an error in publishing the MQTT message or is not received on the MQTT broker
 

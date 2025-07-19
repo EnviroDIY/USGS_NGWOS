@@ -111,7 +111,7 @@ From the required files mentioned above, find and open the file that *ends with*
 As before, you need to see the file in a text editor and you may get a security warning when you open it.
 
 Once you have the file open, it should look like a bunch of random characters sandwiched between the lines `-----BEGIN RSA PRIVATE KEY-----` and `-----END RSA PRIVATE KEY-----`.
-Find and replace the text `paste the private key here` in approximately line 66 of with the text of your certificate.
+Find and replace the text `paste the private key here` in approximately line 67 of with the text of your certificate.
 Make sure that the text begins and ends with the lines `-----BEGIN RSA PRIVATE KEY-----` and `-----END RSA PRIVATE KEY-----` as it does in the example and in your certificate text.
 
 > [!NOTE]
@@ -128,7 +128,7 @@ Since all of the private information went into the config file modified above, o
 #### Set your cellular APN
 
 If you are using a SIM card *other than the [Hologram](https://www.hologram.io/) SIM card* provided by The Stroud Water Research Center, you must provide the [APN](https://en.wikipedia.org/wiki/Access_Point_Name) for your network.
-In line 54, find and replace the text `hologram` with the APN for your SIM card.
+In line 57, find and replace the text `hologram` with the APN for your SIM card.
 Make sure there are quotation marks around the APN string, as there are in the example.
 If you are using a Hologram SIM, you don't need to change this.
 
@@ -158,7 +158,7 @@ These are the messages you should see on the serial monitor as your program runs
 - You'll see a message `=== MQTT NOT CONNECTED ===` because you haven't connected yet.
 - The modem will connect to MQTT, giving the message `Connecting to {your_endpoint} with client ID {your_thing_name} ...success`
 - Finally, the modem will publish a message, telling you: `Publishing a message to {your_thing_name}/init`.
-- If all is well, someone watching your AWS IoT Core's MQTT broker will see the message `{"{your_thing_name}":"connected"}"`from your device on the topic `{your_thing_name}/init`.
+- If all is well, someone watching your AWS IoT Core's MQTT broker will see the message with metadata about your device on the topic `{your_thing_name}/init`.
 
 ## Troubleshooting
 
@@ -179,7 +179,8 @@ There are some [tips in the Read Me](https://github.com/EnviroDIY/USGS_NGWOS/?ta
 If you see the message `failed to initialize modem`, there's a communication problem between the bee and the Stonefly.
 If after the failure message and a delay you do see your modem serial number or firmware version after the message `Modem Info:`, you can ignore this error: it was a baud rate problem and the Stonefly adjusted.
 If you don't get the modem info, there's something wrong.
-If your SIM card requires a user name and password to unlock (uncommon), enter those in lines 55 and 56 of the ino file and recompile and re-upload.
+Make sure that your SIM card is inserted in the right direction.
+The modem will not initialize without a SIM card properly inserted.
 Confirm that your LTE Bee is correctly set in the socket on the Stonefly.
 The cut corners of the bee should line up with the dashed lines on the Stonefly.
 There should not be any copper pins hanging above or below the socket; all the pins should fit into the black slots.
@@ -198,20 +199,21 @@ If the certificates printed back to you are garbled, but you get a success messa
 
 Remember, this may take a **long** time.
 Check that there is cell phone signal in your location.
-If you are using a Hologram SIM; they prefer to connect to T-Mobile; ask around how good the T-Mobile signal is where you are.
+If you are using a Hologram SIM; they prefer to connect to T-Mobile; ask around to see how good the T-Mobile signal is where you are.
 Move somewhere else if you need to.
 Confirm that your SIM card is installed tightly and correctly in the LTE Bee's SIM card slot - it should only be possible to fully insert it one way.
 Also confirm that the APN is set correctly for your SIM card.
 Check that the wire from antenna is securely connected to the bee.
 Remove any wires (especially power wires) that are too close to the antenna; don't lay the antenna on top of the USB cable from your computer to your Stonefly.
 If you got no other error messages, but the modem won't connect, restart and let it try again.
-The first connection with a new combination of SIM card, tower, and device can be painfully slow.
+The first connection with a new combination of SIM card, tower, and device can be *painfully* slow.
+Sometimes it takes multiple attempts, especially if the signal is weak.
 
 ### Modem fails to get LTE data connection
 
 Check your APN.
 It must match the APN assigned by your SIM card provider.
-Check your SIM username and password, if your SIM requires them (uncommon).
+If your SIM requires a username and password (uncommon), contact Stroud for assistance in modifying this program to accept them.
 
 ### SSL (Client) or MQTT connection fails
 
@@ -231,3 +233,4 @@ Upgrading the firmware on the LTE Bee requires solder connections and special fi
 
 At this time, only the AWS administrator or someone with access to the IoT Core MQTT test client will be able to confirm if the message is received, but you should see an error if the publishing fails on the device side.
 Have your AWS administrator confirm that your thing name and certificates give you permission to publish to the topic `{your_thing_name}/init`.
+Also confirm that you have permission to subscribe to the topic `{your_thing_name}/led`.

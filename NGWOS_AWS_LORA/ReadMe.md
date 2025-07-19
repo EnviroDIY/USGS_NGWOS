@@ -28,7 +28,7 @@ See the [other ReadMe](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_A
 This example program is built around the develop branch of ModularSensors library, NOT the released version of the library!  In addition to ModularSensors, you need to have the following libraries and versions installed:
 
 - envirodiy/LoRa_AT@^0.4.2
-- vshymanskyy/StreamDebugger@^1.0.1
+- envirodiy/StreamDebugger from GitHub
 - bblanchon/ArduinoJson@^6.21.5
   - NOTE: This is *NOT* the latest version of the ArduinoJson library! Use version 6! Version 7 will *probably* work, but the CayenneLPP depends on version 6.
 - electroniccats/CayenneLPP@^1.4.0
@@ -68,11 +68,11 @@ C:\Users\{your_user_name}\Documents\Arduino
 ## Customizing the Example Sketch
 
 You need to customize the NGWOS_AWS_LORA.ino file to send data to your application.
-You do not need to do anything to the LoRaModemFxns.h file.
+*Do not make any changes to the LoRaModemFxns.h file.*
 
 ### Set your Thing Name
 
-In line 65, find and replace the text YOUR_LORA_THING_NAME with your assigned thing name.
+In line 75, find and replace the text YOUR_LORA_THING_NAME with your assigned thing name.
 Make sure there are quotation marks around the name string, as there are in the example.
 If your AWS administrator did not assign you a Thing name, you can use any short string for this.
 

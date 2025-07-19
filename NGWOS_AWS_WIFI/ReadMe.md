@@ -87,7 +87,4 @@ There was no sampling feature ID used in the NGWOS_AWS_WIFI_Certs sketch, so you
 
 ### Set your Wi-Fi Credentials
 
-If you are using a SIM card *other than the [Hologram](https://www.hologram.io/) SIM card* provided by The Stroud Water Research Center, you must provide the [APN](https://en.wikipedia.org/wiki/Access_Point_Name) for your network.
-In line 113, find and replace the text `hologram` with the APN for your SIM card.
-Make sure there are quotation marks around the APN string, as there are in the example.
-If you are using a Hologram SIM, you don't need to change this.
+In lines 112 and 113, find and replace the text `YOUR-WIFI-SSID` and `YOUR-WIFI-PASSWORD` with your real Wi-Fi connection information.
