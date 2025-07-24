@@ -424,10 +424,10 @@ float getBatteryVoltage() {
 // This is purely for debugging
 void printFrameHex(byte modbusFrame[], int frameLength) {
     for (int i = 0; i < frameLength; i++) {
-        if (modbusFrame[i] < 16) Serial.print("0");
-        Serial.print(modbusFrame[i], HEX);
+        if (modbusFrame[i] < 16) MS_SERIAL_OUTPUT.print("0");
+        MS_SERIAL_OUTPUT.print(modbusFrame[i], HEX);
     }
-    Serial.println();
+    MS_SERIAL_OUTPUT.println();
 }
 
 // ==========================================================================
@@ -491,8 +491,8 @@ void setup() {
     // set the logging interval
     PRINTOUT(F("Setting logging interval to"), loggingInterval, F("minutes"));
     dataLogger.setLoggingInterval(loggingInterval);
-    PRINTOUT(F("Setting number of initial 1 minute intervals to 10"));
-    dataLogger.setinitialShortIntervals(10);
+    PRINTOUT(F("Setting number of initial 1 minute intervals to 2"));
+    dataLogger.setinitialShortIntervals(2);
     // Attach the variable array to the logger
     PRINTOUT(F("Attaching the variable array"));
     dataLogger.setVariableArray(&varArray);
@@ -544,8 +544,8 @@ void setup() {
 
         // set the RTC time from the epoch
         if (epochTime != 0) {
-            Serial.print(F("Setting RTC epoch to "));
-            Serial.println(epochTime);
+            MS_SERIAL_OUTPUT.print(F("Setting RTC epoch to "));
+            MS_SERIAL_OUTPUT.println(epochTime);
             loggerClock::setRTClock(epochTime, UNIX, epochStart::unix_epoch);
         }
     }
@@ -556,8 +556,8 @@ void setup() {
 
     // Confirm the date and time using the ISO 8601 timestamp
     uint32_t currentEpoch = dataLogger.getNowLocalEpoch();
-    Serial.print(F("Current RTC timestamp:"));
-    Serial.println(dataLogger.formatDateTime_ISO8601(currentEpoch));
+    MS_SERIAL_OUTPUT.print(F("Current RTC timestamp:"));
+    MS_SERIAL_OUTPUT.println(dataLogger.formatDateTime_ISO8601(currentEpoch));
 
     // Create the log file, adding the default header to it
     // Do this last so we have the best chance of getting the time correct and
@@ -614,8 +614,9 @@ void loop() {
 
         // Confirm the date and time using the ISO 8601 timestamp
         uint32_t currentEpoch = dataLogger.getNowLocalEpoch();
-        Serial.print(F("Current RTC timestamp:"));
-        Serial.println(dataLogger.formatDateTime_ISO8601(currentEpoch));
+        MS_SERIAL_OUTPUT.print(F("Current RTC timestamp:"));
+        MS_SERIAL_OUTPUT.println(
+            dataLogger.formatDateTime_ISO8601(currentEpoch));
         extendedWatchDog::resetWatchDog();
 
         // Do a complete update on the variable array.
@@ -644,33 +645,33 @@ void loop() {
         // the gateway can automatically add the RSSI to the message metadata
         // when it forwards the message to IoT Core.
         // But we'll print the RSSI to the serial console.
-        Serial.print(F("Signal quality: "));
-        Serial.println(modemRSSI->getValueString(false));
+        MS_SERIAL_OUTPUT.print(F("Signal quality: "));
+        MS_SERIAL_OUTPUT.println(modemRSSI->getValueString(false));
 
         // lpp.addGenericSensor(2, modemRSSI->getValue(false));
         // extendedWatchDog::resetWatchDog();
 
         // Add the SHT40 data to the Cayenne LPP buffer
-        Serial.print(F("Temperature: "));
-        Serial.println(sht4xTemp->getValueString(false));
-        Serial.print(F("Humidity: "));
-        Serial.println(sht4xHumid->getValueString(false));
+        MS_SERIAL_OUTPUT.print(F("Temperature: "));
+        MS_SERIAL_OUTPUT.println(sht4xTemp->getValueString(false));
+        MS_SERIAL_OUTPUT.print(F("Humidity: "));
+        MS_SERIAL_OUTPUT.println(sht4xHumid->getValueString(false));
         // Add the temperature and humidity to the Cayenne LPP Buffer
         lpp.addTemperature(3, sht4xTemp->getValue(false));
         lpp.addRelativeHumidity(4, sht4xHumid->getValue(false));
         extendedWatchDog::resetWatchDog();
 
         // Add VegaPuls21 data to the Cayenne LPP buffer
-        Serial.print(F("Stage: "));
-        Serial.println(VegaPulsStage->getValueString(false));
-        Serial.print(F("Distance: "));
-        Serial.println(VegaPulsDistance->getValueString(false));
-        Serial.print(F("Temperature: "));
-        Serial.println(VegaPulsTemp->getValueString(false));
-        Serial.print(F("Reliability: "));
-        Serial.println(VegaPulsReliability->getValueString(false));
-        Serial.print(F("Error Code: "));
-        Serial.println(VegaPulsError->getValueString(false));
+        MS_SERIAL_OUTPUT.print(F("Stage: "));
+        MS_SERIAL_OUTPUT.println(VegaPulsStage->getValueString(false));
+        MS_SERIAL_OUTPUT.print(F("Distance: "));
+        MS_SERIAL_OUTPUT.println(VegaPulsDistance->getValueString(false));
+        MS_SERIAL_OUTPUT.print(F("Temperature: "));
+        MS_SERIAL_OUTPUT.println(VegaPulsTemp->getValueString(false));
+        MS_SERIAL_OUTPUT.print(F("Reliability: "));
+        MS_SERIAL_OUTPUT.println(VegaPulsReliability->getValueString(false));
+        MS_SERIAL_OUTPUT.print(F("Error Code: "));
+        MS_SERIAL_OUTPUT.println(VegaPulsError->getValueString(false));
         // stage in m (resolution 1mm)
         lpp.addDistance(5, VegaPulsStage->getValue(false));
         // distance in m (resolution 1mm)
@@ -684,35 +685,35 @@ void loop() {
         extendedWatchDog::resetWatchDog();
 
         // Add the ALS-PT19 data to the Cayenne LPP buffer
-        Serial.print(F("Lux: "));
-        Serial.println(alsPt19Lux->getValueString(false));
+        MS_SERIAL_OUTPUT.print(F("Lux: "));
+        MS_SERIAL_OUTPUT.println(alsPt19Lux->getValueString(false));
         // Add to LPP buffer
         lpp.addLuminosity(10, alsPt19Lux->getValue(false));
         extendedWatchDog::resetWatchDog();
 
         // Add the analog battery voltage monitor to the Cayenne LPP buffer
-        Serial.print(F("Analog 3.3V Batt Voltage: "));
-        Serial.print(mcuBoardBatt->getValueString(false));
-        Serial.println(" V");
+        MS_SERIAL_OUTPUT.print(F("Analog 3.3V Batt Voltage: "));
+        MS_SERIAL_OUTPUT.print(mcuBoardBatt->getValueString(false));
+        MS_SERIAL_OUTPUT.println(" V");
         // Add to LPP buffer
         lpp.addVoltage(14, mcuBoardBatt->getValue(false));
         extendedWatchDog::resetWatchDog();
 
         // Add the secondary battery voltage monitor to the Cayenne LPP buffer
-        Serial.print(F("Analog 12V Batt Voltage: "));
-        Serial.print(extraBatteryVar->getValueString(false));
-        Serial.println(" V");
+        MS_SERIAL_OUTPUT.print(F("Analog 12V Batt Voltage: "));
+        MS_SERIAL_OUTPUT.print(extraBatteryVar->getValueString(false));
+        MS_SERIAL_OUTPUT.println(" V");
         // Add to LPP buffer
         lpp.addVoltage(15, extraBatteryVar->getValue(false));
         extendedWatchDog::resetWatchDog();
 
         // decode and print the Cayenne LPP buffer we just created
-        Serial.println("Cayenne LPP Buffer:");
+        MS_SERIAL_OUTPUT.println("Cayenne LPP Buffer:");
         printFrameHex(lpp.getBuffer(), lpp.getSize());
-        Serial.println("\nDecoded Buffer:");
+        MS_SERIAL_OUTPUT.println("\nDecoded Buffer:");
         lpp.decodeTTN(lpp.getBuffer(), lpp.getSize(), root);
-        serializeJsonPretty(root, Serial);
-        Serial.println();
+        serializeJsonPretty(root, MS_SERIAL_OUTPUT);
+        MS_SERIAL_OUTPUT.println();
         extendedWatchDog::resetWatchDog();
 
 
@@ -720,35 +721,37 @@ void loop() {
         if (successful_wake) {
             if (loraStream.write(lpp.getBuffer(), lpp.getSize()) ==
                 lpp.getSize()) {
-                Serial.println(F("  Successfully sent data"));
+                MS_SERIAL_OUTPUT.println(F("  Successfully sent data"));
                 extendedWatchDog::resetWatchDog();
                 if ((Logger::markedLocalUnixTime != 0 &&
                      Logger::markedLocalUnixTime % 86400 == 43200) ||
                     !dataLogger.isRTCSane()) {
-                    Serial.println(F("Running a daily clock sync..."));
+                    MS_SERIAL_OUTPUT.println(
+                        F("Running a daily clock sync..."));
                     // get the epoch time from the LoRa network
                     uint32_t epochTime = loraModem.modemGetTime(loraAT);
                     // set the RTC time from the epoch
                     if (epochTime != 0) {
-                        Serial.print(F("Setting RTC epoch to "));
-                        Serial.println(epochTime);
+                        MS_SERIAL_OUTPUT.print(F("Setting RTC epoch to "));
+                        MS_SERIAL_OUTPUT.println(epochTime);
                         loggerClock::setRTClock(epochTime, UNIX,
                                                 epochStart::unix_epoch);
                     }
                     extendedWatchDog::resetWatchDog();
                 }
             } else {
-                Serial.println(F("--Failed to send data!"));
+                MS_SERIAL_OUTPUT.println(F("--Failed to send data!"));
                 bool res = loraAT.isNetworkConnected();
-                Serial.print(F("Network status: "));
-                Serial.println(res ? "connected" : "not connected");
+                MS_SERIAL_OUTPUT.print(F("Network status: "));
+                MS_SERIAL_OUTPUT.println(res ? "connected" : "not connected");
                 extendedWatchDog::resetWatchDog();
             }
         } else {
-            Serial.println(
+            MS_SERIAL_OUTPUT.println(
                 F("--Failed to send data! Can not communicate with modem!"));
         }
 
+        // dump anything in the LoRa buffer
         while (loraStream.available()) { Serial.write(loraStream.read()); }
 
         // put the modem to sleep
@@ -757,7 +760,8 @@ void loop() {
         // Turn off the LED
         dataLogger.alertOff();
         // Print a line to show reading ended
-        Serial.println(F("------------------------------------------\n"));
+        MS_SERIAL_OUTPUT.println(
+            F("------------------------------------------\n"));
 
         // Unset flag
         Logger::isLoggingNow = false;
