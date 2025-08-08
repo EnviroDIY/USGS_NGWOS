@@ -45,7 +45,7 @@ volatile bool Logger::startTesting = false;
 RV8803 Logger::rtc;
 
 // Constructors
-Logger::Logger(const char* loggerID, uint16_t loggingIntervalMinutes) {
+Logger::Logger(const char* loggerID, int16_t loggingIntervalMinutes) {
     // Set parameters from constructor
     setLoggerID(loggerID);
     setLoggingInterval(loggingIntervalMinutes);
@@ -69,7 +69,7 @@ void Logger::setLoggerID(const char* loggerID) {
 }
 
 // Sets/Gets the logging interval
-void Logger::setLoggingInterval(uint16_t loggingIntervalMinutes) {
+void Logger::setLoggingInterval(int16_t loggingIntervalMinutes) {
     _loggingIntervalMinutes = loggingIntervalMinutes;
 }
 

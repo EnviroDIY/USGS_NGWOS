@@ -40,7 +40,7 @@
 // Assigning Serial Port Functionality
 // ==========================================================================
 #define modemSerial SerialBee
-#define cameraSerial Serial1
+#define cameraSerial Serial2
 
 // ==========================================================================
 // Data Logging Options
@@ -50,7 +50,7 @@ const char* sketchName = "Stonefly_Vega_Cellular.ino";
 // Logger ID, also becomes the prefix for the name of the data file on SD card
 const char* LoggerID = "24008";
 // How frequently (in minutes) to log data
-const uint8_t loggingInterval = 5;
+const int8_t loggingInterval = 5;
 // Your logger's timezone.
 const int8_t timeZone = -5;  // Eastern Standard Time
 // NOTE:  Daylight savings time will not be applied!  Please use standard time!
@@ -63,8 +63,7 @@ const int8_t  redLED        = 9;       // Pin for the red LED
 const int8_t  buttonPin     = 21;  // Pin for debugging mode (ie, button pin)
 uint8_t       buttonPinMode = INPUT_PULLDOWN;  // mode for debugging pin
 const int8_t  wakePin       = 38;  // MCU interrupt/alarm pin to wake from sleep
-uint8_t       wakePinMode   = INPUT_PULLUP;  // mode for wake pin
-// const int8_t sdCardPwrPin   = 32;  // MCU SD card power pin
+uint8_t       wakePinMode    = INPUT_PULLUP;  // mode for wake pin
 const int8_t sdCardPwrPin   = -1;  // MCU SD card power pin
 const int8_t sdCardSSPin    = 29;  // SD card chip select/slave select pin
 const int8_t flashSSPin     = 20;  // onboard flash chip select/slave select pin

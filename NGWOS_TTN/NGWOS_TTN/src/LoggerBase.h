@@ -88,7 +88,7 @@ class Logger {
      * logged.  This is NOT an array of variables, but an object of the variable
      * array class.
      */
-    Logger(const char* loggerID, uint16_t loggingIntervalMinutes);
+    Logger(const char* loggerID, int16_t loggingIntervalMinutes);
     /**
      * @brief Destroy the Logger object - takes no action.
      */
@@ -126,13 +126,13 @@ class Logger {
      * @param loggingIntervalMinutes The frequency with which to update sensor
      * values and write data to the SD card.
      */
-    void setLoggingInterval(uint16_t loggingIntervalMinutes);
+    void setLoggingInterval(int16_t loggingIntervalMinutes);
     /**
      * @brief Get the Logging Interval.
      *
      * @return The logging interval in minutes
      */
-    uint16_t getLoggingInterval() {
+    int16_t getLoggingInterval() {
         return _loggingIntervalMinutes;
     }
 
@@ -316,7 +316,7 @@ class Logger {
     /**
      * @brief The logging interval in minutes
      */
-    uint16_t _loggingIntervalMinutes = 5;
+    int16_t _loggingIntervalMinutes = 5;
     /**
      * @brief Digital pin number on the mcu controlling the SD card slave
      * select.

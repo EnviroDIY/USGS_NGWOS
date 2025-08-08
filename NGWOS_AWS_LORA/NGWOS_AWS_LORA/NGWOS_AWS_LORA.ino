@@ -75,7 +75,7 @@ const char* sketchName = "NGWOS_AWS_LORA.ino";
 // const char* LoggerID = "YOUR_LORA_THING_NAME";
 const char* LoggerID = "YOUR_LORA_THING_NAME";
 // How frequently (in minutes) to log data
-const uint8_t loggingInterval = 5;
+const int8_t loggingInterval = 5;
 // Your logger's timezone.
 const int8_t timeZone = -5;  // Eastern Standard Time
 // NOTE:  Daylight savings time will not be applied!  Please use standard time!
@@ -87,12 +87,10 @@ const int8_t  buttonPin     = 21;  // Pin for debugging mode (ie, button pin)
 uint8_t       buttonPinMode = INPUT_PULLDOWN;  // mode for debugging pin
 const int8_t  wakePin       = 38;  // MCU interrupt/alarm pin to wake from sleep
 uint8_t       wakePinMode   = INPUT_PULLUP;  // mode for wake pin
-// Stonefly 0.1 would have SD power on pin 32, but the MOSFET circuit is bad
-// const int8_t sdCardPwrPin = 32;  // MCU SD card power pin
-const int8_t sdCardPwrPin   = -1;  // MCU SD card power pin
-const int8_t sdCardSSPin    = 29;  // SD card chip select/slave select pin
-const int8_t flashSSPin     = 20;  // onboard flash chip select/slave select pin
-const int8_t sensorPowerPin = 22;  // MCU pin controlling main sensor power
+const int8_t  sdCardPwrPin  = -1;            // MCU SD card power pin
+const int8_t  sdCardSSPin   = 29;  // SD card chip select/slave select pin
+const int8_t  flashSSPin    = 20;  // onboard flash chip select/slave select pin
+const int8_t  sensorPowerPin = 22;  // MCU pin controlling main sensor power
 const int8_t relayPowerPin = 56;  // MCU pin controlling an optional power relay
 const int8_t sdi12DataPin  = 3;
 
