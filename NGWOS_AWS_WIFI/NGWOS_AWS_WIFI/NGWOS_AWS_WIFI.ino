@@ -104,16 +104,12 @@ Logger dataLogger(LoggerID, samplingFeature, loggingInterval);
 
 // ==========================================================================
 //  Wifi/Cellular Modem Options
-//    NOTE:  DON'T USE MORE THAN ONE MODEM OBJECT!
-//           Delete the sections you are not using!
 // ==========================================================================
 
 // Network connection information
-#define WIFI_ID "YOUR-WIFI-SSID"
-#define WIFI_PASSWD "YOUR-WIFI-PASSWORD"
-
-
-#define MODEM_BAUD 921600
+const char wifiSSID[] = "YOUR-WIFI-SSID";
+const char wifiPass[] = "YOUR-WIFI-PASSWORD";
+#define MODEM_BAUD 460800
 // ==========================================================================
 /** Start [espressif_esp32] */
 // For almost anything based on the Espressif ESP8266 using the
@@ -132,8 +128,8 @@ const int8_t modemLEDPin   = redLED;  // MCU pin connected an LED to show modem
                                       // status
 
 // Network connection information
-const char* wifiId  = WIFI_ID;      // WiFi access point name
-const char* wifiPwd = WIFI_PASSWD;  // WiFi password (WPA2)
+const char* wifiId  = wifiSSID;  // WiFi access point name
+const char* wifiPwd = wifiPass;  // WiFi password (WPA2)
 
 // Create the modem object
 EspressifESP32 modemESP(&modemSerial, modemVccPin, modemResetPin, wifiId,
@@ -202,7 +198,7 @@ Variable* alsPt19Lux     = new EverlightALSPT19_Illuminance(&alsPt19);
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
 const int8_t cameraPower        = relayPowerPin;  // Power pin
-const int8_t cameraAdapterPower = relayPowerPin;  // RS232 adapter power pin
+const int8_t cameraAdapterPower = sensorPowerPin;  // RS232 adapter power pin
 // const char*  imageResolution    = "640x480";
 // const char* imageResolution = "1600x1200";
 const char* imageResolution = "1280x960";
@@ -423,6 +419,7 @@ void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
     }
     digitalWrite(redLED, LOW);
 }
+
 // Uses the processor sensor object to read the battery voltage
 // NOTE: This will actually return the battery level from the previous update!
 float getBatteryVoltage() {
