@@ -17,8 +17,9 @@
 #define STR(X) STR_(X)
 
 // ==========================================================================
-// Defines for LoRa_AT
+//  Defines for LoRa_AT
 // ==========================================================================
+/** Start [defines] */
 #ifndef LORA_AT_YIELD_MS
 #define LORA_AT_YIELD_MS 2
 #endif
@@ -31,9 +32,10 @@
 
 // Define the serial console for debug prints, if needed
 // #define LORA_AT_DEBUG Serial
+/** End [defines] */
 
 // ==========================================================================
-// Include the libraries required for any data logger
+//  Include the libraries required for any data logger
 // ==========================================================================
 /** Start [includes] */
 // The Arduino library is needed for every Arduino program.
@@ -63,12 +65,14 @@
 // We give the modem first priority and assign it to hardware serial
 // All of the supported processors have a hardware port available named Serial1
 #define modemSerial SerialBee
-#define cameraSerial Serial1
+#define cameraSerial Serial2
+/** End [assign_ports_hw] */
 
 
 // ==========================================================================
 //  Data Logging Options
 // ==========================================================================
+/** Start [logging_options] */
 // The name of this program file
 const char* sketchName = "NGWOS_AWS_LORA.ino";
 // Logger ID, also becomes the prefix for the name of the data file on SD card
@@ -93,6 +97,7 @@ const int8_t  flashSSPin    = 20;  // onboard flash chip select/slave select pin
 const int8_t  sensorPowerPin = 22;  // MCU pin controlling main sensor power
 const int8_t relayPowerPin = 56;  // MCU pin controlling an optional power relay
 const int8_t sdi12DataPin  = 3;
+/** End [logging_options] */
 
 
 // ==========================================================================
@@ -166,6 +171,7 @@ ProcessorStats mcuBoard(mcuBoardVersion, 5);
 Variable* mcuBoardBatt   = new ProcessorStats_Battery(&mcuBoard);
 Variable* mcuBoardSampNo = new ProcessorStats_SampleNumber(&mcuBoard);
 // Variable* mcuBoardReset  = new ProcessorStats_ResetCode(&mcuBoard);
+/** End [processor_stats] */
 
 
 // ==========================================================================
@@ -192,16 +198,18 @@ EverlightALSPT19 alsPt19(alsPower, alsData, alsSupply, alsResistance,
 Variable* alsPt19Volt    = new EverlightALSPT19_Voltage(&alsPt19);
 Variable* alsPt19Current = new EverlightALSPT19_Current(&alsPt19);
 Variable* alsPt19Lux     = new EverlightALSPT19_Illuminance(&alsPt19);
+/** End [everlight_alspt19] */
 
 
 // ==========================================================================
 //  Geolux HydroCam camera
 // ==========================================================================
+/** Start [geolux_hydro_cam] */
 #include <sensors/GeoluxHydroCam.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const int8_t cameraPower        = relayPowerPin;  // Power pin
-const int8_t cameraAdapterPower = relayPowerPin;  // RS232 adapter power pin
+const int8_t cameraPower        = relayPowerPin;   // Power pin
+const int8_t cameraAdapterPower = sensorPowerPin;  // RS232 adapter power pin
 // const char*  imageResolution    = "640x480";
 // const char* imageResolution = "1600x1200";
 const char* imageResolution = "1280x960";
@@ -216,6 +224,7 @@ GeoluxHydroCam hydrocam(cameraSerial, cameraPower, dataLogger,
 // Create image size and byte error variables for the Geolux HydroCam
 Variable* hydrocamImageSize = new GeoluxHydroCam_ImageSize(&hydrocam);
 // Variable* hydrocamByteError = new GeoluxHydroCam_ByteError(&hydrocam);
+/** End [geolux_hydro_cam] */
 
 
 // ==========================================================================
@@ -234,6 +243,7 @@ SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
 // Create humidity and temperature variable pointers for the SHT4X
 Variable* sht4xHumid = new SensirionSHT4x_Humidity(&sht4x);
 Variable* sht4xTemp  = new SensirionSHT4x_Temp(&sht4x);
+/** End [sensirion_sht4x] */
 
 
 // ==========================================================================
@@ -258,6 +268,7 @@ Variable* VegaPulsDistance    = new VegaPuls21_Distance(&VegaPuls);
 Variable* VegaPulsTemp        = new VegaPuls21_Temp(&VegaPuls);
 Variable* VegaPulsReliability = new VegaPuls21_Reliability(&VegaPuls);
 Variable* VegaPulsError       = new VegaPuls21_ErrorCode(&VegaPuls);
+/** End [vega_puls21] */
 
 
 // ==========================================================================
@@ -387,7 +398,6 @@ void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
     digitalWrite(redLED, LOW);
 }
 
-
 // Uses the processor sensor object to read the battery voltage
 // NOTE: This will actually return the battery level from the previous update!
 float getBatteryVoltage() {
@@ -432,8 +442,13 @@ void printFrameHex(byte modbusFrame[], int frameLength) {
 //  Arduino Setup Function
 // ==========================================================================
 void setup() {
+    /** Start [setup_flashing_led] */
     // Blink the LEDs to show the board is on and starting up
     greenRedFlash(3, 35);
+    /** End [setup_flashing_led] */
+
+    // Hold the green LED on so we know the board is on
+    digitalWrite(greenLED, HIGH);
 
 // Wait for USB connection to be established by PC
 // NOTE:  Only use this when debugging - if not connected to a PC, this adds an
@@ -441,13 +456,18 @@ void setup() {
 #if defined(SERIAL_PORT_USBVIRTUAL)
     while (!SERIAL_PORT_USBVIRTUAL && (millis() < 10000L));
 #endif
+    /** End [setup_wait] */
 
+    /** Start [setup_prints] */
     // Start the primary serial connection
     Serial.begin(serialBaud);
 #if defined(MS_2ND_OUTPUT)
     MS_2ND_OUTPUT.begin(serialBaud);
 #endif
+    // Flash again to show serial has started
     greenRedFlash(5, 50);
+    // Hold the green LED on so we know the board is on
+    digitalWrite(greenLED, HIGH);
 
     // Print a start-up note to the first serial port
     PRINTOUT("\n\n\n=============================");
@@ -461,7 +481,9 @@ void setup() {
     PRINTOUT(F("Processor:"), mcuBoard.getSensorLocation());
     PRINTOUT(F("The most recent reset cause was"), mcuBoard.getLastResetCode(),
              '(', mcuBoard.getLastResetCause(), ")\n");
+    /** End [setup_prints] */
 
+    /** Start [setup_serial_begins] */
     // Start the serial connection with the modem
     PRINTOUT(F("Starting LoRa module connection at"), modemBaud, F("baud"));
     modemSerial.begin(modemBaud);
@@ -471,6 +493,7 @@ void setup() {
     cameraSerial.begin(115200);
 
     delay(10);
+    /** End [setup_serial_begins] */
 
     // Start the SPI library
     PRINTOUT(F("Starting SPI"));
@@ -482,6 +505,8 @@ void setup() {
 
     PRINTOUT(F("Starting I2C (Wire)"));
     Wire.begin();
+
+    /** Start [setup_logger] */
 
     // set the logger ID
     PRINTOUT(F("Setting logger id to"), LoggerID);
@@ -515,7 +540,9 @@ void setup() {
     // Begin the logger
     PRINTOUT(F("Beginning the logger"));
     dataLogger.begin();
+    /** End [setup_logger] */
 
+    /** Start [setup_sensors] */
     // Note:  Please change these battery voltages to match your battery
     // Set up the sensors, except at lowest battery level
     if (getBatteryVoltage() > 3.4) {
@@ -526,6 +553,7 @@ void setup() {
         varArray.sensorsPowerDown();  // only needed if you have sensors that
                                       // need power for setups
     }
+    /** End [setup_sensors] */
 
     // Power on, set up, and connect the LoRa modem
     PRINTOUT(F("Waking the LoRa module..."));
