@@ -123,10 +123,42 @@ class loraModemAWS {
     }
 
     bool modemConnect(LoRa_AT& _lora_modem, const char* _appEui,
-                      const char* appKey) {
-        Serial.println(F("Attempting to join with OTAA..."));
-        if (!_lora_modem.joinOTAA(_appEui, appKey)) { return false; }
-        return true;
+                      const char* _appKey, const char* _devEui) {
+        bool   mustSetDevEUI = false;
+        String name          = _lora_modem.getDevEUI();
+        name.trim();                         // remove any whitespace
+        name.toUpperCase();                  // convert to uppercase
+        String devEuiStr = String(_devEui);  // save the device EUI
+        devEuiStr.trim();                    // remove any whitespace
+        devEuiStr.toUpperCase();             // convert to uppercase
+        Serial.print(F("Device EUI: "));
+        Serial.println(name);
+        if (name != devEuiStr) {
+            Serial.println(
+                F("WARNING: The device EUI from the LoRa module does not match "
+                  "the expected value!"));
+            Serial.print(F("Expected:"));
+            Serial.println(devEuiStr);
+            Serial.print(F("Actual:"));
+            Serial.println(name);
+            mustSetDevEUI = true;
+        } else if (name == "00-00-00-00-00-00-00-00") {
+            Serial.println(F(
+                "WARNING: The device EUI from the LoRa module is all zeros!"));
+            mustSetDevEUI = true;
+        } else {
+            Serial.println(F("Device EUI matches expected value."));
+        }
+
+        if (mustSetDevEUI) {
+            Serial.println(
+                F("Attempting to join with OTAA, setting device EUI..."));
+            return _lora_modem.joinOTAA(_appEui, _appKey, _devEui);
+        } else {
+            Serial.println(F("Attempting to connect to LoRa network without "
+                             "changing device EUI..."));
+            return _lora_modem.joinOTAA(_appEui, _appKey);
+        }
     }
 
     uint32_t modemGetTime(LoRa_AT& _lora_modem, uint8_t nRetries = 5) {
@@ -149,12 +181,15 @@ class loraModemAWS {
             if (_lora_modem.pinSleep(_lora_wake_pin, _lora_wake_pullup,
                                      _lora_wake_edge)) {
                 Serial.println(F("  Put LoRa modem to sleep"));
+                _lora_modem.stream.flush();
                 return true;
             } else {
                 Serial.println(F("--Failed to put LoRa modem to sleep"));
+                _lora_modem.stream.flush();
                 return false;
             }
         }
+        _lora_modem.stream.flush();
         return true;
     }
 
@@ -163,15 +198,15 @@ class loraModemAWS {
         setPinModes();
         if (_arduino_wake_pin >= 0) {
             delay(5000);
-            DBG("Waking LoRa modem with a 50ms LOW pulse on pin",
-                _arduino_wake_pin);
-            // reset the pin mode - pins tri-state at sleep
+            // Serial.print(F("Waking LoRa modem with a 50ms LOW pulse on pin
+            // ")); Serial.println(_arduino_wake_pin); reset the pin mode - pins
+            // tri-state at sleep
             pinMode(_power_pin_for_module, OUTPUT);
             pinMode(_arduino_wake_pin, OUTPUT);
             digitalWrite(_arduino_wake_pin, LOW);
             delay(50L);
             digitalWrite(_arduino_wake_pin, HIGH);
-            DBG("Testing AT to see if modem woke up");
+            // Serial.println(F("Testing AT to see if modem woke up"));
             if (_lora_modem.testAT()) {
                 Serial.println(F("  Woke up LoRa modem"));
                 return true;
