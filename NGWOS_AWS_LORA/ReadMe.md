@@ -72,7 +72,7 @@ You need to customize the NGWOS_AWS_LORA.ino file to send data to your applicati
 
 ### Set your Thing Name
 
-In line 75, find and replace the text YOUR_LORA_THING_NAME with your assigned thing name.
+In line 82, find and replace the text YOUR_LORA_THING_NAME with your assigned thing name.
 Make sure there are quotation marks around the name string, as there are in the example.
 If your AWS administrator did not assign you a Thing name, you can use any short string for this.
 
@@ -82,7 +82,7 @@ If your AWS administrator did not assign you a Thing name, you can use any short
 
 ### Set your LoRa connection Credentials
 
-- Scroll to lines 108 - 113 in the program.
+- Scroll to lines 126 - 131 in the program.
 - Modify the appEui and appKey in the code to match the values provided by your AWS administrator
 
 ```cpp

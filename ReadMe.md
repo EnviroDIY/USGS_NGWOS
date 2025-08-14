@@ -12,7 +12,6 @@ The brain of the new board is a Microchip Technology's [ATSAMD51N19A](https://ww
   - [UF2 bootloader](#uf2-bootloader)
   - [Reprogramming a Sleeping Logger](#reprogramming-a-sleeping-logger)
 
-
 ## Setting up the Stonefly in the Arduino IDE
 
 To use the Stonefly in the Arduino IDE, you must be using at least version 2 of the IDE.
@@ -49,7 +48,7 @@ The correct version of all of the dependencies for all of the examples are in th
 
 > [!NOTE]
 > To ensure that you have the right version of all of the dependencies after any updates are made, you _**must completely delete the contents of your Arduino libraries folder every time you install updates**_.
-> If you have made changes to any libraries or have a different set of libraries that you use for other sketches, you *must* copy or move the contents of your Arduino libraries folder to a different location!
+> If you have made changes to any libraries or have a different set of libraries that you use for other sketches, you _must_ copy or move the contents of your Arduino libraries folder to a different location!
 > If you do not empty your libraries folder and instead try to write over what you have, you may end up with multiple versions of libraries or completely non-functional libraries that contain fails from mixed library versions.
 
 To install all of the libraries, download the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) and un-zip it.
@@ -57,8 +56,8 @@ The result of the unzipping should be a bunch of sub-directories.
 Move all of the sub-directories from the unzipped directory into your Arduino libraries folder.
 Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
 The final folder structure should be have one subfolder of your libraries folder for each library.
-You should *not* have a single "AllDependencies" folder in your libraries folder.
-You also should *not* have any bare files in your libraries folder, only folders.
+You should _not_ have a single "AllDependencies" folder in your libraries folder.
+You also should _not_ have any bare files in your libraries folder, only folders.
 
 A correct example (using the default Windows folder location):
 
@@ -131,7 +130,7 @@ Download the zip and un-zip it.
 Move all of the files from the unzipped directory into your Arduino libraries folder.
 Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
 
-Detailed instructions for each example are in the ReadMe files in the respective subfolders.
+Detailed instructions for each example are in the ReadMe files in the respective sub-folders.
 
 ## UF2 bootloader
 
