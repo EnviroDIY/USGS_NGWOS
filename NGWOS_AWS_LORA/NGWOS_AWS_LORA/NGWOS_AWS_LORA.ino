@@ -34,6 +34,7 @@
 // #define LORA_AT_DEBUG Serial
 /** End [defines] */
 
+
 // ==========================================================================
 //  Include the libraries required for any data logger
 // ==========================================================================
@@ -56,6 +57,7 @@
 
 // Include the main header for ModularSensors
 #include <ModularSensors.h>
+/** End [includes] */
 
 // ==========================================================================
 //  Assigning Serial Port Functionality
@@ -73,28 +75,31 @@
 //  Data Logging Options
 // ==========================================================================
 /** Start [logging_options] */
-// The name of this program file
+// The name of this program file - this is used only for console printouts at
+// start-up
 const char* sketchName = "NGWOS_AWS_LORA.ino";
 // Logger ID, also becomes the prefix for the name of the data file on SD card
-// const char* LoggerID = "YOUR_LORA_THING_NAME";
 const char* LoggerID = "YOUR_LORA_THING_NAME";
 // How frequently (in minutes) to log data
 const int8_t loggingInterval = 5;
+// The number of 1-minute intervals to take before moving to the set logging
+// interval
+const int8_t initialShortIntervals = 5;
 // Your logger's timezone.
 const int8_t timeZone = -5;  // Eastern Standard Time
 // NOTE:  Daylight savings time will not be applied!  Please use standard time!
 
-const int32_t serialBaud    = 115200;  // Baud rate for debugging
-const int8_t  greenLED      = 8;       // Pin for the green LED
-const int8_t  redLED        = 9;       // Pin for the red LED
-const int8_t  buttonPin     = 21;  // Pin for debugging mode (ie, button pin)
-uint8_t       buttonPinMode = INPUT_PULLDOWN;  // mode for debugging pin
-const int8_t  wakePin       = 38;  // MCU interrupt/alarm pin to wake from sleep
-uint8_t       wakePinMode   = INPUT_PULLUP;  // mode for wake pin
-const int8_t  sdCardPwrPin  = -1;            // MCU SD card power pin
-const int8_t  sdCardSSPin   = 29;  // SD card chip select/slave select pin
-const int8_t  flashSSPin    = 20;  // onboard flash chip select/slave select pin
-const int8_t  sensorPowerPin = 22;  // MCU pin controlling main sensor power
+const uint32_t serialBaud    = 921600;  // Baud rate for debugging
+const int8_t   greenLED      = 8;       // Pin for the green LED
+const int8_t   redLED        = 9;       // Pin for the red LED
+const int8_t   buttonPin     = 21;  // Pin for debugging mode (ie, button pin)
+uint8_t        buttonPinMode = INPUT_PULLDOWN;  // mode for debugging pin
+const int8_t   wakePin      = 38;  // MCU interrupt/alarm pin to wake from sleep
+uint8_t        wakePinMode  = INPUT_PULLUP;  // mode for wake pin
+const int8_t   sdCardPwrPin = -1;            // MCU SD card power pin
+const int8_t   sdCardSSPin  = 29;  // SD card chip select/slave select pin
+const int8_t   flashSSPin   = 20;  // onboard flash chip select/slave select pin
+const int8_t   sensorPowerPin = 22;  // MCU pin controlling main sensor power
 const int8_t relayPowerPin = 56;  // MCU pin controlling an optional power relay
 const int8_t sdi12DataPin  = 3;
 /** End [logging_options] */
@@ -125,7 +130,7 @@ const char appEui[] = "YourAppEUI";
 // This must be exactly 32 hex characters (16 bytes = 128 bits)
 const char appKey[] = "YourAppKey";
 
-const int32_t modemBaud = 115200;
+const uint32_t modemBaud = 115200;  // Communication speed of the modem
 
 // Modem Pins - Describe the physical pin connection of your modem to your board
 // NOTE:  Use -1 for pins that do not apply
@@ -144,7 +149,7 @@ const int8_t lora_wake_edge = 1;
 
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
-StreamDebugger debugger(SerialBee, Serial);
+StreamDebugger debugger(SerialBee, LORA_AT_DEBUG);
 LoRa_AT        loraAT(debugger);
 #else
 LoRa_AT loraAT(SerialBee);
@@ -211,7 +216,6 @@ Variable* alsPt19Lux     = new EverlightALSPT19_Illuminance(&alsPt19);
 const int8_t cameraPower        = relayPowerPin;   // Power pin
 const int8_t cameraAdapterPower = sensorPowerPin;  // RS232 adapter power pin
 // const char*  imageResolution    = "640x480";
-// const char* imageResolution = "1600x1200";
 const char* imageResolution = "1280x960";
 const char* filePrefix      = LoggerID;
 bool        alwaysAutoFocus = false;
@@ -249,6 +253,7 @@ Variable* sht4xTemp  = new SensirionSHT4x_Temp(&sht4x);
 // ==========================================================================
 //  VEGA PULS 21 Radar Sensor
 // ==========================================================================
+/** Start [vega_puls21] */
 #include <sensors/VegaPuls21.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
@@ -272,8 +277,11 @@ Variable* VegaPulsError       = new VegaPuls21_ErrorCode(&VegaPuls);
 
 
 // ==========================================================================
-//  LoRa RSSI as a Calculated Variable
+//  Calculated Variables
 // ==========================================================================
+/** Start [calculated_variables] */
+
+//  LoRa RSSI as a Calculated Variable
 
 // Properties of the calculated variable for the RSSI
 // The number of digits after the decimal place
@@ -291,33 +299,33 @@ float       getLoRaSignalQuality() {
 Variable* modemRSSI = new Variable(getLoRaSignalQuality, modemRSSIResolution,
                                    modemRSSIName, modemRSSIUnit, modemRSSICode);
 
-// ==========================================================================
 //  Extra Battery as an Analog Input via Calculated Variable
-// ==========================================================================
-float readExtraBattery() {
-    float  _batteryMultiplier  = 5.88;
-    float  _operatingVoltage   = 3.3;
-    int8_t _batteryPin         = A0;
-    float  sensorValue_battery = -9999;
+
+
+// helper function to read analog voltage
+float getAnalogBatteryVoltage(int8_t _batteryPin, float _batteryMultiplier,
+                              float _operatingVoltage = 3.3) {
+    float sensorValue_battery = -9999;
     if (_batteryPin >= 0 && _batteryMultiplier > 0) {
         // Get the battery voltage
-        MS_DBG(F("Getting battery voltage from pin"), _batteryPin);
+        // PRINTOUT(F("  Getting battery voltage from pin"), _batteryPin);
         pinMode(_batteryPin, INPUT);
         analogRead(_batteryPin);  // priming reading
         // The return value from analogRead() is IN BITS NOT IN VOLTS!!
         analogRead(_batteryPin);  // another priming reading
         float rawBattery = analogRead(_batteryPin);
-        MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
+        // PRINTOUT(F("  Raw battery pin reading in bits:"), rawBattery);
         // convert bits to volts
         sensorValue_battery =
             (_operatingVoltage / static_cast<float>(PROCESSOR_ADC_MAX)) *
             _batteryMultiplier * rawBattery;
-        MS_DBG(F("Battery in Volts:"), sensorValue_battery);
+        // PRINTOUT(F("  Battery in Volts:"), sensorValue_battery);
     } else {
-        MS_DBG(F("No battery pin specified!"));
+        // PRINTOUT(F("  No battery pin specified!"));
     }
     return sensorValue_battery;
 }
+
 
 // Properties of the calculated variable for the extra battery
 // The number of digits after the decimal place
@@ -329,16 +337,28 @@ const char* extraBatteryUnit = "volt";
 // A short code for the variable
 const char* extraBatteryCode = "12VBattery";
 
+float readExtraBattery() {
+    pinMode(relayPowerPin, OUTPUT);
+    digitalWrite(relayPowerPin, HIGH);  // turn on the relay power
+    float  _batteryMultiplier = 5.88;
+    float  _operatingVoltage  = 3.3;
+    int8_t _batteryPin        = A0;
+    // PRINTOUT(F("Reading 12V battery:"));
+    digitalWrite(relayPowerPin, LOW);  // turn off the relay power
+    return getAnalogBatteryVoltage(_batteryPin, _batteryMultiplier,
+                                   _operatingVoltage);
+}
+
 // Finally, Create a calculated variable and return a variable pointer to it
 Variable* extraBatteryVar =
     new Variable(readExtraBattery, extraBatteryResolution, extraBatteryName,
                  extraBatteryUnit, extraBatteryCode);
+/** End [calculated_variables] */
 
 // ==========================================================================
-//  Creating the Variable Array[s] and Filling with Variable Objects
-//  NOTE:  This shows three different ways of creating the same variable array
-//         and filling it with variables
+//  Creating the Variable Array and Filling with Variable Objects
 // ==========================================================================
+/** Start [variable_array] */
 Variable* variableList[] = {
     alsPt19Volt,    alsPt19Current,      alsPt19Lux,      hydrocamImageSize,
     sht4xHumid,     sht4xTemp,           VegaPulsStage,   VegaPulsDistance,
@@ -349,7 +369,7 @@ Variable* variableList[] = {
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
 // Create the VariableArray object
 VariableArray varArray(variableCount, variableList);
-// ==========================================================================
+/** End [variable_array] */
 
 
 // ==========================================================================
@@ -379,6 +399,25 @@ JsonDocument jsonBuffer;  // ArduinoJson 7
 // ==========================================================================
 //  Working Functions
 // ==========================================================================
+/** Start [working_functions] */
+// Starts up all of the serial ports
+void startSerials() {
+    // Start the primary serial connection
+    Serial.begin(serialBaud);
+#if defined(MS_2ND_OUTPUT)
+    // secondary serial connection
+    MS_2ND_OUTPUT.begin(serialBaud);
+#endif
+#if defined(modemSerial)
+    // Start the serial connection with the modem
+    modemSerial.begin(modemBaud);
+#endif
+#if defined(cameraSerial) && defined(BUILD_SENSOR_GEOLUX_HYDRO_CAM)
+    // Start the stream for the camera; it will always be at 115200 baud
+    cameraSerial.begin(GEOLUX_CAMERA_RS232_BAUD);
+#endif
+}
+
 // Flashes the LED's on the primary board
 void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
     // Set up pins for the LED's
@@ -398,34 +437,14 @@ void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
     digitalWrite(redLED, LOW);
 }
 
-// Uses the processor sensor object to read the battery voltage
-// NOTE: This will actually return the battery level from the previous update!
-float getBatteryVoltage() {
-    // Get the battery voltage
-    // The return value from analogRead() is IN BITS NOT IN VOLTS!!
-    float  sensorValue_battery = -9999;
-    float  _batteryMultiplier  = 4.7;
-    float  _operatingVoltage   = 3.3;
-    int8_t _batteryPin         = 75;  // A9
-    pinMode(_batteryPin, INPUT);
-    if (_batteryPin >= 0 && _batteryMultiplier > 0) {
-        // Get the battery voltage
-        MS_DBG(F("Getting battery voltage from pin"), _batteryPin);
-        pinMode(_batteryPin, INPUT);
-        analogRead(_batteryPin);  // priming reading
-        // The return value from analogRead() is IN BITS NOT IN VOLTS!!
-        analogRead(_batteryPin);  // another priming reading
-        float rawBattery = analogRead(_batteryPin);
-        MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
-        // convert bits to volts
-        sensorValue_battery =
-            (_operatingVoltage / static_cast<float>(((1 << 12) - 1))) *
-            _batteryMultiplier * rawBattery;
-        MS_DBG(F("Battery in Volts:"), sensorValue_battery);
-    } else {
-        MS_DBG(F("No battery pin specified!"));
-    }
-    return sensorValue_battery;
+// Helper function to read the main battery voltage
+float getPrimaryBatteryVoltage() {
+    int8_t _batteryPin        = A9;  // aka 75
+    float  _batteryMultiplier = 4.7;
+    float  _operatingVoltage  = 3.3;
+    // PRINTOUT(F("Reading LiPo battery:"));
+    return getAnalogBatteryVoltage(_batteryPin, _batteryMultiplier,
+                                   _operatingVoltage);
 }
 
 // Just a function to pretty-print the modbus hex frames
@@ -437,6 +456,8 @@ void printFrameHex(byte modbusFrame[], int frameLength) {
     }
     MS_SERIAL_OUTPUT.println();
 }
+/** End [working_functions] */
+
 
 // ==========================================================================
 //  Arduino Setup Function
@@ -450,6 +471,7 @@ void setup() {
     // Hold the green LED on so we know the board is on
     digitalWrite(greenLED, HIGH);
 
+/** Start [setup_wait] */
 // Wait for USB connection to be established by PC
 // NOTE:  Only use this when debugging - if not connected to a PC, this adds an
 // unnecessary startup delay
@@ -458,17 +480,17 @@ void setup() {
 #endif
     /** End [setup_wait] */
 
-    /** Start [setup_prints] */
-    // Start the primary serial connection
-    Serial.begin(serialBaud);
-#if defined(MS_2ND_OUTPUT)
-    MS_2ND_OUTPUT.begin(serialBaud);
-#endif
+    /** Start [setup_serial_begins] */
+    // Start all of the various serial connections
+    startSerials();
     // Flash again to show serial has started
     greenRedFlash(5, 50);
     // Hold the green LED on so we know the board is on
     digitalWrite(greenLED, HIGH);
+    /** End [setup_serial_begins] */
 
+
+    /** Start [setup_prints] */
     // Print a start-up note to the first serial port
     PRINTOUT("\n\n\n=============================");
     PRINTOUT("=============================");
@@ -482,18 +504,6 @@ void setup() {
     PRINTOUT(F("The most recent reset cause was"), mcuBoard.getLastResetCode(),
              '(', mcuBoard.getLastResetCause(), ")\n");
     /** End [setup_prints] */
-
-    /** Start [setup_serial_begins] */
-    // Start the serial connection with the modem
-    PRINTOUT(F("Starting LoRa module connection at"), modemBaud, F("baud"));
-    modemSerial.begin(modemBaud);
-
-    // Start the stream for the camera; it will always be at 115200 baud
-    PRINTOUT(F("Starting camera connection at"), 115200, F("baud"));
-    cameraSerial.begin(115200);
-
-    delay(10);
-    /** End [setup_serial_begins] */
 
     // Start the SPI library
     PRINTOUT(F("Starting SPI"));
@@ -514,8 +524,9 @@ void setup() {
     // set the logging interval
     PRINTOUT(F("Setting logging interval to"), loggingInterval, F("minutes"));
     dataLogger.setLoggingInterval(loggingInterval);
-    PRINTOUT(F("Setting number of initial 1 minute intervals to 2"));
-    dataLogger.setinitialShortIntervals(2);
+    PRINTOUT(F("Setting number of initial 1 minute intervals to"),
+             initialShortIntervals);
+    dataLogger.setinitialShortIntervals(initialShortIntervals);
     // Attach the variable array to the logger
     PRINTOUT(F("Attaching the variable array"));
     dataLogger.setVariableArray(&varArray);
@@ -545,7 +556,7 @@ void setup() {
     /** Start [setup_sensors] */
     // Note:  Please change these battery voltages to match your battery
     // Set up the sensors, except at lowest battery level
-    if (getBatteryVoltage() > 3.4) {
+    if (getPrimaryBatteryVoltage() > 3.4) {
         PRINTOUT(F("Setting up sensors..."));
         varArray.sensorsPowerUp();  // only needed if you have sensors that need
                                     // power for setups
@@ -555,6 +566,7 @@ void setup() {
     }
     /** End [setup_sensors] */
 
+    /** Start [setup_lora] */
     // Power on, set up, and connect the LoRa modem
     PRINTOUT(F("Waking the LoRa module..."));
     loraModem.modemPowerOn();
@@ -562,9 +574,11 @@ void setup() {
     loraModem.setupModemAWS(loraAT);
     PRINTOUT(F("Attempting to connect to LoRa network..."));
     loraModem.modemConnect(loraAT, appEui, appKey);
+    /** End [setup_lora] */
 
+    /** Start [setup_clock] */
     // Sync the clock if it isn't valid or we have battery to spare
-    if (getBatteryVoltage() > 3.55 || !dataLogger.isRTCSane()) {
+    if (getPrimaryBatteryVoltage() > 3.55 || !dataLogger.isRTCSane()) {
         // get the epoch time from the LoRa network
         uint32_t epochTime = loraModem.modemGetTime(loraAT);
 
@@ -575,6 +589,7 @@ void setup() {
             loggerClock::setRTClock(epochTime, UNIX, epochStart::unix_epoch);
         }
     }
+    /** End [setup_clock] */
 
     // put the modem to sleep
     PRINTOUT(F("Putting the LoRa module to sleep..."));
@@ -585,12 +600,13 @@ void setup() {
     MS_SERIAL_OUTPUT.print(F("Current RTC timestamp:"));
     MS_SERIAL_OUTPUT.println(dataLogger.formatDateTime_ISO8601(currentEpoch));
 
+    /** Start [setup_file] */
     // Create the log file, adding the default header to it
     // Do this last so we have the best chance of getting the time correct and
     // all sensor names correct.
     // Writing to the SD card can be power intensive, so if we're skipping the
     // sensor setup we'll skip this too.
-    if (getBatteryVoltage() > 3.4) {
+    if (getPrimaryBatteryVoltage() > 3.4) {
         PRINTOUT(F("Setting up file on SD card"));
         dataLogger.turnOnSDcard(true);
         // true = wait for card to settle after power up
@@ -598,16 +614,23 @@ void setup() {
         dataLogger.turnOffSDcard(true);
         // true = wait for internal housekeeping after write
     }
+    /** End [setup_file] */
+
+    /** Start [setup_sleep] */
+    // Turn off the green LED
+    digitalWrite(greenLED, LOW);
 
     // Call the processor sleep
     PRINTOUT(F("Putting processor to sleep\n"));
     dataLogger.systemSleep();
+    /** End [setup_sleep] */
 }
 
 
 // ==========================================================================
 //  Arduino Loop Function
 // ==========================================================================
+/** Start [complex_loop] */
 void loop() {
     // Reset the watchdog
     extendedWatchDog::resetWatchDog();
@@ -615,9 +638,10 @@ void loop() {
     // Assuming we were woken up by the clock, check if the current time is an
     // even interval of the logging interval
     // We're only doing anything at all if the battery is above 3.4V
-    if (dataLogger.checkInterval() && getBatteryVoltage() > 3.4) {
+    if (dataLogger.checkInterval() && getPrimaryBatteryVoltage() > 3.4) {
         // Flag to notify that we're in already awake and logging a point
         Logger::isLoggingNow = true;
+        startSerials();
         extendedWatchDog::resetWatchDog();
 
         // Print a line to show new reading
@@ -628,14 +652,13 @@ void loop() {
         dataLogger.turnOnSDcard(false);
         extendedWatchDog::resetWatchDog();
 
-        // restart the serial connection with the modem
-        modemSerial.begin(modemBaud);
         // wake up the modem
         bool successful_wake = loraModem.modemWake(loraAT);
         extendedWatchDog::resetWatchDog();
         if (successful_wake) {
             PRINTOUT(F("Attempting to connect to LoRa network..."));
-            successful_wake &= loraModem.modemConnect(loraAT, appEui, appKey);
+            successful_wake &= loraModem.modemConnect(loraAT, appEui, appKey,
+                                                      devEui);
         }
 
         // Confirm the date and time using the ISO 8601 timestamp
@@ -783,6 +806,12 @@ void loop() {
         // put the modem to sleep
         loraModem.modemSleep(loraAT);
 
+        // Dump anything in the LoRa buffer again, and then flush it
+        while (loraStream.available()) { Serial.write(loraStream.read()); }
+        // It is crucial that we flush the stream or we will not be able to
+        // sleep
+        loraStream.flush();
+
         // Turn off the LED
         dataLogger.alertOff();
         // Print a line to show reading ended
@@ -796,6 +825,15 @@ void loop() {
     // Check if it was instead the testing interrupt that woke us up
     if (Logger::startTesting) { dataLogger.benchTestingMode(); }
 
+    // Flush the streams, just in case - data left in the streams will prevent
+    // sleep
+    Serial.flush();
+    modemSerial.flush();
+    cameraSerial.flush();
+#if defined(MS_2ND_OUTPUT)
+    MS_2ND_OUTPUT.flush();
+#endif
     // Call the processor sleep
     dataLogger.systemSleep();
 }
+/** End [complex_loop] */
