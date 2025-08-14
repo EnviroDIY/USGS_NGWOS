@@ -53,10 +53,8 @@
 //  Data Logging Options
 // ==========================================================================
 /** Start [logging_options] */
-// static const char AWS_IOT_ENDPOINT[] TINY_GSM_PROGMEM =
-//     "YOUR_ENDPOINT-ats.iot.us-west-2.amazonaws.com";  // USGS's server
 static const char AWS_IOT_ENDPOINT[] TINY_GSM_PROGMEM =
-    "YOUR_ENDPOINT-ats.iot.us-east-1.amazonaws.com";  // Stroud's server
+    "YOUR_ENDPOINT-ats.iot.us-west-2.amazonaws.com";
 #define THING_NAME "YOUR_THING_NAME"
 
 // The name of this program file - this is used only for console printouts at
@@ -74,7 +72,7 @@ const char* samplingFeature = "YOUR_SAMPLING_FEATURE_ID";
 const int8_t loggingInterval = 5;
 // The number of 1-minute intervals to take before moving to the set logging
 // interval
-const int8_t initialShortIntervals = 2;
+const int8_t initialShortIntervals = 5;
 // Your logger's timezone.
 const int8_t timeZone = -5;  // Eastern Standard Time
 // NOTE:  Daylight savings time will not be applied!  Please use standard time!
@@ -114,8 +112,6 @@ Logger dataLogger(LoggerID, samplingFeature, loggingInterval);
 // APN for cellular connection
 #define CELLULAR_APN "hologram"
 
-
-#define MODEM_BAUD 921600
 // ==========================================================================
 /** Start [sim_com_sim7080] */
 // For almost anything based on the SIMCom SIM7080G
@@ -123,7 +119,7 @@ Logger dataLogger(LoggerID, samplingFeature, loggingInterval);
 
 // NOTE: Extra hardware and software serial ports are created in the "Settings
 // for Additional Serial Ports" section
-const int32_t modemBaud = MODEM_BAUD;  // Communication speed of the modem
+const int32_t modemBaud = 921600;  // Communication speed of the modem
 
 // Modem Pins - Describe the physical pin connection of your modem to your board
 // NOTE:  Use -1 for pins that do not apply
@@ -205,7 +201,6 @@ Variable* alsPt19Lux     = new EverlightALSPT19_Illuminance(&alsPt19);
 const int8_t cameraPower        = relayPowerPin;   // Power pin
 const int8_t cameraAdapterPower = sensorPowerPin;  // RS232 adapter power pin
 // const char*  imageResolution    = "640x480";
-// const char* imageResolution = "1600x1200";
 const char* imageResolution = "1280x960";
 const char* filePrefix      = LoggerID;
 bool        alwaysAutoFocus = false;
@@ -267,49 +262,34 @@ Variable* VegaPulsError       = new VegaPuls21_ErrorCode(&VegaPuls);
 
 
 // ==========================================================================
-//  Calculated Variable[s]
+//  Calculated Variables
 // ==========================================================================
 /** Start [calculated_variables] */
-// Create the function to give your calculated result.
-// The function should take no input (void) and return a float.
-// You can use any named variable pointers to access values by way of
-// variable->getValue()
 
+// helper function to read analog voltage
 float getAnalogBatteryVoltage(int8_t _batteryPin, float _batteryMultiplier,
                               float _operatingVoltage = 3.3) {
     float sensorValue_battery = -9999;
     if (_batteryPin >= 0 && _batteryMultiplier > 0) {
         // Get the battery voltage
-        PRINTOUT(F("  Getting battery voltage from pin"), _batteryPin);
+        // PRINTOUT(F("  Getting battery voltage from pin"), _batteryPin);
         pinMode(_batteryPin, INPUT);
         analogRead(_batteryPin);  // priming reading
         // The return value from analogRead() is IN BITS NOT IN VOLTS!!
         analogRead(_batteryPin);  // another priming reading
         float rawBattery = analogRead(_batteryPin);
-        PRINTOUT(F("  Raw battery pin reading in bits:"), rawBattery);
+        // PRINTOUT(F("  Raw battery pin reading in bits:"), rawBattery);
         // convert bits to volts
         sensorValue_battery =
             (_operatingVoltage / static_cast<float>(PROCESSOR_ADC_MAX)) *
             _batteryMultiplier * rawBattery;
-        PRINTOUT(F("  Battery in Volts:"), sensorValue_battery);
+        // PRINTOUT(F("  Battery in Volts:"), sensorValue_battery);
     } else {
-        PRINTOUT(F("  No battery pin specified!"));
+        // PRINTOUT(F("  No battery pin specified!"));
     }
-    delay(10);
     return sensorValue_battery;
 }
 
-float readExtraBattery() {
-    pinMode(relayPowerPin, OUTPUT);
-    digitalWrite(relayPowerPin, HIGH);  // turn on the relay power
-    float  _batteryMultiplier = 5.88;
-    float  _operatingVoltage  = 3.3;
-    int8_t _batteryPin        = A0;
-    PRINTOUT(F("Reading 12V battery:"));
-    digitalWrite(relayPowerPin, LOW);  // turn off the relay power
-    return getAnalogBatteryVoltage(_batteryPin, _batteryMultiplier,
-                                   _operatingVoltage);
-}
 
 // Properties of the calculated variable for the extra battery
 // The number of digits after the decimal place
@@ -321,15 +301,28 @@ const char* extraBatteryUnit = "volt";
 // A short code for the variable
 const char* extraBatteryCode = "12VBattery";
 
+float readExtraBattery() {
+    pinMode(relayPowerPin, OUTPUT);
+    digitalWrite(relayPowerPin, HIGH);  // turn on the relay power
+    float  _batteryMultiplier = 5.88;
+    float  _operatingVoltage  = 3.3;
+    int8_t _batteryPin        = A0;
+    // PRINTOUT(F("Reading 12V battery:"));
+    digitalWrite(relayPowerPin, LOW);  // turn off the relay power
+    return getAnalogBatteryVoltage(_batteryPin, _batteryMultiplier,
+                                   _operatingVoltage);
+}
+
 // Finally, Create a calculated variable and return a variable pointer to it
 Variable* extraBatteryVar =
     new Variable(readExtraBattery, extraBatteryResolution, extraBatteryName,
                  extraBatteryUnit, extraBatteryCode);
 /** End [calculated_variables] */
 
-//^^ BUILD_TEST_PRE_NAMED_VARS
-/** Start [variables_pre_named] */
-// Version 3: Fill array with already created and named variable pointers
+// ==========================================================================
+//  Creating the Variable Array and Filling with Variable Objects
+// ==========================================================================
+/** Start [variable_array] */
 Variable* variableList[] = {
     VegaPulsStage,       hydrocamImageSize, mcuBoardBatt,     extraBatteryVar,
     modemSignalPct,      sht4xTemp,         sht4xHumid,       alsPt19Lux,
@@ -340,7 +333,7 @@ Variable* variableList[] = {
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
 // Create the VariableArray object
 VariableArray varArray(variableCount, variableList);
-/** End [variables_pre_named] */
+/** End [variable_array] */
 
 // ==========================================================================
 //  AWS S3 Pre-signed URL Publisher
@@ -349,9 +342,9 @@ VariableArray varArray(variableCount, variableList);
 // The name of your certificate authority certificate file
 const char* caCertName = "AmazonRootCA1.pem";
 
-// Expand the expected S3 publish topic into a buffer
-String s3URLPubTopic = "$aws/rules/GetUploadURL/" + String(LoggerID);
-// Expand the expected S3 subscribe topic into a buffer
+// The topic to publish to to request a new S3 pre-signed URL
+String s3URLPubTopic = String(LoggerID) + "/geturl";
+// The topic to subscribe to for the S3 pre-signed URL response
 String s3URLSubTopic = String(LoggerID) + "/upload_url";
 // A function for the IoT core publisher to call to get the message content for
 // a new URL request
@@ -378,6 +371,11 @@ const char* awsIoTEndpoint = AWS_IOT_ENDPOINT;
 const char* clientCertName = THING_NAME "-certificate.pem.crt";
 // The name of your client private key file
 const char* clientKeyName = THING_NAME "-private-key.pem.key";
+
+// The topic to publish data to
+String iotDataTopic = String(LoggerID) + "/dataupload";
+// The topic to publish metadata to (at boot only)
+String iotMetadataTopic = String(LoggerID) + "/metadata";
 
 // Create a data publisher for AWS IoT Core
 #include <publishers/AWS_IoT_Publisher.h>
@@ -427,7 +425,7 @@ void startSerials() {
     // Start the serial connection with the modem
     modemSerial.begin(modemBaud);
 #endif
-#if defined(cameraSerial) && defined(GEOLUX_CAMERA_RS232_BAUD)
+#if defined(cameraSerial) && defined(BUILD_SENSOR_GEOLUX_HYDRO_CAM)
     // Start the stream for the camera; it will always be at 115200 baud
     cameraSerial.begin(GEOLUX_CAMERA_RS232_BAUD);
 #endif
@@ -452,13 +450,12 @@ void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
     digitalWrite(redLED, LOW);
 }
 
-// Uses the processor sensor object to read the battery voltage
-// NOTE: This will actually return the battery level from the previous update!
+// Helper function to read the main battery voltage
 float getPrimaryBatteryVoltage() {
     int8_t _batteryPin        = A9;  // aka 75
     float  _batteryMultiplier = 4.7;
     float  _operatingVoltage  = 3.3;
-    PRINTOUT(F("Reading LiPo battery:"));
+    // PRINTOUT(F("Reading LiPo battery:"));
     return getAnalogBatteryVoltage(_batteryPin, _batteryMultiplier,
                                    _operatingVoltage);
 }
@@ -473,6 +470,9 @@ void setup() {
     // Blink the LEDs to show the board is on and starting up
     greenRedFlash(3, 35);
     /** End [setup_flashing_led] */
+
+    // Hold the green LED on so we know the board is on
+    digitalWrite(greenLED, HIGH);
 
 /** Start [setup_wait] */
 // Wait for USB connection to be established by PC
@@ -558,6 +558,10 @@ void setup() {
     s3pub.setCACertName(caCertName);
     s3pub.attachToLogger(dataLogger);
 
+    // Set the data and metadata topic for AWS IoT Core
+    awsIoTPub.setDataPublishTopic(iotDataTopic.c_str());
+    awsIoTPub.setMetadataPublishTopic(iotMetadataTopic.c_str());
+
     // Set the callback function for the AWS IoT Core MQTT connection
     awsIoTPub.setCallback(IoTCallback);
     awsIoTPub.addSubTopic(s3URLSubTopic.c_str());
@@ -574,9 +578,7 @@ void setup() {
     if (getPrimaryBatteryVoltage() > 3.4) {
         PRINTOUT(F("Setting up sensors..."));
         varArray.sensorsPowerUp();  // only needed if you have sensors that need
-        // power for setups
-        getPrimaryBatteryVoltage();
-        readExtraBattery();
+                                    // power for setups
         varArray.setupSensors();
         varArray.sensorsPowerDown();  // only needed if you have sensors that
                                       // need power for setups
@@ -641,6 +643,9 @@ void setup() {
     /** End [setup_file] */
 
     /** Start [setup_sleep] */
+    // Turn off the green LED
+    digitalWrite(greenLED, LOW);
+
     // Call the processor sleep
     PRINTOUT(F("Putting processor to sleep\n"));
     dataLogger.systemSleep();
