@@ -343,9 +343,9 @@ VariableArray varArray(variableCount, variableList);
 // The name of your certificate authority certificate file
 const char* caCertName = "client_ca.1";
 
-// Expand the expected S3 publish topic into a buffer
-String s3URLPubTopic = "$aws/rules/GetUploadURL/" + String(LoggerID);
-// Expand the expected S3 subscribe topic into a buffer
+// The topic to publish to to request a new S3 pre-signed URL
+String s3URLPubTopic = String(LoggerID) + "/geturl";
+// The topic to subscribe to for the S3 pre-signed URL response
 String s3URLSubTopic = String(LoggerID) + "/upload_url";
 // A function for the IoT core publisher to call to get the message content for
 // a new URL request
@@ -372,6 +372,11 @@ const char* awsIoTEndpoint = AWS_IOT_ENDPOINT;
 const char* clientCertName = "client_cert.1";
 // The name of your client private key file
 const char* clientKeyName = "client_key.1";
+
+// The topic to publish data to
+String iotDataTopic = String(LoggerID) + "/dataupload";
+// The topic to publish metadata to (at boot only)
+String iotMetadataTopic = String(LoggerID) + "/metadata";
 
 // Create a data publisher for AWS IoT Core
 #include <publishers/AWS_IoT_Publisher.h>
@@ -551,6 +556,10 @@ void setup() {
     // Set the S3 certificate authority names
     s3pub.setCACertName(caCertName);
     s3pub.attachToLogger(dataLogger);
+
+    // Set the data and metadata topic for AWS IoT Core
+    awsIoTPub.setDataPublishTopic(iotDataTopic.c_str());
+    awsIoTPub.setMetadataPublishTopic(iotMetadataTopic.c_str());
 
     // Set the callback function for the AWS IoT Core MQTT connection
     awsIoTPub.setCallback(IoTCallback);
