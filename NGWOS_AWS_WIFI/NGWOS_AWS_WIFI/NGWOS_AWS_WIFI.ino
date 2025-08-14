@@ -45,7 +45,7 @@
 // We give the modem first priority and assign it to hardware serial
 // All of the supported processors have a hardware port available named Serial1
 #define modemSerial SerialBee
-#define cameraSerial Serial1
+#define cameraSerial Serial2
 /** End [assign_ports_hw] */
 
 
@@ -70,6 +70,9 @@ const char* LoggerID = THING_NAME;
 const char* samplingFeature = "YOUR_SAMPLING_FEATURE_ID";
 // How frequently (in minutes) to log data
 const int8_t loggingInterval = 5;
+// The number of 1-minute intervals to take before moving to the set logging
+// interval
+const int8_t initialShortIntervals = 5;
 // Your logger's timezone.
 const int8_t timeZone = -5;  // Eastern Standard Time
 // NOTE:  Daylight savings time will not be applied!  Please use standard time!
@@ -81,11 +84,10 @@ const int8_t  buttonPin     = 21;  // Pin for debugging mode (ie, button pin)
 uint8_t       buttonPinMode = INPUT_PULLDOWN;  // mode for debugging pin
 const int8_t  wakePin       = 38;  // MCU interrupt/alarm pin to wake from sleep
 uint8_t       wakePinMode   = INPUT_PULLUP;  // mode for wake pin
-// const int8_t sdCardPwrPin   = 32;  // MCU SD card power pin
-const int8_t sdCardPwrPin   = -1;  // MCU SD card power pin
-const int8_t sdCardSSPin    = 29;  // SD card chip select/slave select pin
-const int8_t flashSSPin     = 20;  // onboard flash chip select/slave select pin
-const int8_t sensorPowerPin = 22;  // MCU pin controlling main sensor power
+const int8_t  sdCardPwrPin  = -1;            // MCU SD card power pin
+const int8_t  sdCardSSPin   = 29;  // SD card chip select/slave select pin
+const int8_t  flashSSPin    = 20;  // onboard flash chip select/slave select pin
+const int8_t  sensorPowerPin = 22;  // MCU pin controlling main sensor power
 const int8_t relayPowerPin = 56;  // MCU pin controlling an optional power relay
 const int8_t sdi12DataPin  = 3;
 /** End [logging_options] */
@@ -109,7 +111,7 @@ Logger dataLogger(LoggerID, samplingFeature, loggingInterval);
 // Network connection information
 const char wifiSSID[] = "YOUR-WIFI-SSID";
 const char wifiPass[] = "YOUR-WIFI-PASSWORD";
-#define MODEM_BAUD 460800
+
 // ==========================================================================
 /** Start [espressif_esp32] */
 // For almost anything based on the Espressif ESP8266 using the
@@ -118,7 +120,7 @@ const char wifiPass[] = "YOUR-WIFI-PASSWORD";
 
 // NOTE: Extra hardware and software serial ports are created in the "Settings
 // for Additional Serial Ports" section
-const int32_t modemBaud = MODEM_BAUD;  // Communication speed of the modem
+const int32_t modemBaud = 460800;  // Communication speed of the modem
 
 // Modem Pins - Describe the physical pin connection of your modem to your board
 // NOTE:  Use -1 for pins that do not apply
@@ -197,10 +199,9 @@ Variable* alsPt19Lux     = new EverlightALSPT19_Illuminance(&alsPt19);
 #include <sensors/GeoluxHydroCam.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const int8_t cameraPower        = relayPowerPin;  // Power pin
+const int8_t cameraPower        = relayPowerPin;   // Power pin
 const int8_t cameraAdapterPower = sensorPowerPin;  // RS232 adapter power pin
 // const char*  imageResolution    = "640x480";
-// const char* imageResolution = "1600x1200";
 const char* imageResolution = "1280x960";
 const char* filePrefix      = LoggerID;
 bool        alwaysAutoFocus = false;
@@ -242,7 +243,7 @@ Variable* sht4xTemp  = new SensirionSHT4x_Temp(&sht4x);
 #include <sensors/VegaPuls21.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const char* VegaPulsSDI12address = "4";  // The SDI-12 Address of the VegaPuls21
+const char* VegaPulsSDI12address = "0";  // The SDI-12 Address of the VegaPuls21
 const int8_t VegaPulsPower       = sensorPowerPin;  // Power pin
 const int8_t VegaPulsData        = sdi12DataPin;    // The SDI-12 data pin
 // NOTE:  you should NOT take more than one readings.  THe sensor already takes
@@ -262,38 +263,34 @@ Variable* VegaPulsError       = new VegaPuls21_ErrorCode(&VegaPuls);
 
 
 // ==========================================================================
-//  Calculated Variable[s]
+//  Calculated Variables
 // ==========================================================================
 /** Start [calculated_variables] */
-// Create the function to give your calculated result.
-// The function should take no input (void) and return a float.
-// You can use any named variable pointers to access values by way of
-// variable->getValue()
 
-float readExtraBattery() {
-    float  _batteryMultiplier  = 5.88;
-    float  _operatingVoltage   = 3.3;
-    int8_t _batteryPin         = A0;
-    float  sensorValue_battery = -9999;
+// helper function to read analog voltage
+float getAnalogBatteryVoltage(int8_t _batteryPin, float _batteryMultiplier,
+                              float _operatingVoltage = 3.3) {
+    float sensorValue_battery = -9999;
     if (_batteryPin >= 0 && _batteryMultiplier > 0) {
         // Get the battery voltage
-        MS_DBG(F("Getting battery voltage from pin"), _batteryPin);
+        // PRINTOUT(F("  Getting battery voltage from pin"), _batteryPin);
         pinMode(_batteryPin, INPUT);
         analogRead(_batteryPin);  // priming reading
         // The return value from analogRead() is IN BITS NOT IN VOLTS!!
         analogRead(_batteryPin);  // another priming reading
         float rawBattery = analogRead(_batteryPin);
-        MS_DBG(F("Raw battery pin reading in bits:"), rawBattery);
+        // PRINTOUT(F("  Raw battery pin reading in bits:"), rawBattery);
         // convert bits to volts
         sensorValue_battery =
             (_operatingVoltage / static_cast<float>(PROCESSOR_ADC_MAX)) *
             _batteryMultiplier * rawBattery;
-        MS_DBG(F("Battery in Volts:"), sensorValue_battery);
+        // PRINTOUT(F("  Battery in Volts:"), sensorValue_battery);
     } else {
-        MS_DBG(F("No battery pin specified!"));
+        // PRINTOUT(F("  No battery pin specified!"));
     }
     return sensorValue_battery;
 }
+
 
 // Properties of the calculated variable for the extra battery
 // The number of digits after the decimal place
@@ -304,20 +301,31 @@ const char* extraBatteryName = "batteryVoltage";
 const char* extraBatteryUnit = "volt";
 // A short code for the variable
 const char* extraBatteryCode = "12VBattery";
-// The (optional) universally unique identifier
-const char* extraBatteryUUID = "";
+
+float readExtraBattery() {
+    pinMode(relayPowerPin, OUTPUT);
+    digitalWrite(relayPowerPin, HIGH);  // turn on the relay power
+    float  _batteryMultiplier = 5.88;
+    float  _operatingVoltage  = 3.3;
+    int8_t _batteryPin        = A0;
+    // PRINTOUT(F("Reading 12V battery:"));
+    digitalWrite(relayPowerPin, LOW);  // turn off the relay power
+    return getAnalogBatteryVoltage(_batteryPin, _batteryMultiplier,
+                                   _operatingVoltage);
+}
 
 // Finally, Create a calculated variable and return a variable pointer to it
-Variable* extraBattery = new Variable(readExtraBattery, extraBatteryResolution,
-                                      extraBatteryName, extraBatteryUnit,
-                                      extraBatteryCode, extraBatteryUUID);
+Variable* extraBatteryVar =
+    new Variable(readExtraBattery, extraBatteryResolution, extraBatteryName,
+                 extraBatteryUnit, extraBatteryCode);
 /** End [calculated_variables] */
 
-//^^ BUILD_TEST_PRE_NAMED_VARS
-/** Start [variables_pre_named] */
-// Version 3: Fill array with already created and named variable pointers
+// ==========================================================================
+//  Creating the Variable Array and Filling with Variable Objects
+// ==========================================================================
+/** Start [variable_array] */
 Variable* variableList[] = {
-    VegaPulsStage,       hydrocamImageSize, mcuBoardBatt,     extraBattery,
+    VegaPulsStage,       hydrocamImageSize, mcuBoardBatt,     extraBatteryVar,
     modemSignalPct,      sht4xTemp,         sht4xHumid,       alsPt19Lux,
     alsPt19Current,      alsPt19Volt,       VegaPulsDistance, VegaPulsTemp,
     VegaPulsReliability, VegaPulsError,     mcuBoardSampNo,
@@ -326,7 +334,7 @@ Variable* variableList[] = {
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
 // Create the VariableArray object
 VariableArray varArray(variableCount, variableList);
-/** End [variables_pre_named] */
+/** End [variable_array] */
 
 // ==========================================================================
 //  AWS S3 Pre-signed URL Publisher
@@ -401,6 +409,24 @@ void IoTCallback(char* topic, byte* payload, unsigned int length) {
 //  Working Functions
 // ==========================================================================
 /** Start [working_functions] */
+// Starts up all of the serial ports
+void startSerials() {
+    // Start the primary serial connection
+    Serial.begin(serialBaud);
+#if defined(MS_2ND_OUTPUT)
+    // secondary serial connection
+    MS_2ND_OUTPUT.begin(serialBaud);
+#endif
+#if defined(modemSerial)
+    // Start the serial connection with the modem
+    modemSerial.begin(modemBaud);
+#endif
+#if defined(cameraSerial) && defined(BUILD_SENSOR_GEOLUX_HYDRO_CAM)
+    // Start the stream for the camera; it will always be at 115200 baud
+    cameraSerial.begin(GEOLUX_CAMERA_RS232_BAUD);
+#endif
+}
+
 // Flashes the LED's on the primary board
 void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
     // Set up pins for the LED's
@@ -420,14 +446,14 @@ void greenRedFlash(uint8_t numFlash = 4, uint8_t rate = 75) {
     digitalWrite(redLED, LOW);
 }
 
-// Uses the processor sensor object to read the battery voltage
-// NOTE: This will actually return the battery level from the previous update!
-float getBatteryVoltage() {
-    if (mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM] == -9999 ||
-        mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM] == 0) {
-        mcuBoard.update();
-    }
-    return mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM];
+// Helper function to read the main battery voltage
+float getPrimaryBatteryVoltage() {
+    int8_t _batteryPin        = A9;  // aka 75
+    float  _batteryMultiplier = 4.7;
+    float  _operatingVoltage  = 3.3;
+    // PRINTOUT(F("Reading LiPo battery:"));
+    return getAnalogBatteryVoltage(_batteryPin, _batteryMultiplier,
+                                   _operatingVoltage);
 }
 /** End [working_functions] */
 
@@ -441,25 +467,27 @@ void setup() {
     greenRedFlash(3, 35);
     /** End [setup_flashing_led] */
 
+    // Hold the green LED on so we know the board is on
+    digitalWrite(greenLED, HIGH);
+
 /** Start [setup_wait] */
 // Wait for USB connection to be established by PC
 // NOTE:  Only use this when debugging - if not connected to a PC, this adds an
 // unnecessary startup delay
 #if defined(SERIAL_PORT_USBVIRTUAL)
-    while (!SERIAL_PORT_USBVIRTUAL && (millis() < 10000L)) {
-        // wait
-    }
+    while (!SERIAL_PORT_USBVIRTUAL && (millis() < 10000L));
 #endif
     /** End [setup_wait] */
 
-    /** Start [setup_prints] */
-    // Start the primary serial connection
-    Serial.begin(serialBaud);
-#if defined(MS_2ND_OUTPUT)
-    MS_2ND_OUTPUT.begin(serialBaud);
-#endif
+    /** Start [setup_serial_begins] */
+    // Start all of the various serial connections
+    startSerials();
+    // Flash again to show serial has started
     greenRedFlash(5, 50);
+    /** End [setup_serial_begins] */
 
+
+    /** Start [setup_prints] */
     // Print a start-up note to the first serial port
     PRINTOUT("\n\n\n=============================");
     PRINTOUT("=============================");
@@ -473,18 +501,6 @@ void setup() {
     PRINTOUT(F("The most recent reset cause was"), mcuBoard.getLastResetCode(),
              '(', mcuBoard.getLastResetCause(), ")\n");
     /** End [setup_prints] */
-
-    /** Start [setup_serial_begins] */
-    // Start the serial connection with the modem
-    PRINTOUT(F("Starting modem connection on"), STR(modemSerial), F(" at"),
-             modemBaud, F(" baud"));
-    modemSerial.begin(modemBaud);
-
-    // Start the stream for the camera; it will always be at 115200 baud
-    PRINTOUT(F("Starting camera connection at"), 115200, F("baud"));
-    cameraSerial.begin(115200);
-
-    /** End [setup_serial_begins] */
 
     // Start the SPI library
     PRINTOUT(F("Starting SPI"));
@@ -507,8 +523,9 @@ void setup() {
     // set the logging interval
     PRINTOUT(F("Setting logging interval to"), loggingInterval, F("minutes"));
     dataLogger.setLoggingInterval(loggingInterval);
-    PRINTOUT(F("Setting number of initial 1 minute intervals to 10"));
-    dataLogger.setinitialShortIntervals(15);
+    PRINTOUT(F("Setting number of initial 1 minute intervals to"),
+             initialShortIntervals);
+    dataLogger.setinitialShortIntervals(initialShortIntervals);
     // Attach the variable array to the logger
     PRINTOUT(F("Attaching the variable array"));
     dataLogger.setVariableArray(&varArray);
@@ -548,7 +565,7 @@ void setup() {
     /** Start [setup_sensors] */
     // Note:  Please change these battery voltages to match your battery
     // Set up the sensors, except at lowest battery level
-    if (getBatteryVoltage() > 3.4) {
+    if (getPrimaryBatteryVoltage() > 3.4) {
         PRINTOUT(F("Setting up sensors..."));
         varArray.sensorsPowerUp();  // only needed if you have sensors that need
                                     // power for setups
@@ -582,7 +599,7 @@ void setup() {
 
     /** Start [setup_clock] */
     // Sync the clock if it isn't valid or we have battery to spare
-    if (getBatteryVoltage() > 3.55 || !loggerClock::isRTCSane()) {
+    if (getPrimaryBatteryVoltage() > 3.55 || !loggerClock::isRTCSane()) {
         // Set up the modem, synchronize the RTC with NIST, and publish
         // configuration information to publishers that support it.
         dataLogger.makeInitialConnections();
@@ -595,7 +612,7 @@ void setup() {
     // all sensor names correct.
     // Writing to the SD card can be power intensive, so if we're skipping the
     // sensor setup we'll skip this too.
-    if (getBatteryVoltage() > 3.4) {
+    if (getPrimaryBatteryVoltage() > 3.4) {
         PRINTOUT(F("Setting up file on SD card"));
         dataLogger.turnOnSDcard(true);
         // true = wait for card to settle after power up
@@ -606,6 +623,9 @@ void setup() {
     /** End [setup_file] */
 
     /** Start [setup_sleep] */
+    // Turn off the green LED
+    digitalWrite(greenLED, LOW);
+
     // Call the processor sleep
     PRINTOUT(F("Putting processor to sleep\n"));
     dataLogger.systemSleep();
@@ -620,21 +640,21 @@ void setup() {
 void loop() {
     // Note:  Please change these battery voltages to match your battery
     // At very low battery, just go back to sleep
-    if (getBatteryVoltage() < 3.4) {
-        PRINTOUT(F("Battery too low, ("),
-                 mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM],
+    startSerials();
+    float batteryVoltage = getPrimaryBatteryVoltage();
+    PRINTOUT(F("Current battery voltage:"), batteryVoltage, F("V"));
+    if (batteryVoltage < 3.4) {
+        PRINTOUT(F("Battery too low, ("), batteryVoltage,
                  F("V) going back to sleep."));
         dataLogger.systemSleep();
-    } else if (getBatteryVoltage() < 3.55) {
+    } else if (batteryVoltage < 3.55) {
         // At moderate voltage, log data but don't send it over the modem
-        PRINTOUT(F("Battery at"),
-                 mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM],
+        PRINTOUT(F("Battery at"), batteryVoltage,
                  F("V; high enough to log, but will not publish!"));
         dataLogger.logData();
     } else {
         // If the battery is good, send the data to the world
-        PRINTOUT(F("Battery at"),
-                 mcuBoard.sensorValues[PROCESSOR_BATTERY_VAR_NUM],
+        PRINTOUT(F("Battery at"), batteryVoltage,
                  F("V; high enough to log and publish data"));
         dataLogger.logDataAndPublish();
     }
