@@ -425,7 +425,7 @@ void startSerials() {
     // Start the serial connection with the modem
     modemSerial.begin(modemBaud);
 #endif
-#if defined(cameraSerial) && defined(BUILD_SENSOR_GEOLUX_HYDRO_CAM)
+#if defined(cameraSerial) && defined(GEOLUX_CAMERA_RS232_BAUD)
     // Start the stream for the camera; it will always be at 115200 baud
     cameraSerial.begin(GEOLUX_CAMERA_RS232_BAUD);
 #endif
