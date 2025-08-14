@@ -186,8 +186,8 @@ Variable* mcuBoardSampNo = new ProcessorStats_SampleNumber(&mcuBoard);
 #include <sensors/EverlightALSPT19.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const int8_t  alsPower      = sensorPowerPin;  // Power pin
-const int8_t  alsData       = A8;              // The ALS PT-19 data pin
+const int8_t  alsPower      = -1;   // Power pin
+const int8_t  alsData       = A8;   // The ALS PT-19 data pin
 const int8_t  alsSupply     = 3.3;  // The ALS PT-19 supply power voltage
 const int8_t  alsResistance = 10;   // The ALS PT-19 loading resistance (in kΩ)
 const uint8_t alsNumberReadings = 10;
@@ -238,7 +238,7 @@ Variable* hydrocamImageSize = new GeoluxHydroCam_ImageSize(&hydrocam);
 #include <sensors/SensirionSHT4x.h>
 
 // NOTE: Use -1 for any pins that don't apply or aren't being used.
-const int8_t SHT4xPower     = sensorPowerPin;  // Power pin
+const int8_t SHT4xPower     = -1;  // Power pin
 const bool   SHT4xUseHeater = true;
 
 // Create an Sensirion SHT4X sensor object
@@ -338,13 +338,24 @@ const char* extraBatteryUnit = "volt";
 const char* extraBatteryCode = "12VBattery";
 
 float readExtraBattery() {
-    pinMode(relayPowerPin, OUTPUT);
-    digitalWrite(relayPowerPin, HIGH);  // turn on the relay power
+    bool wasOn = false;
+    if (relayPowerPin >= 0) {
+        auto powerBitNumber = static_cast<int8_t>(
+            log(digitalPinToBitMask(relayPowerPin)) / log(2));
+        wasOn = bitRead(*portInputRegister(digitalPinToPort(relayPowerPin)),
+                        powerBitNumber) == LOW;
+        if (!wasOn) {
+            pinMode(relayPowerPin, OUTPUT);
+            digitalWrite(relayPowerPin, HIGH);  // turn on the relay power
+        }
+    }
     float  _batteryMultiplier = 5.88;
     float  _operatingVoltage  = 3.3;
     int8_t _batteryPin        = A0;
     // PRINTOUT(F("Reading 12V battery:"));
-    digitalWrite(relayPowerPin, LOW);  // turn off the relay power
+    if (relayPowerPin >= 0 && !wasOn) {
+        digitalWrite(relayPowerPin, LOW);  // turn off the relay power
+    }
     return getAnalogBatteryVoltage(_batteryPin, _batteryMultiplier,
                                    _operatingVoltage);
 }
