@@ -123,42 +123,10 @@ class loraModemAWS {
     }
 
     bool modemConnect(LoRa_AT& _lora_modem, const char* _appEui,
-                      const char* _appKey, const char* _devEui) {
-        bool   mustSetDevEUI = false;
-        String name          = _lora_modem.getDevEUI();
-        name.trim();                         // remove any whitespace
-        name.toUpperCase();                  // convert to uppercase
-        String devEuiStr = String(_devEui);  // save the device EUI
-        devEuiStr.trim();                    // remove any whitespace
-        devEuiStr.toUpperCase();             // convert to uppercase
-        Serial.print(F("Device EUI: "));
-        Serial.println(name);
-        if (name != devEuiStr) {
-            Serial.println(
-                F("WARNING: The device EUI from the LoRa module does not match "
-                  "the expected value!"));
-            Serial.print(F("Expected:"));
-            Serial.println(devEuiStr);
-            Serial.print(F("Actual:"));
-            Serial.println(name);
-            mustSetDevEUI = true;
-        } else if (name == "00-00-00-00-00-00-00-00") {
-            Serial.println(F(
-                "WARNING: The device EUI from the LoRa module is all zeros!"));
-            mustSetDevEUI = true;
-        } else {
-            Serial.println(F("Device EUI matches expected value."));
-        }
-
-        if (mustSetDevEUI) {
-            Serial.println(
-                F("Attempting to join with OTAA, setting device EUI..."));
-            return _lora_modem.joinOTAA(_appEui, _appKey, _devEui);
-        } else {
-            Serial.println(F("Attempting to connect to LoRa network without "
-                             "changing device EUI..."));
-            return _lora_modem.joinOTAA(_appEui, _appKey);
-        }
+                      const char* _appKey) {
+        Serial.println(F("Attempting to connect to LoRa network without "
+                         "OTAA and built-in device EUI..."));
+        return _lora_modem.joinOTAA(_appEui, _appKey);
     }
 
     uint32_t modemGetTime(LoRa_AT& _lora_modem, uint8_t nRetries = 5) {

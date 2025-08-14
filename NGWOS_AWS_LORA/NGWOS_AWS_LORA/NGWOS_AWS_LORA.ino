@@ -657,8 +657,7 @@ void loop() {
         extendedWatchDog::resetWatchDog();
         if (successful_wake) {
             PRINTOUT(F("Attempting to connect to LoRa network..."));
-            successful_wake &= loraModem.modemConnect(loraAT, appEui, appKey,
-                                                      devEui);
+            successful_wake &= loraModem.modemConnect(loraAT, appEui, appKey);
         }
 
         // Confirm the date and time using the ISO 8601 timestamp
