@@ -71,6 +71,12 @@ C:\Users\{your_user_name}\Documents\Arduino\libraries
         └ ... library files ...
 ```
 
+> [!Tip]
+> When you open the Arduino IDE, it will suggest that you update libraries.
+> ***DO NOT ALLOW THE ARDUINO IDE TO UPDATE THE LIBRARIES!***
+> You must have the versions of the libraries from the zip!
+> In the case of ArduinoJSON, the older version of the library is preferred for our use case.
+
 ## Setting up the Stonefly in PlatformIO on VSCode
 
 To use the Stonefly in PlatformIO, you must manually download the boards and variants files and put them in the correct folder.
