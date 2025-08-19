@@ -132,10 +132,7 @@ This repo contains 6 example programs for the USGS:
   - [NGWOS_Hydros21_HydroCam](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_Hydros21_HydroCam)
     - This is identical to the Vega and HydroCam example, but with a Meter Hydros21 instead of a Vega Puls.
 
-The dependencies for all of the examples are in this [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip).
-Download the zip and un-zip it.
-Move all of the files from the unzipped directory into your Arduino libraries folder.
-Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
+Follow the steps above for installing the libraries for either the [Arduino IDE](#installing-or-updating-libraries-for-the-examples-in-the-arduino-ide) or [PlatformIO](#installing-libraries-for-the-examples-in-platformio).
 
 Detailed instructions for each example are in the ReadMe files in the respective sub-folders.
 
