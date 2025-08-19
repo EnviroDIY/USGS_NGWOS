@@ -19,11 +19,11 @@ The IDE can be downloaded [here](https://www.arduino.cc/en/software).
 These instructions were testing using version 2.3.4 of the IDE.
 You **must have administrator privileges** on a Windows computer to install the Arduino IDE and the Adafruit SAMD core needed by the Stonefly.
 
-To add the EnviroDIY Stonefly board to your Arduino IDE, go to File > Preferences (for a Mac: Arduino > Preferences) and copy the following URL into the box labeled "Additional Boards Manager URLs":
+To add the EnviroDIY Stonefly board to your Arduino IDE, go to File > Preferences (for a Mac: Arduino > Preferences) and copy the following URLs into the box labeled "Additional Boards Manager URLs":
 
-`https://raw.githubusercontent.com/EnviroDIY/Arduino_boards/master/package_EnviroDIY_index.json`
+`https://raw.githubusercontent.com/EnviroDIY/Arduino_boards/master/package_EnviroDIY_index.json,https://adafruit.github.io/arduino-board-index/package_adafruit_index.json`
 
-If you already have other custom board manager URL's, extend your list with the EnviroDIY link.
+If you already have other custom board manager URL's, *extend* your list with the EnviroDIY link, separating the URLs with commas.
 
 Then in the IDE, click on Tools > Board > Boards Manager.
 Use the dropdown box for Type to select "Contributed".
@@ -32,7 +32,7 @@ Click the "Install" button to add the EnviroDIY boards to your IDE.
 The install process should also install the Adafruit core into the Arduino IDE.
 As mentioned above, you **must have administrator privileges** on a Windows computer for the install to succeed.
 If you have problems installing the board and core in the board manager, Adafruit has more detailed instructions [here](https://learn.adafruit.com/add-boards-arduino-v164/setup).
-When following the Adafruit instructions, make sure to use the EnviroDIY URL above, not just Adafruit's URL.
+When following the Adafruit instructions, make sure to use both the EnviroDIY URL above and Adafruit's URL.
 
 Once the board and core packages are installed, when you click Tools > Board you will see EnviroDIY SAMD boards > EnviroDIY Stonefly listed as options for available boards.
 
@@ -47,8 +47,8 @@ Managing library dependencies using the Arduino IDE can be tricky as the Arduino
 The correct version of all of the dependencies for all of the examples are in this [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip).
 
 > [!NOTE]
-> To ensure that you have the right version of all of the dependencies after any updates are made, you _**must completely delete the contents of your Arduino libraries folder every time you install updates**_.
-> If you have made changes to any libraries or have a different set of libraries that you use for other sketches, you _must_ copy or move the contents of your Arduino libraries folder to a different location!
+> To ensure that you have the right version of all of the dependencies after any updates are made, you ***must completely delete the contents of your Arduino libraries folder every time you install updates***.
+> If you have made changes to any libraries or have a different set of libraries that you use for other sketches, you *must* copy or move the contents of your Arduino libraries folder to a different location!
 > If you do not empty your libraries folder and instead try to write over what you have, you may end up with multiple versions of libraries or completely non-functional libraries that contain fails from mixed library versions.
 
 To install all of the libraries, download the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) and un-zip it.
@@ -56,8 +56,8 @@ The result of the unzipping should be a bunch of sub-directories.
 Move all of the sub-directories from the unzipped directory into your Arduino libraries folder.
 Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
 The final folder structure should be have one subfolder of your libraries folder for each library.
-You should _not_ have a single "AllDependencies" folder in your libraries folder.
-You also should _not_ have any bare files in your libraries folder, only folders.
+You should *not* have a single "AllDependencies" folder in your libraries folder.
+You also should *not* have any bare files in your libraries folder, only folders.
 
 A correct example (using the default Windows folder location):
 
@@ -97,7 +97,8 @@ board = envirodiy_stonefly_m4
 framework = arduino
 board_build.variant = stonefly_m4
 board_build.variants_dir = ${platformio.core_dir}/variants
-board_build.ldscript = ${platformio.core_dir}/variants/stonefly_m4/linker_scripts/gcc/flash_with_bootloader.ld
+board_build.ldscript = ${platformio.core_dir}
+/variants/stonefly_m4/linker_scripts/gcc/flash_with_bootloader.ld
 ```
 
 ### Installing Libraries for the Examples in PlatformIO
