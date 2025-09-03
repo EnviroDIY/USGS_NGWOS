@@ -354,6 +354,8 @@ VariableArray varArray(variableCount, variableList);
 // The name of your certificate authority certificate file
 const char* caCertName = "client_ca.1";
 
+// The S3 host (need for region specific requests)
+const char* s3Host = "s3.us-west-2.amazonaws.com";
 // The topic to publish to to request a new S3 pre-signed URL
 String s3URLPubTopic = String(LoggerID) + "/geturl";
 // The topic to subscribe to for the S3 pre-signed URL response
@@ -416,6 +418,11 @@ void IoTCallback(char* topic, byte* payload, unsigned int length) {
         // let the publisher know we got what we expected and it can stop
         // waiting
         awsIoTPub.closeConnection();
+    } else {
+        // Handle unexpected topics
+        PRINTOUT(F("Received unexpected topic on AWS IoT Core!"));
+        PRINTOUT(F("Topic was"), String(topic));
+        PRINTOUT(F("Message was:"), String((char*)payload));
     }
 }
 /** End [aws_io_t_publisher] */
@@ -564,8 +571,10 @@ void setup() {
     PRINTOUT(F("Setting modem LEDs"));
     modem.setModemLED(modemLEDPin);
 
-    // Set the S3 certificate authority names
+    // Set the S3 host and certificate authority name
+    s3pub.setHost(s3Host);
     s3pub.setCACertName(caCertName);
+    // Attach to the logger
     s3pub.attachToLogger(dataLogger);
 
     // Set the data and metadata topic for AWS IoT Core

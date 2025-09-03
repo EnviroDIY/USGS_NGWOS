@@ -47,6 +47,8 @@ The jumper next to the "UART1" Grove plug should be connecting the middle two pi
 
 TODO: Add instructions for connecting the secondary battery monitor!
 
+TODO: Add instructions for VegaPuls app
+
 ## Library Dependencies
 
 This example program is built around the **develop branch** of ModularSensors library, ***NOT*** the released version of the library!
@@ -69,7 +71,7 @@ You need your thing name and endpoint again for this sketch.
 
 ### Set your AWS IoT Core Endpoint
 
-In line 56, find and replace the text `YOUR_ENDPOINT-ats.iot.us-west-2.amazonaws.com` with your real endpoint.
+In line 57, find and replace the text `YOUR_ENDPOINT-ats.iot.us-west-2.amazonaws.com` with your real endpoint.
 Make sure there are quotation marks around the endpoint string, as there are in the example.
 This must be the same value you used in the NGWOS_AWS_MQTT_Certs sketch.
 
