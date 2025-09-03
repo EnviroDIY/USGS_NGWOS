@@ -19,7 +19,6 @@ As of 7/1/2025, this program depends on the [develop](https://github.com/EnviroD
   - [Customizing the Example Sketch](#customizing-the-example-sketch)
     - [Set your AWS IoT Core Endpoint](#set-your-aws-iot-core-endpoint)
     - [Set your Thing Name](#set-your-thing-name)
-    - [Set your Sampling Feature (Site) ID](#set-your-sampling-feature-site-id)
     - [Set your Wi-Fi Credentials](#set-your-wi-fi-credentials)
 
 ## Physical Connections
@@ -69,7 +68,7 @@ You need your thing name and endpoint again for this sketch.
 
 ### Set your AWS IoT Core Endpoint
 
-In line 56, find and replace the text `YOUR_ENDPOINT-ats.iot.us-west-2.amazonaws.com` with your real endpoint.
+In line 57, find and replace the text `YOUR_ENDPOINT-ats.iot.us-west-2.amazonaws.com` with your real endpoint.
 Make sure there are quotation marks around the endpoint string, as there are in the example.
 This must be the same value you used in the NGWOS_AWS_WIFI_Certs sketch.
 
@@ -79,12 +78,6 @@ In line 58, find and replace the text `YOUR_THING_NAME` with your assigned thing
 Make sure there are quotation marks around the name string, as there are in the example.
 This must be the same value you used in the NGWOS_AWS_WIFI_Certs sketch.
 
-### Set your Sampling Feature (Site) ID
-
-In line 70, find and replace the text `YOUR_SAMPLING_FEATURE_ID` with your assigned sampling feature ID or UUID.
-Make sure there are quotation marks around the name string, as there are in the example.
-There was no sampling feature ID used in the NGWOS_AWS_WIFI_Certs sketch, so you don't need to worry about it matching.
-
 ### Set your Wi-Fi Credentials
 
-In lines 112 and 113, find and replace the text `YOUR-WIFI-SSID` and `YOUR-WIFI-PASSWORD` with your real Wi-Fi connection information.
+In lines 108 and 109, find and replace the text `YOUR-WIFI-SSID` and `YOUR-WIFI-PASSWORD` with your real Wi-Fi connection information.

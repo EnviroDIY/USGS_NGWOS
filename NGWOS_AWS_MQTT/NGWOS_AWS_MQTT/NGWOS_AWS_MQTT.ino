@@ -64,10 +64,6 @@ const char* sketchName = "NGWOS_AWS_MQTT.ino";
 // This is also used as the Thing Name, MQTT Client ID, and topic for AWS IOT
 // Core
 const char* LoggerID = THING_NAME;
-// Sampling feature UUID
-// This is used as the UUID for the sampling feature on Monitor My Watershed and
-// the sub-topic for AWS IOT Core
-const char* samplingFeature = "YOUR_SAMPLING_FEATURE_ID";
 // How frequently (in minutes) to log data
 const int8_t loggingInterval = 5;
 // The number of 1-minute intervals to take before moving to the set logging
@@ -100,7 +96,7 @@ const int8_t sdi12DataPin  = 3;
 // Create a new logger instance
 // NOTE: We haven't set the pins or variable array here! We will need to call
 // setVariableArray and the various pin assignment functions in the setup!
-Logger dataLogger(LoggerID, samplingFeature, loggingInterval);
+Logger dataLogger;
 /** End [loggers] */
 
 
@@ -378,8 +374,6 @@ S3PresignedPublisher s3pub;
 /** Start [aws_io_t_publisher] */
 // The endpoint for your AWS IoT instance
 const char* awsIoTEndpoint = AWS_IOT_ENDPOINT;
-// NOTE: Because we already set the sampling feature with the logger
-// constructor, don't do it here.
 // The name of your client certificate file
 const char* clientCertName = THING_NAME "-certificate.pem.crt";
 // The name of your client private key file
@@ -540,8 +534,6 @@ void setup() {
     // set the logger ID
     PRINTOUT(F("Setting logger id to"), LoggerID);
     dataLogger.setLoggerID(LoggerID);
-    PRINTOUT(F("Setting the sampling feature UUID to"), LoggerID);
-    dataLogger.setSamplingFeatureUUID(samplingFeature);
     // set the logging interval
     PRINTOUT(F("Setting logging interval to"), loggingInterval, F("minutes"));
     dataLogger.setLoggingInterval(loggingInterval);
