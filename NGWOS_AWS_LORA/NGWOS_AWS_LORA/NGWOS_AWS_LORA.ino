@@ -48,10 +48,6 @@
 #include <LoRa_AT.h>
 // Cayenne LPP library for compressing data for TTN
 #include <CayenneLPP.h>
-// RTC Library (On-board clock)
-#include <SparkFun_RV8803.h>
-// The SDI-12 library for the Vega Puls
-#include <SDI12.h>
 // Local H files with separated fxns
 #include "LoRaModemFxns.h"
 
