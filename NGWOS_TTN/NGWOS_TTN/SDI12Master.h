@@ -4,7 +4,11 @@
 
 #include <Arduino.h>
 // The SDI-12 library for the Vega Puls
+#ifdef SDI12_EXTERNAL_PCINT
 #include <SDI12.h>
+#else
+#include <SDI12_ExtInts.h>
+#endif
 
 
 // Extra time needed for the sensor to wake (0-100ms)

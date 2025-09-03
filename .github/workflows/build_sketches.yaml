@@ -17,8 +17,8 @@ jobs:
           - NGWOS_AWS_LORA
           - NGWOS_AWS_MQTT
           - NGWOS_AWS_MQTT_Certs
-          - NGWOS_Hydros21_HydroCam
           - NGWOS_TTN
+          - NGWOS_Hydros21_HydroCam
           - NGWOS_VegaAndHydroCam
 
     steps:

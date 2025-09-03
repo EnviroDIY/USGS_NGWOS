@@ -56,7 +56,11 @@
 // Adafruit MAX1704x library (On-board battery monitor)
 #include <Adafruit_MAX1704X.h>
 // The SDI-12 library for the Vega Puls
+#ifdef SDI12_EXTERNAL_PCINT
 #include <SDI12.h>
+#else
+#include <SDI12_ExtInts.h>
+#endif
 // Local H files with separated fxns
 #include "SDI12Master.h"
 #include "LoRaModemFxns.h"
