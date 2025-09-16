@@ -99,3 +99,4 @@ NGWOS_VegaAndHydroCam/NGWOS_VegaAndHydroCam_SWRC_UUIDs/NGWOS_VegaAndHydroCam_SWR
 NGWOS_AWS_LORA/LoRa Connection/*
 */platformio.ini
 pio_extra_libs/*
+GeoLux Firmware Update Instructions.docx

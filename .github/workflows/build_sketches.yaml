@@ -51,7 +51,10 @@ jobs:
         with:
           path: |
             home/arduino/data
-          key: arduino_platforms-${{ hashFiles('continuous_integration/install-platforms-arduino-cli.sh') }}
+          key: arduino_platforms-${{ hashFiles('continuous_integration/install-platforms-arduino-cli.sh') }}-${{ github.run_id }}-${{ matrix.sketch }}
+          restore-keys: |
+            arduino_platforms-${{ hashFiles('continuous_integration/install-platforms-arduino-cli.sh') }}-${{ github.run_id }}
+            arduino_platforms-${{ hashFiles('continuous_integration/install-platforms-arduino-cli.sh') }}
 
       # Install cores for the Arduino CLI, iff no cache
       - name: Install the Arduino Platforms
@@ -99,4 +102,4 @@ jobs:
         with:
           path: |
             home/arduino/data
-          key: ${{ steps.restore_platforms.outputs.cache-primary-key }}
+          key: arduino_platforms-${{ hashFiles('continuous_integration/install-platforms-arduino-cli.sh') }}-${{ github.run_id }}-${{ matrix.sketch }}

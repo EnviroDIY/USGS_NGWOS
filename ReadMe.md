@@ -4,6 +4,7 @@ This new logger board was developed by the Stroud Water Research center with fun
 The brain of the new board is a Microchip Technology's [ATSAMD51N19A](https://www.microchip.com/en-us/product/ATSAMD51N19A).
 
 - [The EnviroDIY Stonefly](#the-envirodiy-stonefly)
+  - [Downloading files from GitHub](#downloading-files-from-github)
   - [Setting up the Stonefly in the Arduino IDE](#setting-up-the-stonefly-in-the-arduino-ide)
     - [Installing or Updating Libraries for the Examples in the Arduino IDE](#installing-or-updating-libraries-for-the-examples-in-the-arduino-ide)
   - [Setting up the Stonefly in PlatformIO on VSCode](#setting-up-the-stonefly-in-platformio-on-vscode)
@@ -11,6 +12,33 @@ The brain of the new board is a Microchip Technology's [ATSAMD51N19A](https://ww
   - [Example Programs](#example-programs)
   - [UF2 bootloader](#uf2-bootloader)
   - [Reprogramming a Sleeping Logger](#reprogramming-a-sleeping-logger)
+
+## Downloading files from GitHub
+
+To use these examples, you must to be able download and save files from GitHub and move them to the correct folder on your computer.
+The individual instructions for setting up your board, setting up your libraries, and setting up each example will tell you which files you need to download for each.
+There are several ways you can download files from GitHub:
+
+- Download one file at a time using the download button for each file.
+  - Navigate to each file you're interested in and download that file using the download button.  This will save files to your browsers download folder.
+  - ![screen shot with download file button circled](images/download_button.jpg)
+- Save the raw content of each text-like file one at a time to a file on your computer.
+  - Go to the file you want to download.
+  - Click it to view the contents within the GitHub UI.
+  - In the top right, ***right click*** the Raw button.
+  - Select `Save as...` and save the file somewhere on your computer.
+  - ![screenshot with raw file button circled](images/raw_button.jpg)
+  - Alternately, left click the Raw button, then when the raw text opens, right click on the page and select `Save as...`.
+- Download whole folders as zip files using the link helpers in each example ReadMe.
+  - These links use a secondary download helper page, so - while unlikely - your browser may complain if you have security settings at max.
+  - After downloading the folder, unzip (decompress) the files and move them to the appropriate location on your computer.
+- Download the entire repository as a zip file and move files as you need them to the appropriate location on your computer.
+  - ![screen shot with download repo button circled](images/download_repo_button.jpg)
+- Clone the repository (*git users only*)
+  - If you don't already know how to do this, you do not need to.
+
+> [!tip]
+> You do *not* need to download this entire repository and you definitely don't need to install git and clone the repo. You can download only the files you need.
 
 ## Setting up the Stonefly in the Arduino IDE
 
@@ -85,7 +113,7 @@ To use the Stonefly in PlatformIO, you must manually download the boards and var
 - If they don't already exist, create a "boards" folder and a "variants" folder within the PlatformIO core directory.
 - Download the Stonefly boards file [here](https://raw.githubusercontent.com/EnviroDIY/Arduino_boards/refs/heads/master/EnviroDIYSAMDBoards/boards/envirodiy_stonefly_m4.json) and put it into your new boards subdirectory.
   - On windows, the new file should end up being `C:\Users\{yourUserName}\.platformio\boards\envirodiy_stonefly_m4.json`
-- Download all of the files in this [variants directory](https://github.com/EnviroDIY/Arduino_boards/tree/master/EnviroDIYSAMDBoards/variants/stonefly_m4) and put them in your new variants folder.
+- Download the stonefly_m4 folder in this [variants directory](https://github.com/EnviroDIY/Arduino_boards/tree/master/EnviroDIYSAMDBoards/variants) and all of the files from the folder and put that folder and all of its contents in your new variants folder.
   - You should end up with these files:
     - `C:\Users\{yourUserName}\.platformio\variants\stonefly_m4\pins_arduino.h`
     - `C:\Users\{yourUserName}\.platformio\variants\stonefly_m4\variant.h`
