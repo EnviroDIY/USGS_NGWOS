@@ -65,8 +65,7 @@ Follow the [instructions from the repository ReadMe](https://github.com/EnviroDI
 - Download the [example platformio.ini file for this example](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/NGWOS_AWS_MQTT/platformio_example.ini) and put it in the `NGWOS_AWS_MQTT` folder you created.
   - After downloading, rename the file to `platformio.ini` (remove the `_example` part of the file name).
 - Create another deeper subfolder, also named `NGWOS_AWS_MQTT` inside of the already existing `NGWOS_AWS_MQTT` folder.
-- Download the ino file from the [NGWOS_AWS_MQTT/NGWOS_AWS_MQTT](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT/NGWOS_AWS_MQTT) folder on this repo and move it into the deeper subfolder.
-- Your final folder should look like this (assuming you are using the default Windows Sketchbook folder):
+- Download the ino file from the [NGWOS_AWS_MQTT/NGWOS_AWS_MQTT](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT/NGWOS_AWS_MQTT) folder on this repo and move it into the deeper subfolder.s
 - Your final folder should look like this (assuming you are using the default PlatformIO projects folder):
 
 ```txt
