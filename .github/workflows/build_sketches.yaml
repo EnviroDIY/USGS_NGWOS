@@ -20,6 +20,7 @@ jobs:
           - NGWOS_TTN
           - NGWOS_Hydros21_HydroCam
           - NGWOS_VegaAndHydroCam
+          - PowerAndBlink
 
     steps:
       - name: Checkout code
