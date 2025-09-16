@@ -65,9 +65,11 @@ When following the Adafruit instructions, make sure to use both the EnviroDIY UR
 
 Once the board and core packages are installed, when you click Tools > Board you will see EnviroDIY SAMD boards > EnviroDIY Stonefly listed as options for available boards.
 
-If you get a board error when trying to compile for the Stonefly for the first time, the IDE probably did not correctly install the Adafruit SAMD core.
-To add the Adafruit SAMD core, follow the directions linked above to add Adafruit's board URL to your boards list.
-Then select and install the "Adafruit SAMD Boards" package.
+> [!tip]
+> If you get a board or `Invalid FQBN` error when trying to compile for the Stonefly for the first time, the IDE probably did not correctly install the Adafruit SAMD core that the Stonefly is built on.
+> To add the Adafruit SAMD core, follow the directions linked above to add Adafruit's board URL to your boards list.
+> Then select and install the "Adafruit SAMD Boards" package.
+> Remember to *extend* your list of URLs to include both the Adafruit and EnviroDIY URLs.
 
 ### Installing or Updating Libraries for the Examples in the Arduino IDE
 
