@@ -9,6 +9,7 @@ The brain of the new board is a Microchip Technology's [ATSAMD51N19A](https://ww
     - [Installing or Updating Libraries for the Examples in the Arduino IDE](#installing-or-updating-libraries-for-the-examples-in-the-arduino-ide)
   - [Setting up the Stonefly in PlatformIO on VSCode](#setting-up-the-stonefly-in-platformio-on-vscode)
     - [Installing Libraries for the Examples in PlatformIO](#installing-libraries-for-the-examples-in-platformio)
+    - [Enabling intellisense for ino files](#enabling-intellisense-for-ino-files)
   - [Example Programs](#example-programs)
   - [UF2 bootloader](#uf2-bootloader)
   - [Reprogramming a Sleeping Logger](#reprogramming-a-sleeping-logger)
@@ -140,11 +141,23 @@ board_build.ldscript = ${platformio.core_dir}
 Managing libraries in PlatformIO is much easier because of the package manager.
 You should be able to get all the correct versions of dependencies by using the platformio_example.ino file (after renaming the file to platformio.ini).
 
+### Enabling intellisense for ino files
+
+By default, VSCode and PlatformIO do *not* treat Arduino `ino` files as c++ (cpp) files.
+To forcibly enable cpp intellisense for the ino files:
+
+- Open "Settings" using the 'gear' icon, command pallet, or ctrl+, keyboard shortcut.
+- Search for `files.associations` in the settings search bar
+- Within the file associations setting add a new item with the key `*.ino` and the value `cpp`.
+
+There is more information in the PlatformIO documentation about [the conversion of ino files to cpp files](https://docs.platformio.org/en/latest/faq/ino-to-cpp.html).
+**ALL** ino files within this repository are already valid cpp files; they are named as ino files only for the Arduino IDE.
+
 ## Example Programs
 
-This repo contains 6 example programs for the USGS:
+This repo contains these example programs for the USGS:
 
-- Programs for Amazon Web Services / IoT Core
+- Programs for Amazon Web Services / IoT Core and the training workshop
   - [NGWOS_AWS_MQTT_CERTS](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT_Certs)
     - This program is used to upload the required certificates for AWS IoT Core to the modem module.
   - [NGWOS_AWS_MQTT](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT)
@@ -152,13 +165,17 @@ This repo contains 6 example programs for the USGS:
   - [NGWOS_AWS_LORA](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_LORA)
     - This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to a LoRa gateway for further forwarding to AWS IoT Core. It also saves images from a Geolux HydroCam to a SD Card.
 
-- Original testing programs:
+- Out-Dated and un-used testing programs:
   - [NGWOS_TTN](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_TTN)
     - This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to The Things Network
   - [NGWOS_VegaAndHydroCam](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_VegaAndHydroCam)
     - This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to Monitor My Watershed. It also saves images from a Geolux HydroCam.
   - [NGWOS_Hydros21_HydroCam](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_Hydros21_HydroCam)
     - This is identical to the Vega and HydroCam example, but with a Meter Hydros21 instead of a Vega Puls.
+  - [NGWOS_AWS_WIFI_Certs](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_WIFI_Certs)
+    - This program is identical to [NGWOS_AWS_MQTT_CERTS](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT_Certs) but uses an ESP32 Wi-Fi module instead of a cellular module.
+  - [NGWOS_AWS_WIFI](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_WIFI)
+    - This program is identical to [NGWOS_AWS_MQTT](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT) but uses an ESP32 Wi-Fi module instead of a cellular module.
 
 Follow the steps above for installing the libraries for either the [Arduino IDE](#installing-or-updating-libraries-for-the-examples-in-the-arduino-ide) or [PlatformIO](#installing-libraries-for-the-examples-in-platformio).
 
