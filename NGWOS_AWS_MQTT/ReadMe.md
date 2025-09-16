@@ -1,4 +1,4 @@
-# NGWOS AWS
+# NGWOS AWS IoT Core and S3 Imagery
 
 This program transmits data from a Vega Puls 21, a Geolux camera, and onboard sensors from a Stonefly data logger to AWS IoT Core (for numeric data) and S3 (for images).
 This program uses an EnviroDIY LTE Bee based on a SIMCom SIM7080G LTE module.
@@ -6,57 +6,79 @@ This program uses an EnviroDIY LTE Bee based on a SIMCom SIM7080G LTE module.
 While this program is set for the above sensors, modem, and endpoints, the [ModularSensors library](https://github.com/EnviroDIY/ModularSensors/) this program is built on supports many more sensors, modems, and data endpoints.
 Look at the [GitHub repository](https://github.com/EnviroDIY/ModularSensors/) and [documentation](https://envirodiy.github.io/ModularSensors/) for ModularSensors for help in adding more sensors.
 The ["menu a la carte" example](https://github.com/EnviroDIY/ModularSensors/tree/master/examples/menu_a_la_carte) is a collection of code snippets for all of the supported units for ModularSensors.
-As of 7/1/2025, this program depends on the [develop](https://github.com/EnviroDIY/ModularSensors/tree/develop) branch of the library, but that branch should be merged into the main branch soon.
+As of 9/16/2025, this program depends on the [develop](https://github.com/EnviroDIY/ModularSensors/tree/develop) branch of the library, but that branch should be merged into the main branch soon.
 
 > [!WARNING]
 > You should have loaded and **successfully** run the NGWOS_AWS_MQTT_Certs.ino sketch *before* running this program.
 > This program depends on correct certificates being pre-loaded onto the modem.
 
-- [NGWOS AWS](#ngwos-aws)
+- [NGWOS AWS IoT Core and S3 Imagery](#ngwos-aws-iot-core-and-s3-imagery)
   - [Physical Connections](#physical-connections)
-  - [Library Dependencies](#library-dependencies)
+  - [Downloading the Program and Setting up the IDE](#downloading-the-program-and-setting-up-the-ide)
+    - [Arduino IDE](#arduino-ide)
+      - [Installing Library Dependencies](#installing-library-dependencies)
+    - [PlatformIO/VSCode](#platformiovscode)
   - [Confirm that you can connect to AWS](#confirm-that-you-can-connect-to-aws)
+  - [Configuring the ModularSensors library](#configuring-the-modularsensors-library)
   - [Customizing the Example Sketch](#customizing-the-example-sketch)
     - [Set your AWS IoT Core Endpoint](#set-your-aws-iot-core-endpoint)
     - [Set your Thing Name](#set-your-thing-name)
     - [Set your cellular APN](#set-your-cellular-apn)
+  - [Upload to your Stonefly](#upload-to-your-stonefly)
 
 ## Physical Connections
 
-This program is written for an EnviroDIY Stonefly, a Vega Puls 23, a Geolux HydroCan, a Meter Hydros21, and an EnviroDIY LTE Bee.
+This program is written for an EnviroDIY Stonefly, a Vega Puls 21, a Geolux HydroCan, an EnviroDIY LTE Bee, and other solar and battery components.
+Instructions for assembling the components are available in [this blog post](https://www.envirodiy.org/river-flood-monitoring-system-for-rapid-deployment/).
+Scroll down to the "Assembly" steps.
 
-The physical connections needed are nearly identical to those described in the [The Things Network ReadMe](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_TTN), but with the a different Bee replacing the mDot and the addition of the camera.
+## Downloading the Program and Setting up the IDE
 
-The LTE bee should be installed in the "bee" socket on the Stonefly.
-The cut corners should be at the top of the module, following the traced lines on the Stonefly
+### Arduino IDE
 
-The Vega Puls should be connected to a screw-terminal-to-Grove adapter.
-The Grove plug from the Vega Puls should be connected to one of the two sockets labeled "D2-3 & SDI12" on the Stonefly.
+- Using Windows Explorer (or a folder/file manager), navigate to your Sketchbook folder (or your desired working folder).
+  - The default folder for Windows is `C:\Users\{username}\Documents\Arduino`; instructions to find your folder if needed are [here](https://support.arduino.cc/hc/en-us/articles/4412950938514-Open-the-Sketchbook-folder).
+- Within the Sketchbook folder, create a new subfolder and name it `NGWOS_AWS_MQTT`. Open up the new folder after creating it.
+- Download the ino file from the [NGWOS_AWS_MQTT/NGWOS_AWS_MQTT](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT/NGWOS_AWS_MQTT) folder on this repo. Note where you save the file.
+  - There is only a single ino file needed for this example.
+- Move the file downloaded above to the `NGWOS_AWS_MQTT` folder you created.  Your final folder should look like this (assuming you are using the default Windows Sketchbook folder):
 
-- The *brown* wire of the Vega Puls should be connected to the "V+" connection of the screw terminal.
-- Both the *blue* and thick black/grey *shield* wires should be connected to "Gnd" on the screw terminal.
-- The *white* SDI-12 data wire should be connected to the "S2" connection of the screw terminal.
-- There should be nothing connected to the "S1" connection of the screw terminal.
+```txt
+C:\Users\{your_user_name}\Documents\Arduino
+    └ NGWOS_AWS_MQTT
+        └ NGWOS_AWS_MQTT.ino
+```
 
-The Geolux HydroCam connects to the Stonefly via an RS232 adapter board and *two* grove connections.
-One Grove plug should be plugged into one of the two sockets labeled "D2-3 & SDI12" on the Stonefly - right next to where the Vega Puls is plugged in.
-This connection is only supplying 12V power to the camera.
-The other Grove plug should be connected to the "UART1" Grove plug on the bottom left of the Stonefly.
-The jumper next to the "UART1" Grove plug should be connecting the middle two pins to supply the RS232 adapter with 3.3V.
+- Once the file is in the folder, open the sketch in the Arduino IDE by using the file menu (`file > open > C:\Users\{username}\Documents\Arduino\NGWOS_AWS_MQTT\NGWOS_AWS_MQTT.ino`).
 
-TODO: Add instructions for connecting the secondary battery monitor!
-
-TODO: Add instructions for VegaPuls app
-
-## Library Dependencies
+#### Installing Library Dependencies
 
 This example program is built around the **develop branch** of ModularSensors library, ***NOT*** the released version of the library!
+That libraries and all of its many dependencies are included in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) in the repository main folder.
+Follow the [instructions from the repository ReadMe](https://github.com/EnviroDIY/USGS_NGWOS/tree/main#installing-or-updating-libraries-for-the-examples-in-the-arduino-ide) to install all of the library dependencies together.
 
-To get all of the correct dependencies for Arduino IDE, please download them together in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) in the repository main folder.
-After unzipping the dependencies, move them all to your Arduino libraries folder.
-Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
+### PlatformIO/VSCode
 
-If you are using PlatformIO, using the example platformio.ini in this folder should get all of the correct library versions installed.
+- Using Windows Explorer (or a folder/file manager), navigate to your PlatformIO project folder (or your desired working folder).
+  - The default folder for Windows is `C:\Users\{your_user_name}\Documents\PlatformIO\Projects`.
+- Within the project folder, create a new subfolder and name it `NGWOS_AWS_MQTT`. Open up the new folder after creating it.
+- Download the [example platformio.ini file for this example](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/NGWOS_AWS_MQTT/platformio_example.ini) and put it in the `NGWOS_AWS_MQTT` folder you created.
+  - After downloading, rename the file to `platformio.ini` (remove the `_example` part of the file name).
+- Create another deeper subfolder, also named `NGWOS_AWS_MQTT` inside of the already existing `NGWOS_AWS_MQTT` folder.
+- Download the ino file from the [NGWOS_AWS_MQTT/NGWOS_AWS_MQTT](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT/NGWOS_AWS_MQTT) folder on this repo and move it into the deeper subfolder.
+- Your final folder should look like this (assuming you are using the default Windows Sketchbook folder):
+- Your final folder should look like this (assuming you are using the default PlatformIO projects folder):
+
+```txt
+C:\Users\{your_user_name}\Documents\PlatformIO\Projects
+    └ NGWOS_AWS_MQTT
+        └ platformio.ini
+        └ NGWOS_AWS_MQTT
+            └ NGWOS_AWS_MQTT.ino
+```
+
+- Open the project in VSCode by using the file menu (`File > Open Folder > C:\Users\{your_user_name}\Documents\PlatformIO\Projects\NGWOS_AWS_MQTT`) or by opening PlatformIO "Home" and opening the project from the `Open Project` quick access option.
+- If you've correctly added the `platformio.ini` file to you folder, the project should be detected by the PlatformIO extension, which should download the correct core and libraries automatically.
 
 ## Confirm that you can connect to AWS
 
@@ -86,3 +108,11 @@ If you are using a SIM card *other than the [Hologram](https://www.hologram.io/)
 In line 109, find and replace the text `hologram` with the APN for your SIM card.
 Make sure there are quotation marks around the APN string, as there are in the example.
 If you are using a Hologram SIM, you don't need to change this.
+
+## Upload to your Stonefly
+
+After correctly modifying the configuration and set certificates files, upload the sketch to your Stonefly.
+Instructions for uploading sketches can be found on the [Arduino support pages](https://support.arduino.cc/hc/en-us/articles/4733418441116-Upload-a-sketch-in-Arduino-IDE).
+You should have already installed the board package from the Stonefly following the instructions in the [main Read Me for this repository](https://github.com/EnviroDIY/USGS_NGWOS/?tab=readme-ov-file#setting-up-the-stonefly-in-the-arduino-ide).
+
+To upload with PlatformIO, use the upload task shortcut from the bottom menu or select the "Upload" project task from the PlatformIO menu.

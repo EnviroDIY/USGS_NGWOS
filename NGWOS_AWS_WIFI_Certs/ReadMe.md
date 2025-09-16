@@ -7,12 +7,12 @@ This program loads the required certificates for communication with AWS IoT Core
   - [Library Dependencies](#library-dependencies)
   - [Advanced Work on AWS](#advanced-work-on-aws)
   - [Customizing the Example Sketch](#customizing-the-example-sketch)
-    - [Setup AWS IOT Config](#setup-aws-iot-config)
+    - [Setup AWS IOT Config (aws\_iot\_config.h)](#setup-aws-iot-config-aws_iot_configh)
       - [Set your AWS IoT Core Endpoint](#set-your-aws-iot-core-endpoint)
       - [Set your Thing Name](#set-your-thing-name)
       - [Set your AWS IoT Core Client Certificate](#set-your-aws-iot-core-client-certificate)
       - [Set your AWS IoT Core Client Private Key](#set-your-aws-iot-core-client-private-key)
-    - [Customize the Set Certificates program](#customize-the-set-certificates-program)
+    - [Customize the Set Certificates program (NGWOS\_AWS\_WIFI\_Certs.ino)](#customize-the-set-certificates-program-ngwos_aws_wifi_certsino)
       - [Set your Wi-Fi credentials](#set-your-wi-fi-credentials)
   - [Upload to your Stonefly](#upload-to-your-stonefly)
   - [Monitor the sketch to confirm that you are correctly connected](#monitor-the-sketch-to-confirm-that-you-are-correctly-connected)
@@ -53,7 +53,7 @@ Someone needs to generate the certificates and provide them to you, along with t
 This "sketch" consists of *TWO* files that you need to modify.
 You must edit both files and have both files in the NGWOS_AWS_WIFI_Certs folder!
 
-### Setup AWS IOT Config
+### Setup AWS IOT Config (aws_iot_config.h)
 
 This file is the configuration file which contains the actual text of the certificates.
 Everything in this file is unique to your logger and AWS instance.
@@ -114,7 +114,7 @@ Make sure that the text begins and ends with the lines `-----BEGIN RSA PRIVATE K
 > [!NOTE]
 > The line number where the private key starts may change based on the length of the certificate pasted above it.
 
-### Customize the Set Certificates program
+### Customize the Set Certificates program (NGWOS_AWS_WIFI_Certs.ino)
 
 This is the program the Stonefly will run to feed the certificates onto the modem.
 Since all of the private information went into the config file modified above, only the Wi-Fi credentials need to be modified.

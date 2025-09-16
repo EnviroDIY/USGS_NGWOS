@@ -4,15 +4,18 @@ This program loads the required certificates for communication with AWS IoT Core
 
 - [NGWOS AWS Certificates](#ngwos-aws-certificates)
   - [Physical Connections](#physical-connections)
-  - [Library Dependencies](#library-dependencies)
   - [Advanced Work on AWS](#advanced-work-on-aws)
+  - [Downloading the Program and Setting up the IDE](#downloading-the-program-and-setting-up-the-ide)
+    - [Arduino IDE](#arduino-ide)
+      - [Installing Library Dependencies](#installing-library-dependencies)
+    - [PlatformIO/VSCode](#platformiovscode)
   - [Customizing the Example Sketch](#customizing-the-example-sketch)
-    - [Setup AWS IOT Config](#setup-aws-iot-config)
+    - [Configuring AWS (`aws_iot_config.h`)](#configuring-aws-aws_iot_configh)
       - [Set your AWS IoT Core Endpoint](#set-your-aws-iot-core-endpoint)
       - [Set your Thing Name](#set-your-thing-name)
       - [Set your AWS IoT Core Client Certificate](#set-your-aws-iot-core-client-certificate)
       - [Set your AWS IoT Core Client Private Key](#set-your-aws-iot-core-client-private-key)
-    - [Customize the Set Certificates program](#customize-the-set-certificates-program)
+    - [Customize the Set Certificates program (`NGWOS_AWS_MQTT_Certs.ino`)](#customize-the-set-certificates-program-ngwos_aws_mqtt_certsino)
       - [Set your cellular APN](#set-your-cellular-apn)
   - [Upload to your Stonefly](#upload-to-your-stonefly)
   - [Monitor the sketch to confirm that you are correctly connected](#monitor-the-sketch-to-confirm-that-you-are-correctly-connected)
@@ -27,37 +30,79 @@ This program loads the required certificates for communication with AWS IoT Core
 
 ## Physical Connections
 
-This program is written for an EnviroDIY Stonefly and an EnviroDIY LTE Bee.
+This program is written for an EnviroDIY Stonefly and an EnviroDIY LTE Bee - no other parts are needed.
 The LTE bee should be installed in the "bee" socket on the Stonefly.
-The cut corners should be at the top of the module, following the traced lines on the Stonefly
+The cut corners should be at the top of the module, following the traced lines on the Stonefly.
 
 > [!WARNING]
 > The firmware the EnviroDIY LTE Bee's ship with from the factory is *too old* to work correctly with AWS's mutual authentication!
 > You should be running firmware version 1951B**17**SIM7080 or later.
 > The modems provided with your Stonefly should already have been upgraded to this version.
 
-
-## Library Dependencies
-
-This example program is built around the **develop branch** of ModularSensors library, ***NOT*** the released version of the library!
-
-To get all of the correct dependencies for Arduino IDE, please download them together in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) in the repository main folder.
-After unzipping the dependencies, move them all to your Arduino libraries folder.
-Instructions for finding your libraries folder are [here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
-
-If you are using PlatformIO, using the example platformio.ini in this folder should get all of the correct library versions installed.
-
 ## Advanced Work on AWS
 
 Someone needs to generate the certificates and provide them to you, along with the Thing Name = Client ID = Logger ID
+
+## Downloading the Program and Setting up the IDE
+
+### Arduino IDE
+
+- Using Windows Explorer (or a folder/file manager), navigate to your Sketchbook folder (or your desired working folder).
+  - The default folder for Windows is `C:\Users\{username}\Documents\Arduino`; instructions to find your folder if needed are [here](https://support.arduino.cc/hc/en-us/articles/4412950938514-Open-the-Sketchbook-folder).
+- Within the Sketchbook folder, create a new subfolder and name it `NGWOS_AWS_MQTT_certs`. Open up the new folder after creating it.
+- Download the **two** files from the [NGWOS_AWS_MQTT_Certs/NGWOS_AWS_MQTT_Certs](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT_Certs/NGWOS_AWS_MQTT_Certs) folder on this repo. Note where you save the files.
+  - You can download both files together as a zip [by following this link](https://downgit.github.io/#/home?url=https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT_Certs/NGWOS_AWS_MQTT_Certs).
+- Move the two files downloaded above to the `NGWOS_AWS_MQTT_certs` folder you created.
+- If you are using the default Arduino sketch folder it should look like this:
+
+```txt
+C:\Users\{your_user_name}\Documents\Arduino
+    └ NGWOS_AWS_MQTT_Certs
+        └ aws_iot_config.h
+        └ NGWOS_AWS_MQTT_Certs.ino
+```
+
+- Once *both* files are in the folder, open the sketch in the Arduino IDE by using the file menu (`file > open > C:\Users\{username}\Documents\Arduino\NGWOS_AWS_MQTT_certs\NGWOS_AWS_MQTT_Certs.ino`).
+  - You only need to open the ino file; the h file will open automatically with the ino.
+
+#### Installing Library Dependencies
+
+This example program uses only the EnviroDIY fork of TinyGSM and the PubSubClient libraries.
+These libraries are included in the [zip file](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/AllDependencies.zip) in the repository main folder.
+Follow the [instructions from the repository ReadMe](https://github.com/EnviroDIY/USGS_NGWOS/tree/main#installing-or-updating-libraries-for-the-examples-in-the-arduino-ide) to install all of the library dependencies together.
+
+### PlatformIO/VSCode
+
+- Using Windows Explorer (or a folder/file manager), navigate to your PlatformIO project folder (or your desired working folder).
+  - The default folder for Windows is `C:\Users\{your_user_name}\Documents\PlatformIO\Projects`.
+- Within the project folder, create a new subfolder and name it `NGWOS_AWS_MQTT_certs`. Open up the new folder after creating it.
+- Download the [example platformio.ini file for this example](https://github.com/EnviroDIY/USGS_NGWOS/blob/main/NGWOS_AWS_MQTT_Certs/platformio_example.ini) and put it in the `NGWOS_AWS_MQTT_certs` folder you created.
+  - After downloading, rename the file to `platformio.ini` (remove the `_example` part of the file name).
+- Create another deeper subfolder, also named `NGWOS_AWS_MQTT_certs` inside of the already existing `NGWOS_AWS_MQTT_certs` folder.
+- Download the **two** files from the [NGWOS_AWS_MQTT_Certs/NGWOS_AWS_MQTT_Certs](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT_Certs/NGWOS_AWS_MQTT_Certs) folder on this repo and move them into the deeper subfolder.
+  - You can download both files together as a zip [by following this link](https://downgit.github.io/#/home?url=https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT_Certs/NGWOS_AWS_MQTT_Certs).
+- Your final folder should look like this (assuming you are using the default PlatformIO projects folder):
+
+```txt
+C:\Users\{your_user_name}\Documents\PlatformIO\Projects
+    └ NGWOS_AWS_MQTT_certs
+        └ platformio.ini
+        └ NGWOS_AWS_MQTT_certs
+            └ aws_iot_config.h
+            └ NGWOS_AWS_MQTT_certs.ino
+```
+
+- Open the project in VSCode by using the file menu (`File > Open Folder > C:\Users\{your_user_name}\Documents\PlatformIO\Projects\NGWOS_AWS_MQTT_certs`) or by opening PlatformIO "Home" and opening the project from the `Open Project` quick access option.
+- If you've correctly added the `platformio.ini` file to you folder, the project should be detected by the PlatformIO extension, which should download the correct core and libraries automatically.
 
 ## Customizing the Example Sketch
 
 This "sketch" consists of *TWO* files that you need to modify.
 You must edit both files and have both files in the NGWOS_AWS_MQTT_Certs folder!
 
-### Setup AWS IOT Config
+### Configuring AWS (`aws_iot_config.h`)
 
+All AWS configuration is done in the `aws_iot_config.h` file.
 This file is the configuration file which contains the actual text of the certificates.
 Everything in this file is unique to your logger and AWS instance.
 **DO NOT SHARE THIS FILE!!**
@@ -76,7 +121,7 @@ Before you start, have these things ready:
   - These files will probably be provide in a single zip file that contains your personal certificate, public key, private key, and two Amazon root CA certificates.
     - Unzip the files if necessary - make sure you know where they end up on your computer after unzipping!
 
-Unfortunately, the Stonefly cannot read the certificates from your computer, so you need to copy and paste them here.
+Unfortunately, the Stonefly cannot read the certificates from your computer, so you need to copy and paste the contents of the files here.
 
 #### Set your AWS IoT Core Endpoint
 
@@ -117,7 +162,7 @@ Make sure that the text begins and ends with the lines `-----BEGIN RSA PRIVATE K
 > [!NOTE]
 > The line number where the private key starts may change based on the length of the certificate pasted above it.
 
-### Customize the Set Certificates program
+### Customize the Set Certificates program (`NGWOS_AWS_MQTT_Certs.ino`)
 
 This is the program the Stonefly will run to feed the certificates onto the modem.
 Since all of the private information went into the config file modified above, only the cellular APN may need to be modified.
