@@ -88,6 +88,23 @@ Do not proceed to this program until you have successfully connected to and publ
 
 You need your thing name and endpoint again for this sketch.
 
+## Configuring the ModularSensors library
+
+To get consistent two-way communication with the USGS AWS instance, you need to increase the default timeout for MQTT messages within the ModularSensors library.
+This is a simple change to a single file.
+
+- Find the ModularSensors configuration header
+  - If you are using the Arduino IDE, the file will be here: `"C:\Users\{your_user_name}\Documents\Arduino\libraries\EnviroDIY_ModularSensors\src\ModSensorConfig.h"`
+- Open the configuration file in a text editor (like notepad)
+  - You cannot open this header file in the Arduino IDE; you must use a text editor.
+- In line 317 of ModSensorConfig.h, find the define `#define MS_AWS_IOT_MAX_CONNECTION_TIME 30000L` and replace the `30000L` with `120000L`:
+  - Line 317 will end up as `#define MS_AWS_IOT_MAX_CONNECTION_TIME 120000L`
+- Save and close the file.
+
+If you are using PlatformIO you *do not* need to modify this file.
+Instead, add a the [build flag](https://docs.platformio.org/en/latest/projectconf/sections/env/options/build/build_flags.html) `-DMS_AWS_IOT_MAX_CONNECTION_TIME=120000L`to your platformio.ini file
+This build flag is already set in the platformio.ini file for this example.
+
 ## Customizing the Example Sketch
 
 ### Set your AWS IoT Core Endpoint
