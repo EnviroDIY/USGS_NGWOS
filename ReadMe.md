@@ -100,13 +100,22 @@ C:\Users\{your_user_name}\Documents\Arduino\libraries
         └ ... library files ...
 ```
 
-> [!Tip]
+> [!important]
 > When you open the Arduino IDE, it will suggest that you update libraries.
 > ***DO NOT ALLOW THE ARDUINO IDE TO UPDATE THE LIBRARIES!***
 > You must have the versions of the libraries from the zip!
 > In the case of ArduinoJSON, the older version of the library is preferred for our use case.
 
 ## Setting up the Stonefly in PlatformIO on VSCode
+
+[PlatformIO](https://platformio.org/) is both an command line interface and extension for [Microsoft Visual Studio Code](https://code.visualstudio.com/) for embedded software development - including Arduino programming.
+It is more powerful - and less beginner friendly - than the Arduino IDE.
+For those unfamiliar with programming, the Arduino IDE is easier to start with.
+For those who do other programming, want intellisense, compiling, and linting options, or want library and environment management, PlatformIO is the way to go.
+
+> [!tip]
+> All workshops will be taught *exclusively* using the Arduino IDE!
+> There will not be time to help with troubleshooting or configuring PlatformIO during the workshop.
 
 To use the Stonefly in PlatformIO, you must manually download the boards and variants files and put them in the correct folder.
 
