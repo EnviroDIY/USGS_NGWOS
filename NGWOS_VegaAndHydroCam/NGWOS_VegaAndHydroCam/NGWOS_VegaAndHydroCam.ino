@@ -207,7 +207,7 @@ const bool   SHT4xUseHeater = true;
 SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
 
 // ==========================================================================
-// VEGA PULS 21 Radar Sensor
+// VEGAPULS C 21 Radar Sensor
 // ==========================================================================
 #include <sensors/VegaPuls21.h>
 

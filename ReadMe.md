@@ -172,15 +172,15 @@ This repo contains these example programs for the USGS:
   - [NGWOS_AWS_MQTT_CERTS](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT_Certs)
     - This program is used to upload the required certificates for AWS IoT Core to the modem module.
   - [NGWOS_AWS_MQTT](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_MQTT)
-    - This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to AWS IoT Core's MQTT server using cellular data. It also saves images from a Geolux HydroCam to a SD Card and transmits them to AWS S3.
+    - This program transmits data from a VEGAPULS C 21 and onboard sensors from a Stonefly data logger to AWS IoT Core's MQTT server using cellular data. It also saves images from a Geolux HydroCam to a SD Card and transmits them to AWS S3.
   - [NGWOS_AWS_LORA](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_LORA)
-    - This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to a LoRa gateway for further forwarding to AWS IoT Core. It also saves images from a Geolux HydroCam to a SD Card.
+    - This program transmits data from a VEGAPULS C 21 and onboard sensors from a Stonefly data logger to a LoRa gateway for further forwarding to AWS IoT Core. It also saves images from a Geolux HydroCam to a SD Card.
 
 - Out-Dated and un-used testing programs:
   - [NGWOS_TTN](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_TTN)
-    - This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to The Things Network
+    - This program transmits data from a VEGAPULS C 21 and onboard sensors from a Stonefly data logger to The Things Network
   - [NGWOS_VegaAndHydroCam](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_VegaAndHydroCam)
-    - This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to Monitor My Watershed. It also saves images from a Geolux HydroCam.
+    - This program transmits data from a VEGAPULS C 21 and onboard sensors from a Stonefly data logger to Monitor My Watershed. It also saves images from a Geolux HydroCam.
   - [NGWOS_Hydros21_HydroCam](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_Hydros21_HydroCam)
     - This is identical to the Vega and HydroCam example, but with a Meter Hydros21 instead of a Vega Puls.
   - [NGWOS_AWS_WIFI_Certs](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_AWS_WIFI_Certs)

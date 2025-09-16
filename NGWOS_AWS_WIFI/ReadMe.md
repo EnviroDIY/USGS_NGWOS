@@ -1,6 +1,6 @@
 # NGWOS AWS
 
-This program transmits data from a Vega Puls 21, a Geolux camera, and onboard sensors from a Stonefly data logger to AWS IoT Core (for numeric data) and S3 (for images).
+This program transmits data from a VEGAPULS C 21, a Geolux camera, and onboard sensors from a Stonefly data logger to AWS IoT Core (for numeric data) and S3 (for images).
 This program uses an EnviroDIY Wi-Fi Bee based on an Espressif ESP32 (WROOM-32) module.
 
 While this program is set for the above sensors, modem, and endpoints, the [ModularSensors library](https://github.com/EnviroDIY/ModularSensors/) this program is built on supports many more sensors, modems, and data endpoints.

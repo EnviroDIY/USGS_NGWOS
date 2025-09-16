@@ -232,7 +232,7 @@ Variable* sht4xTemp  = new SensirionSHT4x_Temp(&sht4x);
 
 
 // ==========================================================================
-//  VEGA PULS 21 Radar Sensor
+//  VEGAPULS C 21 Radar Sensor
 // ==========================================================================
 /** Start [vega_puls21] */
 #include <sensors/VegaPuls21.h>

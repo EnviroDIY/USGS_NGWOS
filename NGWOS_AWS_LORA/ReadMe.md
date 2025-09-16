@@ -1,6 +1,6 @@
 # AWS IoT Core over LoRa
 
-This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to AWS IoT Core via LoRa. It also takes images with a Geolux Hydrocam and saves them to an SD card. The images are **not** transmitted anywhere, only saved locally.
+This program transmits data from a VEGAPULS C 21 and onboard sensors from a Stonefly data logger to AWS IoT Core via LoRa. It also takes images with a Geolux Hydrocam and saves them to an SD card. The images are **not** transmitted anywhere, only saved locally.
 
 - [AWS IoT Core over LoRa](#aws-iot-core-over-lora)
   - [Physical Connections](#physical-connections)
@@ -17,7 +17,7 @@ This program transmits data from a Vega Puls 21 and onboard sensors from a Stone
 
 ## Physical Connections
 
-This program is written for an EnviroDIY Stonefly, a Vega Puls 21, a Geolux Hydrocam, and a MultiTech mDot.
+This program is written for an EnviroDIY Stonefly, a VEGAPULS C 21, a Geolux Hydrocam, and a MultiTech mDot.
 Instructions for assembling the components are available in [this blog post](https://www.envirodiy.org/river-flood-monitoring-system-for-rapid-deployment/).
 Scroll down to the "Assembly" steps.
 

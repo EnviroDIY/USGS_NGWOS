@@ -158,7 +158,7 @@ Adafruit_SHT4x sht4 = Adafruit_SHT4x();
 
 #ifdef USE_VEGA_PULS
 // ==========================================================================
-// VEGA PULS 21 Radar Sensor
+// VEGAPULS C 21 Radar Sensor
 // ==========================================================================
 
 // The Vega's Address

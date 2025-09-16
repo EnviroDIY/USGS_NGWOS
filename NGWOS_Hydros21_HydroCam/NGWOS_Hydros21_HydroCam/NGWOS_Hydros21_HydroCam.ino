@@ -214,7 +214,7 @@ SensirionSHT4x sht4x(SHT4xPower, SHT4xUseHeater);
 
 #ifdef USE_VEGA_PULS
 // ==========================================================================
-// VEGA PULS 21 Radar Sensor
+// VEGAPULS C 21 Radar Sensor
 // ==========================================================================
 #include <sensors/VegaPuls21.h>
 

@@ -1,6 +1,6 @@
 # The Things Network
 
-This program transmits data from a Vega Puls 21 and onboard sensors from a Stonefly data logger to The Things Network via LoRa.
+This program transmits data from a VEGAPULS C 21 and onboard sensors from a Stonefly data logger to The Things Network via LoRa.
 
 - [The Things Network](#the-things-network)
   - [Physical Connections](#physical-connections)
@@ -13,7 +13,7 @@ This program transmits data from a Vega Puls 21 and onboard sensors from a Stone
 
 ## Physical Connections
 
-This program is written for an EnviroDIY Stonefly, a Vega Puls 21, a Meter Hydros 21, and a MultiTech mDot.
+This program is written for an EnviroDIY Stonefly, a VEGAPULS C 21, a Meter Hydros 21, and a MultiTech mDot.
 
 The physical connections needed are nearly identical to those described in the [Monitor My Watershed ReadMe](https://github.com/EnviroDIY/USGS_NGWOS/tree/main/NGWOS_Hydros21_HydroCam), but with the mDot replacing the modem and no camera.
 

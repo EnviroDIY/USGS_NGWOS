@@ -1,6 +1,6 @@
 # NGWOS AWS IoT Core and S3 Imagery
 
-This program transmits data from a Vega Puls 21, a Geolux camera, and onboard sensors from a Stonefly data logger to AWS IoT Core (for numeric data) and S3 (for images).
+This program transmits data from a VEGAPULS C 21, a Geolux camera, and onboard sensors from a Stonefly data logger to AWS IoT Core (for numeric data) and S3 (for images).
 This program uses an EnviroDIY LTE Bee based on a SIMCom SIM7080G LTE module.
 
 While this program is set for the above sensors, modem, and endpoints, the [ModularSensors library](https://github.com/EnviroDIY/ModularSensors/) this program is built on supports many more sensors, modems, and data endpoints.
@@ -28,7 +28,7 @@ As of 9/16/2025, this program depends on the [develop](https://github.com/Enviro
 
 ## Physical Connections
 
-This program is written for an EnviroDIY Stonefly, a Vega Puls 21, a Geolux HydroCan, an EnviroDIY LTE Bee, and other solar and battery components.
+This program is written for an EnviroDIY Stonefly, a VEGAPULS C 21, a Geolux HydroCan, an EnviroDIY LTE Bee, and other solar and battery components.
 Instructions for assembling the components are available in [this blog post](https://www.envirodiy.org/river-flood-monitoring-system-for-rapid-deployment/).
 Scroll down to the "Assembly" steps.
 
